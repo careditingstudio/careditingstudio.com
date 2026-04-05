@@ -3,9 +3,15 @@
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { useChromeScrollLock } from "@/components/ChromeScrollLockContext";
 import { SiteHeader } from "@/components/SiteHeader";
+import type { SiteSettings } from "@/lib/cms-types";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-export function SiteTopChrome({ children }: { children: ReactNode }) {
+type Props = {
+  children: ReactNode;
+  site: SiteSettings;
+};
+
+export function SiteTopChrome({ children, site }: Props) {
   const { isChromeHideLocked } = useChromeScrollLock();
   const [announcementHidden, setAnnouncementHidden] = useState(false);
   const lastY = useRef(0);
@@ -61,7 +67,7 @@ export function SiteTopChrome({ children }: { children: ReactNode }) {
             hideAnnouncement ? "-translate-y-full" : "translate-y-0",
           ].join(" ")}
         >
-          <AnnouncementBar />
+          <AnnouncementBar contact={site} />
         </div>
       </div>
 
@@ -73,7 +79,7 @@ export function SiteTopChrome({ children }: { children: ReactNode }) {
             : "top-[var(--announcement-h)]",
         ].join(" ")}
       >
-        <SiteHeader />
+        <SiteHeader brandName={site.businessName} />
       </div>
 
       <div

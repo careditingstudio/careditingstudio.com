@@ -7,10 +7,6 @@ export const siteConfig = {
   whatsappDial: "1234567890123",
   /** Shown in the announcement bar */
   whatsappDisplay: "+1 (234) 567-8901",
-  /** Hero backdrop (behind text) */
-  heroBanner: "/hero/banner1.webp",
-  /** Cut-out car; sits below banner edge — add public/hero/floatingcar.webp */
-  floatingCar: "/hero/floatingcar.webp",
 } as const;
 
 export const navItems = [

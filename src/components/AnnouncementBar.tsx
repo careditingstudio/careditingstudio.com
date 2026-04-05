@@ -1,8 +1,8 @@
 "use client";
 
 import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
+import type { SiteSettings } from "@/lib/cms-types";
 import { usePathname } from "next/navigation";
-import { siteConfig } from "@/config/site";
 
 function IconMail({ className }: { className?: string }) {
   return (
@@ -39,12 +39,16 @@ function IconWhatsApp({ className }: { className?: string }) {
   );
 }
 
-export function AnnouncementBar() {
+type Props = {
+  contact: SiteSettings;
+};
+
+export function AnnouncementBar({ contact }: Props) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
   const overlay = isHome && !chromeSolid;
-  const wa = `https://wa.me/${siteConfig.whatsappDial}`;
+  const wa = `https://wa.me/${contact.whatsappDial}`;
 
   return (
     <div
@@ -59,7 +63,7 @@ export function AnnouncementBar() {
     >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6">
         <a
-          href={`mailto:${siteConfig.email}`}
+          href={`mailto:${contact.email}`}
           className={[
             "group flex min-w-0 items-center gap-2 text-[13px] transition-colors",
             overlay
@@ -75,7 +79,7 @@ export function AnnouncementBar() {
                 : "opacity-60 group-hover:opacity-100",
             ].join(" ")}
           />
-          <span className="truncate">{siteConfig.email}</span>
+          <span className="truncate">{contact.email}</span>
         </a>
         <a
           href={wa}
@@ -97,8 +101,8 @@ export function AnnouncementBar() {
             ].join(" ")}
           />
           <span className="tabular-nums">
-            <span className="hidden sm:inline"></span>
-            {siteConfig.whatsappDisplay}
+            <span className="hidden sm:inline">WhatsApp · </span>
+            {contact.whatsappDisplay}
           </span>
         </a>
       </div>

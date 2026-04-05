@@ -1,0 +1,24 @@
+{
+  "site": {
+    "businessName": "Car Editing Studio",
+    "domainLabel": "careditingstudio.com",
+    "email": "info@careditingstudio.com",
+    "whatsappDial": "1234567890123",
+    "whatsappDisplay": "+1 (234) 567-8901"
+  },
+  "heroBanners": [
+    "/cms/uploads/e79a1ed9-42b2-483d-90d8-c71ef5388b7c.jpg"
+  ],
+  "floatingCar": "/cms/uploads/0c318a31-5a27-44a0-be0f-38affbd880e9.webp",
+  "beforeAfter": [
+    {
+      "before": "/cms/uploads/8920a7d7-cb50-49df-a01a-9aef88512630.jpg",
+      "after": "/cms/uploads/730fcd60-0822-4cc7-9669-b4086001a1c0.jpg"
+    },
+    {
+      "before": "/cms/uploads/246a2aaf-34c1-4bea-abaf-a5756dd5ac27.jpg",
+      "after": "/cms/uploads/6ea0eddc-e66e-455d-bd0c-a8160b1f8684.jpg"
+    }
+  ],
+  "updatedAt": "2026-04-05T20:17:13.908Z"
+}

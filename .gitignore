@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# CMS uploads (keep folder via .gitkeep)
+/public/cms/uploads/*
+!/public/cms/uploads/.gitkeep

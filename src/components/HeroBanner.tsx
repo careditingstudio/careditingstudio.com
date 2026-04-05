@@ -1,19 +1,26 @@
 import Link from "next/link";
 import { display, sans } from "@/app/fonts";
-import { siteConfig } from "@/config/site";
+import type { CmsJson } from "@/lib/cms-types";
 import { FloatingCar } from "@/components/FloatingCar";
+import { HeroBackdropRotator } from "@/components/HeroBackdropRotator";
 
 const HERO_LEAD =
   "Professional Automotive Photo Editing & Retouching Services";
 const HERO_SUPPORT =
   "for Car Selling Companies, Automotive Dealers, and Online Car Sellers";
 
+type Props = {
+  cms: CmsJson;
+};
+
 /**
  * Full-viewport bg (z-8). Copy sits upper-mid in a shorter band.
  * Floating car: separate layer + scroll shrink/fade (FloatingCar).
  */
-export function HeroBanner() {
+export function HeroBanner({ cms }: Props) {
   const bandBottom = `calc(var(--announcement-h) + var(--header-h) + var(--home-hero-band))`;
+  const banners = cms.heroBanners.filter((u) => u.trim().length > 0);
+  const floating = cms.floatingCar.trim();
 
   return (
     <>
@@ -22,10 +29,7 @@ export function HeroBanner() {
         aria-hidden
       >
         <div className="absolute inset-0 bg-[#0a0a0a]" />
-        <div
-          className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('${siteConfig.heroBanner}')` }}
-        />
+        {banners.length > 0 ? <HeroBackdropRotator images={banners} /> : null}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/75" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_30%,transparent_0%,rgba(0,0,0,0.55)_100%)]" />
       </div>
@@ -42,7 +46,7 @@ export function HeroBanner() {
             <p
               className={`${sans.className} mb-2 shrink-0 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60`}
             >
-              {siteConfig.domain}
+              {cms.site.domainLabel}
             </p>
 
             <h1
@@ -74,11 +78,13 @@ export function HeroBanner() {
         </section>
       </div>
 
-      <FloatingCar
-        bandBottom={bandBottom}
-        src={siteConfig.floatingCar}
-        sizes="(max-width: 768px) 80vw, 540px"
-      />
+      {floating ? (
+        <FloatingCar
+          bandBottom={bandBottom}
+          src={floating}
+          sizes="(max-width: 768px) 80vw, 540px"
+        />
+      ) : null}
     </>
   );
 }

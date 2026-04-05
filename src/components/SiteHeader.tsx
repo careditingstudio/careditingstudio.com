@@ -104,7 +104,11 @@ function IconMenu({ open, className }: { open: boolean; className?: string }) {
   );
 }
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  brandName?: string;
+};
+
+export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
@@ -210,7 +214,7 @@ export function SiteHeader() {
             overlayNav ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
-          <span className="whitespace-nowrap">Car Editing Studio</span>
+          <span className="whitespace-nowrap">{brandName}</span>
         </Link>
 
         <nav

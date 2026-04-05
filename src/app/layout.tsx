@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
+import { isAdminRequestHost } from "@/lib/admin-host";
 import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
 import { HomeChromeProvider } from "@/components/HomeChromeProvider";
-import { SiteTopChrome } from "@/components/SiteTopChrome";
+import { SiteTopChromeWrapper } from "@/components/SiteTopChromeWrapper";
 import { sans } from "./fonts";
 import "./globals.css";
 
@@ -31,19 +33,37 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const h = await headers();
+  const isAdminHost =
+    isAdminRequestHost(h.get("host")) || h.get("x-cms-admin") === "1";
+
+  if (isAdminHost) {
+    return (
+      <html lang="en" className="h-full" suppressHydrationWarning>
+        <body
+          className={`${sans.className} min-h-screen bg-zinc-950 text-zinc-100 antialiased`}
+          suppressHydrationWarning
+        >
+          {children}
+        </body>
+      </html>
+    );
+  }
+
   return (
-    <html lang="en" className="h-full scroll-smooth">
+    <html lang="en" className="h-full scroll-smooth" suppressHydrationWarning>
       <body
         className={`${sans.className} flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] antialiased`}
+        suppressHydrationWarning
       >
         <HomeChromeProvider>
           <ChromeScrollLockProvider>
-            <SiteTopChrome>{children}</SiteTopChrome>
+            <SiteTopChromeWrapper>{children}</SiteTopChromeWrapper>
           </ChromeScrollLockProvider>
         </HomeChromeProvider>
       </body>
