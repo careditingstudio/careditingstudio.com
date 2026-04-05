@@ -1,4 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
+import { HomeChromeProvider } from "@/components/HomeChromeProvider";
+import { SiteTopChrome } from "@/components/SiteTopChrome";
 import { sans } from "./fonts";
 import "./globals.css";
 
@@ -23,7 +26,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f8f7" },
     { media: "(prefers-color-scheme: dark)", color: "#09090b" },
   ],
 };
@@ -34,11 +37,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full scroll-smooth">
       <body
-        className={`${sans.className} min-h-full bg-[var(--background)] text-[var(--foreground)] antialiased`}
+        className={`${sans.className} flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] antialiased`}
       >
-        {children}
+        <HomeChromeProvider>
+          <ChromeScrollLockProvider>
+            <SiteTopChrome>{children}</SiteTopChrome>
+          </ChromeScrollLockProvider>
+        </HomeChromeProvider>
       </body>
     </html>
   );
