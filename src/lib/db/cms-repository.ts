@@ -66,6 +66,20 @@ function isMissingTablesError(e: unknown): boolean {
   );
 }
 
+/** Pooler down, firewall, paused Supabase project, wrong URL, etc. */
+function isDatabaseUnreachable(e: unknown): boolean {
+  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P1001") {
+    return true;
+  }
+  return (
+    e instanceof Error &&
+    e.constructor.name === "PrismaClientInitializationError"
+  );
+}
+
+const CMS_DB_CONNECT_HELP =
+  "Check POSTGRES_PRISMA_URL, that your Supabase project is not paused, and your network. If port 6543 (transaction pooler) fails locally, use Supabase’s Session mode URI on port 5432 for POSTGRES_PRISMA_URL.";
+
 async function importLegacyCmsJsonIfNeeded(): Promise<void> {
   if (legacyImportAttempted) return;
 
@@ -104,82 +118,96 @@ async function importLegacyCmsJsonIfNeeded(): Promise<void> {
 }
 
 export async function readCmsFromDb(): Promise<CmsJson> {
-  await importLegacyCmsJsonIfNeeded();
+  try {
+    await importLegacyCmsJsonIfNeeded();
 
-  const siteRow = await prisma.siteSettings.findUnique({
-    where: { id: 1 },
-  });
+    const siteRow = await prisma.siteSettings.findUnique({
+      where: { id: 1 },
+    });
 
-  if (!siteRow) {
-    return defaultCmsJson();
+    if (!siteRow) {
+      return defaultCmsJson();
+    }
+
+    const site: SiteSettings = {
+      businessName: siteRow.businessName,
+      domainLabel: siteRow.domainLabel,
+      email: siteRow.email,
+      whatsappDial: siteRow.whatsappDial,
+      whatsappDisplay: siteRow.whatsappDisplay,
+    };
+
+    const heroRows = await prisma.heroBanner.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    const heroBanners = heroRows.map((r) => r.url);
+
+    const baRows = await prisma.beforeAfterPost.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+
+    const beforeAfter: BeforeAfterPair[] = baRows.map((r) => ({
+      before: r.beforeUrl,
+      after: r.afterUrl,
+      title: r.title,
+      intro: r.intro,
+      priceNote: r.priceNote,
+      listTitle: r.listTitle,
+      includes: JSON.parse(r.includesJson || "[]") as string[],
+      beforeAlt: r.beforeAlt,
+      afterAlt: r.afterAlt,
+      imageFirst: r.imageFirst,
+      showDualCtas: r.showDualCtas,
+      primaryCtaLabel: r.primaryCtaLabel,
+      primaryCtaHref: r.primaryCtaHref,
+      secondaryCtaLabel: r.secondaryCtaLabel,
+      secondaryCtaHref: r.secondaryCtaHref,
+      soloCtaLabel: r.soloCtaLabel,
+      soloCtaHref: r.soloCtaHref,
+    }));
+
+    const svcRows = await prisma.service.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    const services: ServiceRow[] = svcRows.map((r) => ({
+      id: r.id,
+      name: r.name,
+    }));
+
+    const pfRows = await prisma.portfolioItem.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    const portfolioGrid: PortfolioGridItem[] = pfRows.map((r) => ({
+      label: r.label,
+      serviceId: r.serviceId ?? null,
+      before: r.beforeUrl,
+      after: r.afterUrl,
+      beforeAlt: r.beforeAlt,
+      afterAlt: r.afterAlt,
+    }));
+
+    return {
+      site,
+      heroBanners,
+      floatingCar: siteRow.floatingCar ?? "",
+      beforeAfter,
+      services,
+      portfolioGrid,
+      updatedAt: siteRow.updatedAt ?? "",
+    };
+  } catch (e) {
+    if (isDatabaseUnreachable(e)) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[cms] Postgres unreachable — using default CMS in dev. " +
+            CMS_DB_CONNECT_HELP,
+        );
+        return defaultCmsJson();
+      }
+      throw new Error(`CMS: ${CMS_DB_CONNECT_HELP}`, { cause: e });
+    }
+    throw e;
   }
-
-  const site: SiteSettings = {
-    businessName: siteRow.businessName,
-    domainLabel: siteRow.domainLabel,
-    email: siteRow.email,
-    whatsappDial: siteRow.whatsappDial,
-    whatsappDisplay: siteRow.whatsappDisplay,
-  };
-
-  const heroRows = await prisma.heroBanner.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
-  const heroBanners = heroRows.map((r) => r.url);
-
-  const baRows = await prisma.beforeAfterPost.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
-
-  const beforeAfter: BeforeAfterPair[] = baRows.map((r) => ({
-    before: r.beforeUrl,
-    after: r.afterUrl,
-    title: r.title,
-    intro: r.intro,
-    priceNote: r.priceNote,
-    listTitle: r.listTitle,
-    includes: JSON.parse(r.includesJson || "[]") as string[],
-    beforeAlt: r.beforeAlt,
-    afterAlt: r.afterAlt,
-    imageFirst: r.imageFirst,
-    showDualCtas: r.showDualCtas,
-    primaryCtaLabel: r.primaryCtaLabel,
-    primaryCtaHref: r.primaryCtaHref,
-    secondaryCtaLabel: r.secondaryCtaLabel,
-    secondaryCtaHref: r.secondaryCtaHref,
-    soloCtaLabel: r.soloCtaLabel,
-    soloCtaHref: r.soloCtaHref,
-  }));
-
-  const svcRows = await prisma.service.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
-  const services: ServiceRow[] = svcRows.map((r) => ({
-    id: r.id,
-    name: r.name,
-  }));
-
-  const pfRows = await prisma.portfolioItem.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
-  const portfolioGrid: PortfolioGridItem[] = pfRows.map((r) => ({
-    label: r.label,
-    serviceId: r.serviceId ?? null,
-    before: r.beforeUrl,
-    after: r.afterUrl,
-    beforeAlt: r.beforeAlt,
-    afterAlt: r.afterAlt,
-  }));
-
-  return {
-    site,
-    heroBanners,
-    floatingCar: siteRow.floatingCar ?? "",
-    beforeAfter,
-    services,
-    portfolioGrid,
-    updatedAt: siteRow.updatedAt ?? "",
-  };
 }
 
 type WriteOpts = { skipLegacyImport?: boolean };
@@ -324,5 +352,14 @@ async function writeCmsInternal(
 }
 
 export async function writeCmsToDb(cms: CmsJson): Promise<CmsJson> {
-  return writeCmsInternal(cms, {});
+  try {
+    return await writeCmsInternal(cms, {});
+  } catch (e) {
+    if (isDatabaseUnreachable(e)) {
+      throw new Error(`Cannot save CMS: ${CMS_DB_CONNECT_HELP}`, {
+        cause: e,
+      });
+    }
+    throw e;
+  }
 }

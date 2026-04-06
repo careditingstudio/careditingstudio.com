@@ -2,7 +2,7 @@
 
 import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 import type { CmsJson, PortfolioGridItem } from "@/lib/cms-types";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const ALL = "__all__";
 const OTHER = "__other__";
@@ -37,24 +37,6 @@ export function PortfolioGrid({ cms }: { cms: CmsJson }) {
     [complete, serviceIds],
   );
 
-  /** Services that have at least one live tile — only these appear as filter chips. */
-  const filterableServices = useMemo(() => {
-    const used = new Set(
-      complete
-        .map((i) => i.serviceId)
-        .filter((id): id is number => id !== null),
-    );
-    return cms.services.filter((s) => used.has(s.id));
-  }, [cms.services, complete]);
-
-  useEffect(() => {
-    if (filter === ALL || filter === OTHER) return;
-    const fid = Number(filter);
-    if (!filterableServices.some((s) => s.id === fid)) {
-      setFilter(ALL);
-    }
-  }, [filter, filterableServices]);
-
   const filtered = useMemo(() => {
     if (filter === ALL) return complete;
     if (filter === OTHER) {
@@ -84,7 +66,7 @@ export function PortfolioGrid({ cms }: { cms: CmsJson }) {
           selected={filter === ALL}
           onClick={() => setFilter(ALL)}
         />
-        {filterableServices.map((svc) => (
+        {cms.services.map((svc) => (
           <FilterPill
             key={svc.id}
             label={svc.name.trim() || "Untitled"}
@@ -106,14 +88,14 @@ export function PortfolioGrid({ cms }: { cms: CmsJson }) {
           No work in this filter yet.
         </p>
       ) : (
-        <ul className="mx-auto grid max-w-6xl grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
+        <ul className="mx-auto grid w-full grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-12">
           {filtered.map((item, i) => (
             <li
               key={`${item.before}-${item.after}-${item.serviceId}-${i}`}
-              className="mx-auto w-full max-w-[22rem] sm:max-w-none"
+              className="w-full"
             >
               <BeforeAfterSlider
-                layout="square"
+                layout="portfolio"
                 beforeSrc={item.before}
                 afterSrc={item.after}
                 beforeAlt={item.beforeAlt}
