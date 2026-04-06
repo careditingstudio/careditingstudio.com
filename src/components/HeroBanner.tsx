@@ -3,6 +3,7 @@ import { display, sans } from "@/app/fonts";
 import type { CmsJson } from "@/lib/cms-types";
 import { FloatingCar } from "@/components/FloatingCar";
 import { HeroBackdropRotator } from "@/components/HeroBackdropRotator";
+import { siteConfig } from "@/config/site";
 
 const HERO_LEAD =
   "Professional Automotive Photo Editing & Retouching Services";
@@ -46,7 +47,7 @@ export function HeroBanner({ cms }: Props) {
             <p
               className={`${sans.className} mb-2 shrink-0 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60`}
             >
-              {cms.site.domainLabel}
+              {siteConfig.domain}
             </p>
 
             <h1

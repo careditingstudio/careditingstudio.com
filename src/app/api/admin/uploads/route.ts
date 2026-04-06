@@ -3,6 +3,7 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { ENV_APP } from "@/config/deployment-env";
+import { requireAdminApi } from "@/lib/admin-api";
 import {
   destroyBySecureUrl,
   listUploadedImageUrls,
@@ -27,6 +28,8 @@ function hasCloudinaryEnv() {
 }
 
 export async function GET() {
+  const deny = await requireAdminApi();
+  if (deny) return deny;
   if (hasCloudinaryEnv()) {
     try {
       const cloud = await listUploadedImageUrls();
@@ -49,6 +52,8 @@ export async function GET() {
 }
 
 export async function DELETE(request: Request) {
+  const deny = await requireAdminApi();
+  if (deny) return deny;
   let body: { url?: string };
   try {
     body = (await request.json()) as { url?: string };

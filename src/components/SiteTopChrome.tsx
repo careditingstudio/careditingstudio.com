@@ -4,6 +4,7 @@ import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { useChromeScrollLock } from "@/components/ChromeScrollLockContext";
 import { SiteHeader } from "@/components/SiteHeader";
 import type { SiteSettings } from "@/lib/cms-types";
+import { siteConfig } from "@/config/site";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type Props = {
@@ -79,7 +80,7 @@ export function SiteTopChrome({ children, site }: Props) {
             : "top-[var(--announcement-h)]",
         ].join(" ")}
       >
-        <SiteHeader brandName={site.businessName} />
+        <SiteHeader brandName={siteConfig.name} />
       </div>
 
       <div

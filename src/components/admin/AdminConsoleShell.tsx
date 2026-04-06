@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 const DASH = { href: "/admin-panel", label: "Dashboard" } as const;
-const SITE_LINK = { href: "/admin-panel/site", label: "Site-wide" } as const;
+const SITE_LINK = { href: "/admin-panel/settings", label: "Settings" } as const;
 const LIBRARY = { href: "/admin-panel/library", label: "Upload library" } as const;
 
 function normPath(p: string) {
@@ -26,8 +26,7 @@ function pathActive(pathname: string, href: string) {
 function AdminChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [publicSiteUrl, setPublicSiteUrl] = useState("");
-  const { cms, loading, loadError, saving, flash, setFlash, save, refresh } =
-    useAdminCms();
+  const { cms, loading, loadError, saving, flash, save, refresh } = useAdminCms();
 
   useEffect(() => {
     const { protocol, hostname, port } = window.location;
@@ -150,13 +149,6 @@ function AdminChrome({ children }: { children: ReactNode }) {
             ].join(" ")}
           >
             {flash.text}
-            <button
-              type="button"
-              onClick={() => setFlash(null)}
-              className="ml-3 underline opacity-80 hover:opacity-100"
-            >
-              Dismiss
-            </button>
           </div>
         ) : null}
 

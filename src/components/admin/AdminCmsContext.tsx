@@ -114,6 +114,22 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       email: cms.site.email.trim(),
       whatsappDial: cms.site.whatsappDial.replace(/\D/g, "") || cms.site.whatsappDial,
       whatsappDisplay: cms.site.whatsappDisplay.trim(),
+      siteTagsText: cms.site.siteTagsText,
+      siteTagsSeparator: cms.site.siteTagsSeparator,
+      socialLinks: (() => {
+        const seen = new Set<string>();
+        const out: { label: string; url: string }[] = [];
+        for (const row of cms.site.socialLinks) {
+          const label = row.label.trim();
+          const url = row.url.trim();
+          if (label.length === 0) continue;
+          const key = label.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push({ label, url });
+        }
+        return out;
+      })(),
     } satisfies SiteSettings,
   };
 }
@@ -129,8 +145,12 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoadError("");
-    const r = await fetch("/api/admin/cms");
+    const r = await fetch("/api/admin/cms", { credentials: "include" });
     if (!r.ok) {
+      if (r.status === 401) {
+        window.location.href = "/admin-panel/login";
+        return;
+      }
       setLoadError("Could not load CMS data.");
       setLoading(false);
       return;
@@ -153,7 +173,12 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials: "include",
       });
+      if (r.status === 401) {
+        window.location.href = "/admin-panel/login";
+        return false;
+      }
       if (!r.ok) throw new Error("save");
       setCms((await r.json()) as CmsJson);
       setFlash({ type: "ok", text: "Published." });

@@ -24,10 +24,21 @@ export function getAdminPassword() {
   return p;
 }
 
+export function getAdminUsername() {
+  const u = process.env[ENV_APP.ADMIN_USERNAME];
+  if (!u || u.trim().length < 3) {
+    throw new Error(
+      `${ENV_APP.ADMIN_USERNAME} must be set (min 3 characters). Add it to .env`,
+    );
+  }
+  return u.trim();
+}
+
 /** Safe check for middleware / early init without throwing */
 export function adminAuthConfigured(): boolean {
   try {
     getSecret();
+    getAdminUsername();
     getAdminPassword();
     return true;
   } catch {

@@ -4,27 +4,47 @@ import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
 import { HomeChromeProvider } from "@/components/HomeChromeProvider";
 import { SiteTopChromeWrapper } from "@/components/SiteTopChromeWrapper";
+import { readCms } from "@/lib/cms-store";
+import { parseSiteTags } from "@/lib/site-tags";
 import { sans } from "./fonts";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://careditingstudio.com"),
-  title: {
-    default: "Car Editing Studio",
-    template: "%s | Car Editing Studio",
-  },
-  description:
-    "Automotive retouching and graphics — car edits, composites, and visual work for brands and creators.",
-  openGraph: {
-    title: "Car Editing Studio",
-    description:
-      "Automotive retouching and graphics — car edits, composites, and visual work.",
-    url: "https://careditingstudio.com",
-    siteName: "Car Editing Studio",
-    locale: "en_US",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // Keep metadata stable even if CMS is temporarily unavailable.
+  let tags: string[] = [];
+  try {
+    const cms = await readCms();
+    tags = parseSiteTags(cms.site);
+  } catch {
+    tags = [];
+  }
+
+  const baseDescription =
+    "Automotive retouching and graphics — car edits, composites, and visual work for brands and creators.";
+
+  return {
+    metadataBase: new URL("https://careditingstudio.com"),
+    title: {
+      default: "Car Editing Studio",
+      template: "%s | Car Editing Studio",
+    },
+    description: baseDescription,
+    keywords: tags.length > 0 ? tags : undefined,
+    openGraph: {
+      title: "Car Editing Studio",
+      description: baseDescription,
+      url: "https://careditingstudio.com",
+      siteName: "Car Editing Studio",
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Car Editing Studio",
+      description: baseDescription,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

@@ -60,9 +60,6 @@ export function AdminDashboard() {
 
   return (
     <div className="mx-auto max-w-5xl pb-8">
-      <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-        Pages
-      </h2>
       <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ADMIN_PAGE_NAV.map((c) => {
           const slug = c.href.replace("/editor/", "");
@@ -91,20 +88,17 @@ export function AdminDashboard() {
         })}
       </ul>
 
-      <h2 className="mt-14 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-        Global
-      </h2>
       <ul className="mt-4 grid gap-4 sm:grid-cols-2">
         <li>
           <Link
-            href="/admin-panel/site"
+            href="/admin-panel/settings"
             className="group flex items-start gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 transition hover:border-zinc-600 hover:bg-zinc-900/70"
           >
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-800/80 text-sky-400 ring-1 ring-zinc-700/80">
               <IconGlobe className="h-5 w-5" aria-hidden />
             </span>
             <div>
-              <h3 className="font-semibold text-white">Site-wide</h3>
+              <h3 className="font-semibold text-white">Settings</h3>
             </div>
           </Link>
         </li>

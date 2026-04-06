@@ -1,8 +1,11 @@
-import { redirect } from "next/navigation";
+import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 
 export const dynamic = "force-dynamic";
 
-/** Login is disabled for now — send everyone to the dashboard. */
 export default function AdminLoginPage() {
-  redirect("/");
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <AdminLoginForm />
+    </div>
+  );
 }

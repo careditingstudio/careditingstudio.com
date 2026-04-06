@@ -98,6 +98,14 @@ export type SiteSettings = {
   email: string;
   whatsappDial: string;
   whatsappDisplay: string;
+  /** Social links rendered in the public footer (label + URL). */
+  socialLinks: { label: string; url: string }[];
+  /**
+   * Multiline (or separator-delimited) tags used for SEO.
+   * Store as text so the editor can control parsing rules.
+   */
+  siteTagsText: string;
+  siteTagsSeparator: "newline" | "comma" | "semicolon" | "pipe";
 };
 
 /** Editable in admin (Services); portfolio tiles reference these by id. */
@@ -146,6 +154,16 @@ export function defaultSiteSettings(): SiteSettings {
     email: siteConfig.email,
     whatsappDial: siteConfig.whatsappDial,
     whatsappDisplay: siteConfig.whatsappDisplay,
+    socialLinks: [
+      { label: "Facebook", url: "" },
+      { label: "Instagram", url: "" },
+      { label: "LinkedIn", url: "" },
+      { label: "X (Twitter)", url: "" },
+      { label: "YouTube", url: "" },
+      { label: "TikTok", url: "" },
+    ],
+    siteTagsText: "",
+    siteTagsSeparator: "newline",
   };
 }
 
@@ -307,6 +325,35 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     if (typeof s.whatsappDial === "string") {
       const digits = s.whatsappDial.replace(/\D/g, "");
       if (digits.length > 0) d.whatsappDial = digits;
+    }
+    if (typeof s.siteTagsText === "string") {
+      d.siteTagsText = s.siteTagsText;
+    }
+    const sep = s.siteTagsSeparator;
+    if (
+      sep === "newline" ||
+      sep === "comma" ||
+      sep === "semicolon" ||
+      sep === "pipe"
+    ) {
+      d.siteTagsSeparator = sep;
+    }
+    if (Array.isArray(s.socialLinks)) {
+      const out: { label: string; url: string }[] = [];
+      const seen = new Set<string>();
+      for (const row of s.socialLinks) {
+        if (!row || typeof row !== "object") continue;
+        const p = row as Record<string, unknown>;
+        if (typeof p.label !== "string" || typeof p.url !== "string") continue;
+        const label = p.label.trim();
+        const url = p.url.trim();
+        if (label.length === 0) continue;
+        const key = label.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ label, url });
+      }
+      if (out.length > 0) d.socialLinks = out;
     }
     base.site = d;
   }

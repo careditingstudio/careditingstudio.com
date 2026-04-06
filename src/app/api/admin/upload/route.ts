@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { uploadImageBuffer } from "@/lib/cloudinary-server";
+import { requireAdminApi } from "@/lib/admin-api";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,8 @@ function isAllowedImage(file: File): boolean {
 }
 
 export async function POST(request: Request) {
+  const deny = await requireAdminApi();
+  if (deny) return deny;
   let form: FormData;
   try {
     form = await request.formData();

@@ -16,6 +16,9 @@ model SiteSettings {
   email           String
   whatsappDial    String @map("whatsapp_dial")
   whatsappDisplay String @map("whatsapp_display")
+  socialLinksJson String @default("[]") @map("social_links_json")
+  siteTagsText    String @default("") @map("site_tags_text")
+  siteTagsSeparator String @default("newline") @map("site_tags_separator")
   floatingCar     String @default("") @map("floating_car")
   updatedAt       String @default("") @map("updated_at")
 

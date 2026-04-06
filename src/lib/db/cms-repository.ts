@@ -49,6 +49,9 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
       email: site.email,
       whatsappDial: site.whatsappDial,
       whatsappDisplay: site.whatsappDisplay,
+      socialLinksJson: JSON.stringify(site.socialLinks ?? []),
+      siteTagsText: site.siteTagsText ?? "",
+      siteTagsSeparator: site.siteTagsSeparator ?? "newline",
       floatingCar: "",
       updatedAt: now,
     },
@@ -148,6 +151,29 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       email: siteRow.email,
       whatsappDial: siteRow.whatsappDial,
       whatsappDisplay: siteRow.whatsappDisplay,
+      socialLinks: (() => {
+        try {
+          const parsed = JSON.parse(siteRow.socialLinksJson || "[]") as unknown;
+          if (!Array.isArray(parsed)) return [];
+          const out: { label: string; url: string }[] = [];
+          for (const row of parsed) {
+            if (!row || typeof row !== "object") continue;
+            const p = row as Record<string, unknown>;
+            if (typeof p.label !== "string" || typeof p.url !== "string") continue;
+            out.push({ label: p.label, url: p.url });
+          }
+          return out;
+        } catch {
+          return [];
+        }
+      })(),
+      siteTagsText: siteRow.siteTagsText ?? "",
+      siteTagsSeparator:
+        siteRow.siteTagsSeparator === "comma" ||
+        siteRow.siteTagsSeparator === "semicolon" ||
+        siteRow.siteTagsSeparator === "pipe"
+          ? siteRow.siteTagsSeparator
+          : "newline",
     };
 
     const heroRows = await prisma.heroBanner.findMany({
@@ -244,6 +270,9 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         email: site.email,
         whatsappDial: site.whatsappDial,
         whatsappDisplay: site.whatsappDisplay,
+          socialLinksJson: JSON.stringify(site.socialLinks ?? []),
+          siteTagsText: site.siteTagsText ?? "",
+          siteTagsSeparator: site.siteTagsSeparator ?? "newline",
         floatingCar: cms.floatingCar.trim(),
         updatedAt: now,
       },
@@ -253,6 +282,9 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         email: site.email,
         whatsappDial: site.whatsappDial,
         whatsappDisplay: site.whatsappDisplay,
+          socialLinksJson: JSON.stringify(site.socialLinks ?? []),
+          siteTagsText: site.siteTagsText ?? "",
+          siteTagsSeparator: site.siteTagsSeparator ?? "newline",
         floatingCar: cms.floatingCar.trim(),
         updatedAt: now,
       },

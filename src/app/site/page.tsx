@@ -10,5 +10,5 @@ export const dynamic = "force-dynamic";
 export default async function SiteShortcutPage() {
   const h = await headers();
   if (!isAdminHostFromIncomingHeaders((name) => h.get(name))) notFound();
-  redirect("/admin-panel/site");
+  redirect("/admin-panel/settings");
 }

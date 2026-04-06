@@ -38,6 +38,7 @@ export default function AdminLibraryPage() {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
+      credentials: "include",
     });
     if (!r.ok) {
       setMsg("Delete failed.");

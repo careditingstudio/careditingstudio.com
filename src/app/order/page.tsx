@@ -2,6 +2,8 @@ import { InnerPageBody } from "@/components/InnerPageBody";
 import { PageHeading } from "@/components/PageHeading";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Order",
   description: "Place an order for automotive photo editing.",
