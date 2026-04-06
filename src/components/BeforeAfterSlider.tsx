@@ -15,7 +15,7 @@ type BeforeAfterSliderProps = {
   afterSrc: string;
   beforeAlt: string;
   afterAlt: string;
-  /** Home: landscape; legacy square; portfolio: gentle portrait (wider than 4/5). */
+  /** Home: landscape; legacy square; portfolio: square tile (grid). */
   layout?: "landscape" | "square" | "portfolio";
   className?: string;
   priority?: boolean;
@@ -33,17 +33,13 @@ export function BeforeAfterSlider({
   const unopt =
     isUploadedAsset(beforeSrc) || isUploadedAsset(afterSrc);
   const aspectClass =
-    layout === "square"
+    layout === "square" || layout === "portfolio"
       ? "aspect-square"
-      : layout === "portfolio"
-        ? "aspect-[7/8]"
-        : "aspect-[4/3]";
+      : "aspect-[4/3]";
   const imageSizes =
-    layout === "square"
+    layout === "square" || layout === "portfolio"
       ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      : layout === "portfolio"
-        ? "(max-width: 640px) 100vw, (max-width: 1024px) 45vw, 30vw"
-        : "(max-width: 1024px) 100vw, 50vw";
+      : "(max-width: 1024px) 100vw, 50vw";
   const id = useId();
   const labelId = `${id}-label`;
   const containerRef = useRef<HTMLDivElement>(null);
