@@ -1,6 +1,25 @@
 import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+
+const ADMIN_SESSION_COOKIE = "cms_admin";
+
+function hasAdminCookie(req: NextRequest): boolean {
+  return Boolean(req.cookies.get(ADMIN_SESSION_COOKIE)?.value);
+}
+
+function adminEnvConfigured(): boolean {
+  const secret = process.env.CMS_AUTH_SECRET?.trim();
+  const user = process.env.ADMIN_USERNAME?.trim();
+  const pass = process.env.ADMIN_PASSWORD?.trim();
+  return Boolean(
+    secret &&
+      secret.length >= 16 &&
+      user &&
+      user.length >= 3 &&
+      pass &&
+      pass.length >= 8,
+  );
+}
 
 function shouldRewriteAdminPath(pathname: string) {
   /** Served by `src/app/editor/*` on the admin host — do not rewrite. */
@@ -20,15 +39,43 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdmin = isAdminHostFromIncomingHeaders((n) => request.headers.get(n));
 
+  // Public host should not expose admin pages/APIs.
   if (!isAdmin && pathname.startsWith("/api/admin")) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-
   if (!isAdmin && pathname.startsWith("/admin-panel")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  // Admin host: enforce login for admin panel + admin APIs.
   if (isAdmin) {
+    const isAdminPanel = pathname === "/admin-panel" || pathname.startsWith("/admin-panel/");
+    const isAdminApi = pathname.startsWith("/api/admin/");
+    const isLoginPage = pathname === "/admin-panel/login";
+    const isLoginApi = pathname === "/api/admin/login";
+    const isLogoutApi = pathname === "/api/admin/logout";
+
+    if ((isAdminPanel || isAdminApi) && !isLoginPage && !isLoginApi && !isLogoutApi) {
+      // In production, fail closed if auth is not configured.
+      if (process.env.NODE_ENV === "production" && !adminEnvConfigured()) {
+        if (isAdminApi) {
+          return NextResponse.json(
+            { error: "Admin auth is not configured." },
+            { status: 503 },
+          );
+        }
+        return NextResponse.redirect(new URL("/admin-panel/login", request.url));
+      }
+
+      if (!hasAdminCookie(request)) {
+        if (isAdminApi) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.redirect(new URL("/admin-panel/login", request.url));
+      }
+    }
+
+    // Keep legacy admin-host conveniences.
     if (pathname === "/page" || pathname.startsWith("/page/")) {
       const url = request.nextUrl.clone();
       url.pathname = pathname.replace(/^\/page/, "/editor") || "/editor/home";
