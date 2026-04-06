@@ -31,7 +31,7 @@ export default function AdminLibraryPage() {
   }, [load]);
 
   async function remove(url: string) {
-    if (!confirm("Delete this file from the server? Links that use it will break.")) {
+    if (!confirm("Delete?")) {
       return;
     }
     const r = await fetch("/api/admin/uploads", {
@@ -54,7 +54,7 @@ export default function AdminLibraryPage() {
     setMsg("");
     try {
       await adminUploadFile(file);
-      setMsg("Uploaded — use it in Home or publish if you already added it to the page.");
+      setMsg("Uploaded.");
       void load();
       setTimeout(() => setMsg(""), 5000);
     } catch (e) {
@@ -70,21 +70,11 @@ export default function AdminLibraryPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-white">
           Media library
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-          New uploads go to{" "}
-          <span className="font-medium text-zinc-300">Cloudinary</span> (folder
-          from <code className="font-mono text-xs">CLOUDINARY_UPLOAD_FOLDER</code>
-          ). Deleting here removes the asset from Cloudinary — clear URLs in the
-          editor first if a page still references it.
-        </p>
       </header>
 
       <label className="mt-8 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 px-6 py-12 text-center transition hover:border-[var(--accent)]/45 hover:bg-zinc-900/60">
         <span className="text-sm font-medium text-zinc-200">
           {uploading ? "Uploading…" : "Upload image"}
-        </span>
-        <span className="mt-1 text-xs text-zinc-500">
-          JPG, PNG, WebP, GIF, or AVIF · up to 12MB
         </span>
         <input
           type="file"
@@ -107,7 +97,7 @@ export default function AdminLibraryPage() {
         <p className="mt-10 text-zinc-500">Loading…</p>
       ) : files.length === 0 ? (
         <p className="mt-10 rounded-xl border border-dashed border-zinc-700 p-8 text-center text-sm text-zinc-500">
-          No uploads yet. Add images from Hero, Floating car, or Before/after.
+          —
         </p>
       ) : (
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

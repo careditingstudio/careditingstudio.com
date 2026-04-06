@@ -1,7 +1,5 @@
 import "server-only";
 
-import fs from "fs";
-import path from "path";
 import {
   type BeforeAfterPair,
   type CmsJson,
@@ -10,12 +8,12 @@ import {
   type SiteSettings,
   defaultCmsJson,
   defaultSiteSettings,
-  normalizeCmsJson,
 } from "@/lib/cms-types";
+import { ENV_VERCEL_SUPABASE } from "@/config/deployment-env";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
-const CMS_JSON = path.join(process.cwd(), "data", "cms.json");
+const { POSTGRES_PRISMA_URL, POSTGRES_URL_NON_POOLING } = ENV_VERCEL_SUPABASE;
 
 const DEFAULT_SERVICE_NAMES = [
   "Background Removal",
@@ -26,7 +24,7 @@ const DEFAULT_SERVICE_NAMES = [
   "Photo Retouching",
 ];
 
-let legacyImportAttempted = false;
+let seedAttempted = false;
 
 async function seedDefaultServices(): Promise<void> {
   const n = await prisma.service.count();
@@ -77,11 +75,32 @@ function isDatabaseUnreachable(e: unknown): boolean {
   );
 }
 
-const CMS_DB_CONNECT_HELP =
-  "Check POSTGRES_PRISMA_URL, that your Supabase project is not paused, and your network. If port 6543 (transaction pooler) fails locally, use Supabase’s Session mode URI on port 5432 for POSTGRES_PRISMA_URL.";
+/** Some layers wrap Prisma errors as `Error` with `cause` set. */
+function isDatabaseUnreachableDeep(e: unknown): boolean {
+  let cur: unknown = e;
+  const seen = new Set<unknown>();
+  for (let i = 0; i < 6 && cur != null; i++) {
+    if (seen.has(cur)) break;
+    seen.add(cur);
+    if (isDatabaseUnreachable(cur)) return true;
+    if (cur instanceof Error && cur.cause !== undefined) {
+      cur = cur.cause;
+      continue;
+    }
+    break;
+  }
+  return false;
+}
 
-async function importLegacyCmsJsonIfNeeded(): Promise<void> {
-  if (legacyImportAttempted) return;
+const CMS_DB_CONNECT_HELP =
+  `Check ${POSTGRES_PRISMA_URL}, that your Supabase project is not paused, and your network. If port 6543 (transaction pooler) fails locally, use Supabase’s Session mode URI on port 5432 for ${POSTGRES_PRISMA_URL}.`;
+
+const CMS_LOCAL_DEV_DB_HINT =
+  `Copy ${POSTGRES_PRISMA_URL} and ${POSTGRES_URL_NON_POOLING} from your Vercel project into .env so local dev uses the same database as production.`;
+
+/** Empty DB: create site row + default services only (no file import). */
+async function ensureCmsSeededIfEmpty(): Promise<void> {
+  if (seedAttempted) return;
 
   let count: number;
   try {
@@ -95,38 +114,32 @@ async function importLegacyCmsJsonIfNeeded(): Promise<void> {
     throw e;
   }
 
-  legacyImportAttempted = true;
+  seedAttempted = true;
 
   if (count > 0) {
     return;
   }
 
-  if (!fs.existsSync(CMS_JSON)) {
-    await upsertDefaultSiteRow(defaultSiteSettings());
-    await seedDefaultServices();
-    return;
-  }
-
-  try {
-    const raw = JSON.parse(fs.readFileSync(CMS_JSON, "utf-8"));
-    const cms = normalizeCmsJson(raw);
-    await writeCmsInternal(cms, { skipLegacyImport: true });
-  } catch {
-    await upsertDefaultSiteRow(defaultSiteSettings());
-    await seedDefaultServices();
-  }
+  await upsertDefaultSiteRow(defaultSiteSettings());
+  await seedDefaultServices();
 }
 
-export async function readCmsFromDb(): Promise<CmsJson> {
+export type ReadCmsFromDbResult = {
+  cms: CmsJson;
+  /** `true` only in development when Postgres could not be reached (empty CMS fallback). */
+  devDbUnreachable: boolean;
+};
+
+export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
   try {
-    await importLegacyCmsJsonIfNeeded();
+    await ensureCmsSeededIfEmpty();
 
     const siteRow = await prisma.siteSettings.findUnique({
       where: { id: 1 },
     });
 
     if (!siteRow) {
-      return defaultCmsJson();
+      return { cms: defaultCmsJson(), devDbUnreachable: false };
     }
 
     const site: SiteSettings = {
@@ -187,22 +200,27 @@ export async function readCmsFromDb(): Promise<CmsJson> {
     }));
 
     return {
-      site,
-      heroBanners,
-      floatingCar: siteRow.floatingCar ?? "",
-      beforeAfter,
-      services,
-      portfolioGrid,
-      updatedAt: siteRow.updatedAt ?? "",
+      cms: {
+        site,
+        heroBanners,
+        floatingCar: siteRow.floatingCar ?? "",
+        beforeAfter,
+        services,
+        portfolioGrid,
+        updatedAt: siteRow.updatedAt ?? "",
+      },
+      devDbUnreachable: false,
     };
   } catch (e) {
-    if (isDatabaseUnreachable(e)) {
+    if (isDatabaseUnreachableDeep(e)) {
       if (process.env.NODE_ENV === "development") {
         console.warn(
-          "[cms] Postgres unreachable — using default CMS in dev. " +
-            CMS_DB_CONNECT_HELP,
+          "[cms] Postgres unreachable — empty CMS in dev. " +
+            CMS_DB_CONNECT_HELP +
+            " " +
+            CMS_LOCAL_DEV_DB_HINT,
         );
-        return defaultCmsJson();
+        return { cms: defaultCmsJson(), devDbUnreachable: true };
       }
       throw new Error(`CMS: ${CMS_DB_CONNECT_HELP}`, { cause: e });
     }
@@ -210,15 +228,8 @@ export async function readCmsFromDb(): Promise<CmsJson> {
   }
 }
 
-type WriteOpts = { skipLegacyImport?: boolean };
-
-async function writeCmsInternal(
-  cms: CmsJson,
-  opts?: WriteOpts,
-): Promise<CmsJson> {
-  if (!opts?.skipLegacyImport) {
-    await importLegacyCmsJsonIfNeeded();
-  }
+async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
+  await ensureCmsSeededIfEmpty();
 
   const now = new Date().toISOString();
   const site = cms.site;
@@ -348,14 +359,15 @@ async function writeCmsInternal(
     }
   });
 
-  return readCmsFromDb();
+  const r = await readCmsFromDb();
+  return r.cms;
 }
 
 export async function writeCmsToDb(cms: CmsJson): Promise<CmsJson> {
   try {
-    return await writeCmsInternal(cms, {});
+    return await writeCmsInternal(cms);
   } catch (e) {
-    if (isDatabaseUnreachable(e)) {
+    if (isDatabaseUnreachableDeep(e)) {
       throw new Error(`Cannot save CMS: ${CMS_DB_CONNECT_HELP}`, {
         cause: e,
       });

@@ -28,11 +28,5 @@ export default async function AdminEditorPage({ params }: Props) {
     return <AdminServicesContent />;
   }
 
-  return (
-    <AdminPagePlaceholder
-      title={item.label}
-      publicPath={item.publicPath}
-      description={item.hint}
-    />
-  );
+  return <AdminPagePlaceholder title={item.label} />;
 }

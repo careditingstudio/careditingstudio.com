@@ -174,7 +174,7 @@ export function BeforeAfterPostEditModal({
                     setPairPatch({ showDualCtas: e.target.checked })
                   }
                 />
-                Two buttons (else single link)
+                Two buttons
               </label>
             </div>
 
@@ -293,10 +293,7 @@ export function BeforeAfterPostEditModal({
                         onClick={() =>
                           pickFromLibrary((url) => {
                             setPairPatch({ [side]: url });
-                            setFlash({
-                              type: "ok",
-                              text: "Image set — publish when ready.",
-                            });
+                            setFlash({ type: "ok", text: "Updated." });
                           })
                         }
                         className="rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"

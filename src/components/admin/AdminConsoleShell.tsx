@@ -6,23 +6,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
-const DASH = {
-  href: "/admin-panel",
-  label: "Dashboard",
-  hint: "Overview & shortcuts",
-} as const;
-
-const SITE_LINK = {
-  href: "/admin-panel/site",
-  label: "Site-wide",
-  hint: "Header, bar, hero label",
-} as const;
-
-const LIBRARY = {
-  href: "/admin-panel/library",
-  label: "Upload library",
-  hint: "Files in /cms/uploads",
-} as const;
+const DASH = { href: "/admin-panel", label: "Dashboard" } as const;
+const SITE_LINK = { href: "/admin-panel/site", label: "Site-wide" } as const;
+const LIBRARY = { href: "/admin-panel/library", label: "Upload library" } as const;
 
 function normPath(p: string) {
   return p.length > 1 && p.endsWith("/") ? p.slice(0, -1) : p;
@@ -81,9 +67,6 @@ function AdminChrome({ children }: { children: ReactNode }) {
             CMS
           </p>
           <p className="mt-1 font-semibold tracking-tight text-white">Control panel</p>
-          <p className="mt-1 text-xs leading-snug text-zinc-500">
-            Edit the live site, then publish.
-          </p>
         </div>
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           <Link
@@ -96,9 +79,6 @@ function AdminChrome({ children }: { children: ReactNode }) {
             ].join(" ")}
           >
             <span className="block text-sm font-medium">{DASH.label}</span>
-            <span className="mt-0.5 block text-[11px] text-zinc-500">
-              {DASH.hint}
-            </span>
           </Link>
 
           <p className="px-3 pb-0.5 pt-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
@@ -118,9 +98,6 @@ function AdminChrome({ children }: { children: ReactNode }) {
                 ].join(" ")}
               >
                 <span className="block text-sm font-medium">{item.label}</span>
-                <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500">
-                  {item.hint}
-                </span>
               </Link>
             );
           })}
@@ -142,9 +119,6 @@ function AdminChrome({ children }: { children: ReactNode }) {
                 ].join(" ")}
               >
                 <span className="block text-sm font-medium">{item.label}</span>
-                <span className="mt-0.5 block text-[11px] text-zinc-500">
-                  {item.hint}
-                </span>
               </Link>
             );
           })}
@@ -191,18 +165,18 @@ function AdminChrome({ children }: { children: ReactNode }) {
         </main>
 
         <footer className="fixed bottom-0 right-0 z-30 flex items-center justify-end gap-3 border-t border-zinc-800/80 bg-zinc-950/95 px-4 py-3 backdrop-blur-md sm:left-64 sm:px-10">
-          <p className="mr-auto hidden text-xs text-zinc-500 sm:block">
-            {cms.updatedAt
-              ? `Last published: ${new Date(cms.updatedAt).toLocaleString()}`
-              : "Not published yet from this panel"}
-          </p>
+          {cms.updatedAt ? (
+            <p className="mr-auto hidden text-xs text-zinc-500 sm:block">
+              {new Date(cms.updatedAt).toLocaleString()}
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={() => void save()}
             disabled={saving}
             className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
-            {saving ? "Publishing…" : "Publish changes"}
+            {saving ? "Publishing…" : "Publish"}
           </button>
         </footer>
       </div>

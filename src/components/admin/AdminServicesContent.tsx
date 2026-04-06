@@ -11,13 +11,7 @@ export function AdminServicesContent() {
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-white">Services</h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            These names appear in the portfolio editor when you tag a tile.
-            Reorder with the arrows; publish to update the live site.
-          </p>
-        </div>
+        <h2 className="text-lg font-semibold text-white">Services</h2>
         <button
           type="button"
           onClick={() => addService()}
@@ -30,7 +24,7 @@ export function AdminServicesContent() {
       <ul className="space-y-1.5">
         {cms.services.length === 0 ? (
           <li className="rounded-lg border border-zinc-800/80 px-3 py-5 text-center text-[11px] text-zinc-600">
-            No services yet — add one for portfolio tagging.
+            —
           </li>
         ) : (
           cms.services.map((svc, i) => (

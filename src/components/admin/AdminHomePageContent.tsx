@@ -66,10 +66,6 @@ export function AdminHomePageContent() {
 
       <section className="scroll-mt-8" id="hero-banners">
         <h2 className="text-lg font-semibold text-white">Hero banners</h2>
-        <p className="mt-2 text-sm text-zinc-400">
-          Full-screen images behind the headline. Multiple images cross-fade.
-          Order = first in list shows first.
-        </p>
         <ul className="mt-6 space-y-3">
           {cms.heroBanners.map((url, i) => {
             const src = resolvedImageSrc(url);
@@ -108,10 +104,7 @@ export function AdminHomePageContent() {
                           next[i] = picked;
                           return { ...c, heroBanners: next };
                         });
-                        setFlash({
-                          type: "ok",
-                          text: "Banner updated — publish when ready.",
-                        });
+                        setFlash({ type: "ok", text: "Updated." });
                       })
                     }
                     className="rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-3 py-1.5 text-xs text-[var(--accent)] hover:bg-[var(--accent)]/20"
@@ -151,28 +144,19 @@ export function AdminHomePageContent() {
           onClick={() =>
             openMediaPicker((url) => {
               addBannerUrl(url);
-              setFlash({
-                type: "ok",
-                text: "Banner added — publish when ready.",
-              });
+              setFlash({ type: "ok", text: "Added." });
             })
           }
           className="mt-6 flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-600 bg-zinc-900/30 px-6 py-10 text-center transition hover:border-[var(--accent)]/50"
         >
           <span className="text-sm font-medium text-zinc-200">
-            Add banner from library
-          </span>
-          <span className="mt-1 text-xs text-zinc-500">
-            Opens your media library — pick an image or upload there
+            Add banner
           </span>
         </button>
       </section>
 
       <section className="scroll-mt-8 border-t border-zinc-800 pt-16" id="floating-car">
         <h2 className="text-lg font-semibold text-white">Floating car</h2>
-        <p className="mt-2 text-sm text-zinc-400">
-          Cut-out over the hero. PNG/WebP with transparency works best.
-        </p>
         <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
           <div className="relative mx-auto aspect-[16/10] max-w-md bg-zinc-950">
             {floatingSrc ? (
@@ -186,7 +170,7 @@ export function AdminHomePageContent() {
               />
             ) : (
               <div className="flex h-full min-h-[12rem] items-center justify-center px-4 text-center text-sm text-zinc-600">
-                No image yet — set a URL below or choose from the library.
+                —
               </div>
             )}
           </div>
@@ -204,12 +188,12 @@ export function AdminHomePageContent() {
             onClick={() =>
               openMediaPicker((url) => {
                 setFloatingCar(url);
-                setFlash({ type: "ok", text: "Updated — publish when ready." });
+                setFlash({ type: "ok", text: "Updated." });
               })
             }
             className="mt-4 rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-4 py-2.5 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
           >
-            Choose from library…
+            Library
           </button>
         </div>
       </section>
@@ -257,8 +241,6 @@ export function AdminHomePageContent() {
             </li>
           ) : (
             cms.beforeAfter.map((pair, i) => {
-              const ready =
-                pair.before.trim().length > 0 && pair.after.trim().length > 0;
               return (
                 <li
                   key={`ba-${i}`}
@@ -290,10 +272,6 @@ export function AdminHomePageContent() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs text-zinc-200">
                       {pair.title.trim() || "Untitled"}
-                    </p>
-                    <p className="truncate text-[10px] text-zinc-500">
-                      {ready ? "Live" : "Needs images"} · {pair.includes.length}{" "}
-                      bullets
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">

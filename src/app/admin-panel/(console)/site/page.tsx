@@ -5,36 +5,13 @@ import { useAdminCms } from "@/components/admin/AdminCmsContext";
 const fields: {
   key: keyof import("@/lib/cms-types").SiteSettings;
   label: string;
-  hint: string;
   type?: "email" | "tel";
 }[] = [
-  {
-    key: "businessName",
-    label: "Business name",
-    hint: "Shown in the main navigation header on every page.",
-  },
-  {
-    key: "domainLabel",
-    label: "Domain / tagline line",
-    hint: "Small uppercase line above the hero headline (often your domain).",
-  },
-  {
-    key: "email",
-    label: "Email",
-    hint: "Used in the top announcement bar (mailto link).",
-    type: "email",
-  },
-  {
-    key: "whatsappDial",
-    label: "WhatsApp number (digits only)",
-    hint: "Country code included, no + or spaces — used in wa.me links.",
-    type: "tel",
-  },
-  {
-    key: "whatsappDisplay",
-    label: "WhatsApp display",
-    hint: "How the number appears to visitors next to the icon.",
-  },
+  { key: "businessName", label: "Business name" },
+  { key: "domainLabel", label: "Domain / tagline" },
+  { key: "email", label: "Email", type: "email" },
+  { key: "whatsappDial", label: "WhatsApp (digits)", type: "tel" },
+  { key: "whatsappDisplay", label: "WhatsApp display" },
 ];
 
 export default function AdminSitePage() {
@@ -45,10 +22,6 @@ export default function AdminSitePage() {
     <div className="mx-auto max-w-xl">
       <header className="border-b border-zinc-800 pb-8">
         <h1 className="text-2xl font-semibold text-white">Site & contact</h1>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          Text-only settings that appear in the header, hero, and top contact
-          strip. No images here — use the Media pages for pictures.
-        </p>
       </header>
 
       <form className="mt-10 space-y-8" onSubmit={(e) => e.preventDefault()}>
@@ -60,7 +33,6 @@ export default function AdminSitePage() {
             >
               {f.label}
             </label>
-            <p className="mt-1 text-xs text-zinc-500">{f.hint}</p>
             <input
               id={f.key}
               type={f.type ?? "text"}

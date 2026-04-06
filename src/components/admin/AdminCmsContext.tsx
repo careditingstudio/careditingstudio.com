@@ -156,11 +156,11 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       });
       if (!r.ok) throw new Error("save");
       setCms((await r.json()) as CmsJson);
-      setFlash({ type: "ok", text: "Published to the live site." });
+      setFlash({ type: "ok", text: "Published." });
       setTimeout(() => setFlash(null), 5000);
       return true;
     } catch {
-      setFlash({ type: "err", text: "Save failed. Try again." });
+      setFlash({ type: "err", text: "Save failed." });
       return false;
     } finally {
       setSaving(false);

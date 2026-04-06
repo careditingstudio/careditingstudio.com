@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
+  // Vercel ↔ Supabase integration names only (see src/config/deployment-env.ts).
   url       = env("POSTGRES_PRISMA_URL")
-  // Supabase pooler (6543) often cannot run migrations; use the direct (5432) URI here.
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 

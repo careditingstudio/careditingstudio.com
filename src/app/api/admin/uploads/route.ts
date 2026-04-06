@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { ENV_APP } from "@/config/deployment-env";
 import {
   destroyBySecureUrl,
   listUploadedImageUrls,
@@ -19,9 +20,9 @@ const CMS_UPLOAD_DIR = path.join(
 
 function hasCloudinaryEnv() {
   return Boolean(
-    process.env.CLOUDINARY_CLOUD_NAME?.trim() &&
-      process.env.CLOUDINARY_API_KEY?.trim() &&
-      process.env.CLOUDINARY_API_SECRET?.trim(),
+    process.env[ENV_APP.CLOUDINARY_CLOUD_NAME]?.trim() &&
+      process.env[ENV_APP.CLOUDINARY_API_KEY]?.trim() &&
+      process.env[ENV_APP.CLOUDINARY_API_SECRET]?.trim(),
   );
 }
 

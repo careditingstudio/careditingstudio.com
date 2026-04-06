@@ -60,18 +60,7 @@ export function AdminPortfolioContent() {
 
       <section className="scroll-mt-8" id="portfolio-grid">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-white">
-              Portfolio grid
-            </h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Before/after tiles on{" "}
-              <span className="font-mono text-zinc-300">/portfolio</span>.
-              Tag each tile with a service from{" "}
-              <span className="font-mono text-zinc-300">/editor/services</span>.
-              Only tiles with both images go live.
-            </p>
-          </div>
+          <h2 className="text-lg font-semibold text-white">Portfolio grid</h2>
           <button
             type="button"
             onClick={() => {
@@ -109,12 +98,10 @@ export function AdminPortfolioContent() {
         <ul className="mt-4 space-y-1.5">
           {cms.portfolioGrid.length === 0 ? (
             <li className="rounded-lg border border-zinc-800/80 px-3 py-5 text-center text-[11px] text-zinc-600">
-              No tiles yet — add one to start.
+              —
             </li>
           ) : (
             cms.portfolioGrid.map((row, i) => {
-              const ready =
-                row.before.trim().length > 0 && row.after.trim().length > 0;
               return (
                 <li
                   key={`pg-${i}`}
@@ -148,8 +135,7 @@ export function AdminPortfolioContent() {
                       {row.label.trim() || "Untitled tile"}
                     </p>
                     <p className="truncate text-[10px] text-zinc-500">
-                      {serviceLabel(cms.services, row.serviceId)} ·{" "}
-                      {ready ? "Live on site" : "Needs both images"}
+                      {serviceLabel(cms.services, row.serviceId)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">

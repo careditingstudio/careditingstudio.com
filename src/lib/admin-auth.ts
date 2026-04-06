@@ -1,23 +1,24 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
+import { ENV_APP } from "@/config/deployment-env";
 
 export const ADMIN_SESSION_COOKIE = "cms_admin";
 
 function getSecret() {
-  const s = process.env.CMS_AUTH_SECRET;
+  const s = process.env[ENV_APP.CMS_AUTH_SECRET];
   if (!s || s.length < 16) {
     throw new Error(
-      "CMS_AUTH_SECRET must be set (min 16 characters). Add it to .env.local",
+      `${ENV_APP.CMS_AUTH_SECRET} must be set (min 16 characters). Add it to .env`,
     );
   }
   return s;
 }
 
 export function getAdminPassword() {
-  const p = process.env.ADMIN_PASSWORD;
+  const p = process.env[ENV_APP.ADMIN_PASSWORD];
   if (!p || p.length < 8) {
     throw new Error(
-      "ADMIN_PASSWORD must be set (min 8 characters). Add it to .env.local",
+      `${ENV_APP.ADMIN_PASSWORD} must be set (min 8 characters). Add it to .env`,
     );
   }
   return p;
@@ -48,7 +49,7 @@ export function signAdminSession(): string {
 export function verifyAdminSessionToken(token: string | undefined): boolean {
   if (!token) return false;
   try {
-    const secret = process.env.CMS_AUTH_SECRET;
+    const secret = process.env[ENV_APP.CMS_AUTH_SECRET];
     if (!secret || secret.length < 16) return false;
     const [payloadB64, sig] = token.split(".");
     if (!payloadB64 || !sig) return false;

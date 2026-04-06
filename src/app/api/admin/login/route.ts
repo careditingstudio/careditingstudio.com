@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
+import { ENV_APP } from "@/config/deployment-env";
 import { getAdminPassword, setAdminSessionCookie } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (
-    !process.env.CMS_AUTH_SECRET?.trim() ||
-    process.env.CMS_AUTH_SECRET.length < 16 ||
-    !process.env.ADMIN_PASSWORD?.trim() ||
-    process.env.ADMIN_PASSWORD.length < 8
-  ) {
+  const secret = process.env[ENV_APP.CMS_AUTH_SECRET]?.trim();
+  const adminPass = process.env[ENV_APP.ADMIN_PASSWORD]?.trim();
+  if (!secret || secret.length < 16 || !adminPass || adminPass.length < 8) {
     return NextResponse.json(
       {
-        error:
-          "Set CMS_AUTH_SECRET (16+ chars) and ADMIN_PASSWORD (8+ chars) in .env.local",
+        error: `Set ${ENV_APP.CMS_AUTH_SECRET} (16+ chars) and ${ENV_APP.ADMIN_PASSWORD} (8+ chars) in .env`,
       },
       { status: 503 },
     );

@@ -67,36 +67,20 @@ export function AdminDashboard() {
         {ADMIN_PAGE_NAV.map((c) => {
           const slug = c.href.replace("/editor/", "");
           const Icon = pageIcon(slug);
-          const isHome = slug === "home";
           return (
             <li key={c.href}>
               <Link
                 href={c.href}
                 className="group flex h-full flex-col rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm transition hover:border-[var(--accent)]/40 hover:bg-zinc-900 hover:shadow-md hover:shadow-black/20"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-800/80 text-[var(--accent)] ring-1 ring-zinc-700/80 transition group-hover:bg-[var(--accent)]/15 group-hover:ring-[var(--accent)]/30">
-                    <Icon className="h-5 w-5" aria-hidden />
-                  </span>
-                  {isHome ? (
-                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
-                      Full editor
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
-                      Coming soon
-                    </span>
-                  )}
-                </div>
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-800/80 text-[var(--accent)] ring-1 ring-zinc-700/80 transition group-hover:bg-[var(--accent)]/15 group-hover:ring-[var(--accent)]/30">
+                  <Icon className="h-5 w-5" aria-hidden />
+                </span>
                 <h3 className="mt-4 text-lg font-semibold text-white group-hover:text-[var(--accent)]">
                   {c.label}
                 </h3>
-                <p className="mt-1 font-mono text-[11px] text-zinc-500">{c.publicPath}</p>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-500">
-                  {c.hint}
-                </p>
                 <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent)]">
-                  {isHome ? "Customize home" : "Open page"}
+                  Open
                   <span className="transition group-hover:translate-x-0.5" aria-hidden>
                     →
                   </span>

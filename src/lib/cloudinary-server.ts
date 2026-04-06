@@ -1,14 +1,15 @@
 import "server-only";
 
+import { ENV_APP } from "@/config/deployment-env";
 import { v2 as cloudinary } from "cloudinary";
 
 function ensureConfig() {
-  const cloud_name = process.env.CLOUDINARY_CLOUD_NAME;
-  const api_key = process.env.CLOUDINARY_API_KEY;
-  const api_secret = process.env.CLOUDINARY_API_SECRET;
+  const cloud_name = process.env[ENV_APP.CLOUDINARY_CLOUD_NAME];
+  const api_key = process.env[ENV_APP.CLOUDINARY_API_KEY];
+  const api_secret = process.env[ENV_APP.CLOUDINARY_API_SECRET];
   if (!cloud_name || !api_key || !api_secret) {
     throw new Error(
-      "Missing CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, or CLOUDINARY_API_SECRET",
+      `Missing ${ENV_APP.CLOUDINARY_CLOUD_NAME}, ${ENV_APP.CLOUDINARY_API_KEY}, or ${ENV_APP.CLOUDINARY_API_SECRET}`,
     );
   }
   cloudinary.config({ cloud_name, api_key, api_secret });
@@ -16,7 +17,7 @@ function ensureConfig() {
 
 export function getCloudinaryUploadFolder(): string {
   return (
-    process.env.CLOUDINARY_UPLOAD_FOLDER?.trim() || "careditingstudio-cms"
+    process.env[ENV_APP.CLOUDINARY_UPLOAD_FOLDER]?.trim() || "careditingstudio-cms"
   );
 }
 

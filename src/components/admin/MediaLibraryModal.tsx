@@ -103,17 +103,12 @@ export function MediaLibraryModal({
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-800 px-5 py-4 sm:px-6">
-          <div>
-            <h2
-              id={`${fileId}-title`}
-              className="text-lg font-semibold tracking-tight text-white"
-            >
-              {title}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-500">
-              Pick an image or upload a new one — no page reload.
-            </p>
-          </div>
+          <h2
+            id={`${fileId}-title`}
+            className="text-lg font-semibold tracking-tight text-white"
+          >
+            {title}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -126,9 +121,8 @@ export function MediaLibraryModal({
         <div className="shrink-0 border-b border-zinc-800/80 px-5 py-3 sm:px-6">
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-600 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-300 transition hover:border-[var(--accent)]/45 hover:bg-zinc-900">
             <span className="font-medium text-zinc-200">
-              {uploading ? "Uploading…" : "Upload new image"}
+              {uploading ? "Uploading…" : "Upload"}
             </span>
-            <span className="text-xs text-zinc-500">· max 12MB</span>
             <input
               id={fileId}
               type="file"
@@ -153,8 +147,7 @@ export function MediaLibraryModal({
             <p className="py-12 text-center text-sm text-zinc-500">Loading library…</p>
           ) : files.length === 0 ? (
             <p className="rounded-xl border border-dashed border-zinc-700 py-12 text-center text-sm text-zinc-500">
-              No images yet. Upload one above — it will be added here and applied
-              to your field.
+              —
             </p>
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">

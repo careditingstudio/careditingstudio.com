@@ -106,12 +106,11 @@ export function PortfolioGridItemEditModal({
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <div className="space-y-4">
             <div>
-              <label className={lab}>Label (admin only)</label>
+              <label className={lab}>Label</label>
               <input
                 type="text"
                 value={item.label}
                 onChange={(e) => setItemPatch({ label: e.target.value })}
-                placeholder="e.g. Campaign still #2"
                 className={`mt-1.5 ${inp}`}
               />
             </div>
@@ -150,9 +149,6 @@ export function PortfolioGridItemEditModal({
                   </option>
                 ))}
               </select>
-              <p className="mt-1.5 text-[11px] text-zinc-500">
-                Edit the list under Services in the sidebar.
-              </p>
             </div>
 
             <div className="border-t border-zinc-800 pt-4">
@@ -204,10 +200,7 @@ export function PortfolioGridItemEditModal({
                         onClick={() =>
                           pickFromLibrary((url) => {
                             setItemPatch({ [side]: url });
-                            setFlash({
-                              type: "ok",
-                              text: "Image set — publish when ready.",
-                            });
+                            setFlash({ type: "ok", text: "Updated." });
                           })
                         }
                         className="rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"

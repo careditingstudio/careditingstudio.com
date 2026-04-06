@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Legacy CMS JSON (removed from app — CMS is Postgres only)
+/data/cms.json
+
 # local CMS database (SQLite; migrate to Postgres in production if needed)
 /data/cms.sqlite
 /data/cms.sqlite-wal
