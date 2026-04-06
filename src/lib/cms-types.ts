@@ -100,11 +100,42 @@ export type SiteSettings = {
   whatsappDisplay: string;
 };
 
+/** Editable in admin (Services); portfolio tiles reference these by id. */
+export type ServiceRow = {
+  id: number;
+  name: string;
+};
+
+/** Square before/after tile on /portfolio (same slider UI as home, grid layout). */
+export type PortfolioGridItem = {
+  /** Optional — shown in admin list only */
+  label: string;
+  /** References `services`; null/uncategorized; client may use negative ids before first save */
+  serviceId: number | null;
+  before: string;
+  after: string;
+  beforeAlt: string;
+  afterAlt: string;
+};
+
+export function defaultPortfolioGridItem(): PortfolioGridItem {
+  return {
+    label: "",
+    serviceId: null,
+    before: "",
+    after: "",
+    beforeAlt: "Before editing",
+    afterAlt: "After editing",
+  };
+}
+
 export type CmsJson = {
   site: SiteSettings;
   heroBanners: string[];
   floatingCar: string;
   beforeAfter: BeforeAfterPair[];
+  services: ServiceRow[];
+  portfolioGrid: PortfolioGridItem[];
   updatedAt: string;
 };
 
@@ -125,6 +156,8 @@ export function defaultCmsJson(): CmsJson {
     heroBanners: [],
     floatingCar: "",
     beforeAfter: [],
+    services: [],
+    portfolioGrid: [],
     updatedAt: "",
   };
 }
@@ -145,6 +178,63 @@ function boolField(
 ): boolean {
   const v = p[key];
   return typeof v === "boolean" ? v : fallback;
+}
+
+function normalizePortfolioCategoriesList(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of raw) {
+    if (typeof x !== "string") continue;
+    const t = x.trim();
+    if (t.length === 0) continue;
+    const key = t.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(t);
+  }
+  return out;
+}
+
+function normalizeServiceRow(item: unknown): ServiceRow | null {
+  if (!item || typeof item !== "object") return null;
+  const p = item as Record<string, unknown>;
+  if (typeof p.name !== "string") return null;
+  const id =
+    typeof p.id === "number" && Number.isFinite(p.id) ? Math.trunc(p.id) : 0;
+  return { id, name: p.name };
+}
+
+function normalizePortfolioGridItem(
+  item: unknown,
+  categoryToServiceId: Map<string, number>,
+): PortfolioGridItem | null {
+  if (!item || typeof item !== "object") return null;
+  const p = item as Record<string, unknown>;
+  if (typeof p.before !== "string" || typeof p.after !== "string") return null;
+
+  let serviceId: number | null = null;
+  if (typeof p.serviceId === "number" && Number.isFinite(p.serviceId)) {
+    serviceId = Math.trunc(p.serviceId);
+  } else {
+    const catRaw = p.category;
+    if (typeof catRaw === "string") {
+      const key = catRaw.trim().toLowerCase();
+      if (key.length > 0) {
+        const mapped = categoryToServiceId.get(key);
+        if (mapped !== undefined) serviceId = mapped;
+      }
+    }
+  }
+
+  return {
+    label: typeof p.label === "string" ? p.label : "",
+    serviceId,
+    before: p.before,
+    after: p.after,
+    beforeAlt: strField(p, "beforeAlt", "Before editing"),
+    afterAlt: strField(p, "afterAlt", "After editing"),
+  };
 }
 
 function normalizeBeforeAfterPair(
@@ -240,11 +330,49 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     base.beforeAfter = pairs;
   }
 
+  let services: ServiceRow[] = [];
+  if (Array.isArray(o.services)) {
+    for (const x of o.services) {
+      const row = normalizeServiceRow(x);
+      if (row && row.name.trim().length > 0) services.push(row);
+    }
+  }
+  const legacyCats = Object.prototype.hasOwnProperty.call(
+    o,
+    "portfolioCategories",
+  )
+    ? normalizePortfolioCategoriesList(o.portfolioCategories)
+    : [];
+  if (services.length === 0 && legacyCats.length > 0) {
+    services = legacyCats.map((name, i) => ({ id: i + 1, name }));
+  }
+  base.services = services;
+
+  const categoryToServiceId = new Map<string, number>();
+  for (const s of base.services) {
+    categoryToServiceId.set(s.name.trim().toLowerCase(), s.id);
+  }
+
+  const pg = o.portfolioGrid;
+  if (Array.isArray(pg)) {
+    const grid: PortfolioGridItem[] = [];
+    for (const item of pg) {
+      const row = normalizePortfolioGridItem(item, categoryToServiceId);
+      if (row) grid.push(row);
+    }
+    base.portfolioGrid = grid;
+  }
+
   if (typeof o.updatedAt === "string") base.updatedAt = o.updatedAt;
 
   return base;
 }
 
+/** Legacy local files under /public/cms/uploads — use unoptimized Next/Image. */
 export function isUploadedAsset(url: string) {
   return url.startsWith("/cms/");
+}
+
+export function isCloudinaryUrl(url: string) {
+  return url.includes("res.cloudinary.com");
 }

@@ -13,20 +13,122 @@
   "beforeAfter": [
     {
       "before": "/cms/uploads/8920a7d7-cb50-49df-a01a-9aef88512630.jpg",
-      "after": "/cms/uploads/730fcd60-0822-4cc7-9669-b4086001a1c0.jpg"
+      "after": "/cms/uploads/730fcd60-0822-4cc7-9669-b4086001a1c0.jpg",
+      "title": "Studio-grade vehicle cleanup",
+      "intro": "Swap cluttered driveways for a clean studio look, tame reflections, and keep paint reading true—ideal for listings and ads.",
+      "priceNote": "Typical projects start around $1–$3 per image depending on complexity.",
+      "listTitle": "Includes:",
+      "includes": [
+        "Background replacement",
+        "Reflection & glare control",
+        "Wheel and trim cleanup",
+        "License plate handling",
+        "Shadows that ground the car"
+      ],
+      "beforeAlt": "Car photo before editing",
+      "afterAlt": "Car photo after professional editing",
+      "imageFirst": false,
+      "showDualCtas": true,
+      "primaryCtaLabel": "Get a free trial",
+      "primaryCtaHref": "/contact",
+      "secondaryCtaLabel": "View more",
+      "secondaryCtaHref": "/services",
+      "soloCtaLabel": "Talk to us about your set",
+      "soloCtaHref": "/contact"
     },
     {
       "before": "/cms/uploads/a71b3328-3966-4358-80d9-0f237fac8124.jpg",
-      "after": "/cms/uploads/fa644783-2491-45c9-9ae5-c93aa13407cf.jpg"
+      "after": "/cms/uploads/fa644783-2491-45c9-9ae5-c93aa13407cf.jpg",
+      "title": "Color & exposure you can trust",
+      "intro": "Correct white balance and exposure so every body line and interior detail matches what buyers see in person.",
+      "priceNote": "Color-focused edits often land around $0.50–$2.50 per frame.",
+      "listTitle": "Includes:",
+      "includes": [
+        "White balance & exposure",
+        "Interior exposure matching",
+        "Paint color accuracy",
+        "Window sky cleanup",
+        "Batch consistency across sets"
+      ],
+      "beforeAlt": "Vehicle image before color correction",
+      "afterAlt": "Vehicle image after color correction",
+      "imageFirst": true,
+      "showDualCtas": false,
+      "primaryCtaLabel": "Get a free trial",
+      "primaryCtaHref": "/contact",
+      "secondaryCtaLabel": "View more",
+      "secondaryCtaHref": "/services",
+      "soloCtaLabel": "Talk to us about your set",
+      "soloCtaHref": "/contact"
     },
     {
       "before": "/cms/uploads/438d551b-ddfc-49c6-9f9a-387943bff99a.jpg",
-      "after": "/cms/uploads/e66f183e-59f3-4529-b9c0-16e0d70de66a.jpg"
+      "after": "/cms/uploads/e66f183e-59f3-4529-b9c0-16e0d70de66a.jpg",
+      "title": "Studio-grade vehicle cleanup",
+      "intro": "Swap cluttered driveways for a clean studio look, tame reflections, and keep paint reading true—ideal for listings and ads.",
+      "priceNote": "Typical projects start around $1–$3 per image depending on complexity.",
+      "listTitle": "Includes:",
+      "includes": [
+        "Background replacement",
+        "Reflection & glare control",
+        "Wheel and trim cleanup",
+        "License plate handling",
+        "Shadows that ground the car"
+      ],
+      "beforeAlt": "Car photo before editing",
+      "afterAlt": "Car photo after professional editing",
+      "imageFirst": false,
+      "showDualCtas": true,
+      "primaryCtaLabel": "Get a free trial",
+      "primaryCtaHref": "/contact",
+      "secondaryCtaLabel": "View more",
+      "secondaryCtaHref": "/services",
+      "soloCtaLabel": "Talk to us about your set",
+      "soloCtaHref": "/contact"
     },
     {
       "before": "/cms/uploads/246a2aaf-34c1-4bea-abaf-a5756dd5ac27.jpg",
-      "after": "/cms/uploads/6ea0eddc-e66e-455d-bd0c-a8160b1f8684.jpg"
+      "after": "/cms/uploads/6ea0eddc-e66e-455d-bd0c-a8160b1f8684.jpg",
+      "title": "Color & exposure you can trust",
+      "intro": "Correct white balance and exposure so every body line and interior detail matches what buyers see in person.",
+      "priceNote": "Color-focused edits often land around $0.50–$2.50 per frame.",
+      "listTitle": "Includes:",
+      "includes": [
+        "White balance & exposure",
+        "Interior exposure matching",
+        "Paint color accuracy",
+        "Window sky cleanup",
+        "Batch consistency across sets"
+      ],
+      "beforeAlt": "Vehicle image before color correction",
+      "afterAlt": "Vehicle image after color correction",
+      "imageFirst": true,
+      "showDualCtas": false,
+      "primaryCtaLabel": "Get a free trial",
+      "primaryCtaHref": "/contact",
+      "secondaryCtaLabel": "View more",
+      "secondaryCtaHref": "/services",
+      "soloCtaLabel": "Talk to us about your set",
+      "soloCtaHref": "/contact"
     }
   ],
-  "updatedAt": "2026-04-05T20:29:46.367Z"
+  "portfolioCategories": [
+    "Background Removal",
+    "Color Correction",
+    "Shadow Masking",
+    "E-Commerce Photo Editing",
+    "Jewelry Retouching",
+    "Photo Retouching"
+  ],
+  "portfolioGrid": [
+    {
+      "label": "test",
+      "category": "Color Correction",
+      "before": "/cms/uploads/a71b3328-3966-4358-80d9-0f237fac8124.jpg",
+      "after": "/cms/uploads/fa644783-2491-45c9-9ae5-c93aa13407cf.jpg",
+      "beforeAlt": "Before editing",
+      "afterAlt": "After editing"
+    }
+  ],
+  "updatedAt": "2026-04-06T01:07:40.753Z"
 }

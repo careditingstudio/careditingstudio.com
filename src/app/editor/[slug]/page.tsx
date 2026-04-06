@@ -1,4 +1,6 @@
 import { AdminHomePageContent } from "@/components/admin/AdminHomePageContent";
+import { AdminPortfolioContent } from "@/components/admin/AdminPortfolioContent";
+import { AdminServicesContent } from "@/components/admin/AdminServicesContent";
 import { AdminPagePlaceholder } from "@/components/admin/AdminPagePlaceholder";
 import { ADMIN_PAGE_NAV } from "@/config/admin-pages";
 import { notFound } from "next/navigation";
@@ -16,6 +18,14 @@ export default async function AdminEditorPage({ params }: Props) {
 
   if (slug === "home") {
     return <AdminHomePageContent />;
+  }
+
+  if (slug === "portfolio") {
+    return <AdminPortfolioContent />;
+  }
+
+  if (slug === "services") {
+    return <AdminServicesContent />;
   }
 
   return (

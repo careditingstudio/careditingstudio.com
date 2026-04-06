@@ -4,8 +4,18 @@ import {
   type BeforeAfterPair,
   type CmsJson,
   defaultBeforeAfterPair,
+  defaultPortfolioGridItem,
+  type PortfolioGridItem,
   type SiteSettings,
 } from "@/lib/cms-types";
+
+function nextTempServiceId(
+  services: { id: number; name: string }[],
+): number {
+  const ids = services.map((s) => s.id);
+  const floor = ids.length ? Math.min(...ids, 0) : 0;
+  return floor - 1;
+}
 import {
   createContext,
   useCallback,
@@ -39,6 +49,17 @@ type AdminCmsContextValue = {
   addPair: () => void;
   removePair: (index: number) => void;
   moveBeforeAfterPost: (index: number, dir: -1 | 1) => void;
+  setPortfolioItem: (
+    index: number,
+    patch: Partial<PortfolioGridItem>,
+  ) => void;
+  addPortfolioItem: () => void;
+  removePortfolioItem: (index: number) => void;
+  movePortfolioItem: (index: number, dir: -1 | 1) => void;
+  addService: () => void;
+  removeService: (index: number) => void;
+  moveService: (index: number, dir: -1 | 1) => void;
+  setService: (index: number, patch: { name?: string }) => void;
 };
 
 const AdminCmsContext = createContext<AdminCmsContextValue | null>(null);
@@ -64,6 +85,27 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       secondaryCtaHref: p.secondaryCtaHref.trim(),
       soloCtaLabel: p.soloCtaLabel.trim(),
       soloCtaHref: p.soloCtaHref.trim(),
+    })),
+    services: (() => {
+      const seen = new Set<string>();
+      const out: { id: number; name: string }[] = [];
+      for (const s of cms.services) {
+        const name = s.name.trim();
+        if (name.length === 0) continue;
+        const key = name.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ id: s.id, name });
+      }
+      return out;
+    })(),
+    portfolioGrid: cms.portfolioGrid.map((p) => ({
+      ...p,
+      label: p.label.trim(),
+      before: p.before.trim(),
+      after: p.after.trim(),
+      beforeAlt: p.beforeAlt.trim(),
+      afterAlt: p.afterAlt.trim(),
     })),
     site: {
       ...cms.site,
@@ -211,6 +253,100 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const setPortfolioItem = useCallback(
+    (index: number, patch: Partial<PortfolioGridItem>) => {
+      setCms((c) => {
+        if (!c) return c;
+        const portfolioGrid = c.portfolioGrid.map((p, k) =>
+          k === index ? { ...p, ...patch } : p,
+        );
+        return { ...c, portfolioGrid };
+      });
+    },
+    [],
+  );
+
+  const addPortfolioItem = useCallback(() => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            portfolioGrid: [...c.portfolioGrid, defaultPortfolioGridItem()],
+          }
+        : c,
+    );
+  }, []);
+
+  const removePortfolioItem = useCallback((index: number) => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            portfolioGrid: c.portfolioGrid.filter((_, k) => k !== index),
+          }
+        : c,
+    );
+  }, []);
+
+  const movePortfolioItem = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.portfolioGrid.length) return c;
+      const next = [...c.portfolioGrid];
+      [next[index], next[j]] = [next[j], next[index]];
+      return { ...c, portfolioGrid: next };
+    });
+  }, []);
+
+  const addService = useCallback(() => {
+    setCms((c) => {
+      if (!c) return c;
+      const id = nextTempServiceId(c.services);
+      return {
+        ...c,
+        services: [...c.services, { id, name: "New service" }],
+      };
+    });
+  }, []);
+
+  const removeService = useCallback((index: number) => {
+    setCms((c) => {
+      if (!c) return c;
+      const removed = c.services[index];
+      if (!removed) return c;
+      const services = c.services.filter((_, k) => k !== index);
+      const portfolioGrid = c.portfolioGrid.map((p) =>
+        p.serviceId === removed.id ? { ...p, serviceId: null } : p,
+      );
+      return { ...c, services, portfolioGrid };
+    });
+  }, []);
+
+  const moveService = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.services.length) return c;
+      const next = [...c.services];
+      [next[index], next[j]] = [next[j], next[index]];
+      return { ...c, services: next };
+    });
+  }, []);
+
+  const setService = useCallback(
+    (index: number, patch: { name?: string }) => {
+      setCms((c) => {
+        if (!c) return c;
+        const services = c.services.map((s, k) =>
+          k === index ? { ...s, ...patch } : s,
+        );
+        return { ...c, services };
+      });
+    },
+    [],
+  );
+
   const value = useMemo(
     () => ({
       cms,
@@ -234,6 +370,14 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       addPair,
       removePair,
       moveBeforeAfterPost,
+      setPortfolioItem,
+      addPortfolioItem,
+      removePortfolioItem,
+      movePortfolioItem,
+      addService,
+      removeService,
+      moveService,
+      setService,
     }),
     [
       cms,
@@ -255,6 +399,14 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       addPair,
       removePair,
       moveBeforeAfterPost,
+      setPortfolioItem,
+      addPortfolioItem,
+      removePortfolioItem,
+      movePortfolioItem,
+      addService,
+      removeService,
+      moveService,
+      setService,
     ],
   );
 

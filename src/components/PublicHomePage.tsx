@@ -4,8 +4,8 @@ import { HomeServiceFeatures } from "@/components/HomeServiceFeatures";
 import { readCms } from "@/lib/cms-store";
 import { display, sans } from "@/app/fonts";
 
-export function PublicHomePage() {
-  const cms = readCms();
+export async function PublicHomePage() {
+  const cms = await readCms();
 
   return (
     <div className="flex flex-1 flex-col">

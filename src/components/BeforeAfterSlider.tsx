@@ -15,6 +15,8 @@ type BeforeAfterSliderProps = {
   afterSrc: string;
   beforeAlt: string;
   afterAlt: string;
+  /** Home: landscape; legacy square; portfolio: slightly tall near-square tiles. */
+  layout?: "landscape" | "square" | "portfolio";
   className?: string;
   priority?: boolean;
 };
@@ -24,11 +26,24 @@ export function BeforeAfterSlider({
   afterSrc,
   beforeAlt,
   afterAlt,
+  layout = "landscape",
   className = "",
   priority = false,
 }: BeforeAfterSliderProps) {
   const unopt =
     isUploadedAsset(beforeSrc) || isUploadedAsset(afterSrc);
+  const aspectClass =
+    layout === "square"
+      ? "aspect-square"
+      : layout === "portfolio"
+        ? "aspect-[4/5]"
+        : "aspect-[4/3]";
+  const imageSizes =
+    layout === "square"
+      ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      : layout === "portfolio"
+        ? "(max-width: 640px) 100vw, (max-width: 1024px) 45vw, 30vw"
+        : "(max-width: 1024px) 100vw, 50vw";
   const id = useId();
   const labelId = `${id}-label`;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +99,7 @@ export function BeforeAfterSlider({
       aria-valuemax={100}
       aria-valuenow={Math.round(percent)}
       aria-valuetext={`${Math.round(percent)} percent before visible`}
-      className={`group relative aspect-[4/3] w-full max-w-none cursor-ew-resize touch-none select-none overflow-hidden rounded-3xl bg-zinc-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)] ring-1 ring-black/10 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] dark:bg-zinc-800 dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] dark:ring-white/10 ${className}`}
+      className={`group relative ${aspectClass} w-full max-w-none cursor-ew-resize touch-none select-none overflow-hidden rounded-3xl bg-zinc-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)] ring-1 ring-black/10 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] dark:bg-zinc-800 dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] dark:ring-white/10 ${className}`}
       onPointerDown={(e) => {
         if (e.button !== 0) return;
         e.preventDefault();
@@ -105,7 +120,7 @@ export function BeforeAfterSlider({
         fill
         priority={priority}
         unoptimized={unopt}
-        sizes="(max-width: 1024px) 100vw, 50vw"
+        sizes={imageSizes}
         className="pointer-events-none object-cover"
         draggable={false}
       />
@@ -121,7 +136,7 @@ export function BeforeAfterSlider({
           fill
           priority={priority}
           unoptimized={unopt}
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes={imageSizes}
           className="object-cover"
           draggable={false}
         />

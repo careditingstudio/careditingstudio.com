@@ -71,12 +71,11 @@ export default function AdminLibraryPage() {
           Media library
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-          Images are stored under{" "}
-          <code className="rounded bg-zinc-800/90 px-1.5 py-0.5 font-mono text-xs text-zinc-300">
-            public/cms/uploads
-          </code>
-          . Deleting a file here does not remove it from hero or sliders — clear
-          those URLs on the Home editor first if you need to replace an asset.
+          New uploads go to{" "}
+          <span className="font-medium text-zinc-300">Cloudinary</span> (folder
+          from <code className="font-mono text-xs">CLOUDINARY_UPLOAD_FOLDER</code>
+          ). Deleting here removes the asset from Cloudinary — clear URLs in the
+          editor first if a page still references it.
         </p>
       </header>
 

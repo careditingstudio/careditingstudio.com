@@ -14,7 +14,7 @@ export const ADMIN_PAGE_NAV = [
     href: "/editor/services",
     label: "Services",
     publicPath: "/services",
-    hint: "Page settings (expand later)",
+    hint: "Service list — used when tagging portfolio tiles",
   },
   {
     href: "/editor/pricing",
@@ -26,7 +26,7 @@ export const ADMIN_PAGE_NAV = [
     href: "/editor/portfolio",
     label: "Portfolio",
     publicPath: "/portfolio",
-    hint: "Page settings (expand later)",
+    hint: "Portfolio grid — tag tiles with Services, publish",
   },
   {
     href: "/editor/about",

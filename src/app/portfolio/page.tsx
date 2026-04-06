@@ -1,22 +1,26 @@
-import { InnerPageBody } from "@/components/InnerPageBody";
 import { PageHeading } from "@/components/PageHeading";
+import { PortfolioGrid } from "@/components/PortfolioGrid";
+import { readCms } from "@/lib/cms-store";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Portfolio",
   description: "Selected automotive retouching and graphics work.",
 };
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const cms = await readCms();
   return (
     <>
       <PageHeading
         title="Portfolio"
-        description="Before/after sets and campaign stills will live here."
+        description="Drag the slider on each tile to compare before and after."
       />
-      <InnerPageBody>
-        <p>Content coming soon.</p>
-      </InnerPageBody>
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+        <PortfolioGrid cms={cms} />
+      </div>
     </>
   );
 }

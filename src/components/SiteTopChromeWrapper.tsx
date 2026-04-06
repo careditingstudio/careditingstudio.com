@@ -3,6 +3,6 @@ import { readCms } from "@/lib/cms-store";
 import type { ReactNode } from "react";
 
 export async function SiteTopChromeWrapper({ children }: { children: ReactNode }) {
-  const cms = readCms();
+  const cms = await readCms();
   return <SiteTopChrome site={cms.site}>{children}</SiteTopChrome>;
 }

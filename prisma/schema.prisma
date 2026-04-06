@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  // Supabase pooler (6543) often cannot run migrations; use the direct (5432) URI here.
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model SiteSettings {
+  id              Int    @id @default(1)
+  businessName    String @map("business_name")
+  domainLabel     String @map("domain_label")
+  email           String
+  whatsappDial    String @map("whatsapp_dial")
+  whatsappDisplay String @map("whatsapp_display")
+  floatingCar     String @default("") @map("floating_car")
+  updatedAt       String @default("") @map("updated_at")
+
+  @@map("site_settings")
+}
+
+model HeroBanner {
+  id        Int    @id @default(autoincrement())
+  sortOrder Int    @map("sort_order")
+  url       String
+
+  @@map("hero_banners")
+}
+
+model BeforeAfterPost {
+  id                 Int     @id @default(autoincrement())
+  sortOrder          Int     @map("sort_order")
+  beforeUrl          String  @map("before_url")
+  afterUrl           String  @map("after_url")
+  title              String
+  intro              String
+  priceNote          String  @map("price_note")
+  listTitle          String  @map("list_title")
+  includesJson       String  @map("includes_json")
+  beforeAlt          String  @map("before_alt")
+  afterAlt           String  @map("after_alt")
+  imageFirst         Boolean @default(false) @map("image_first")
+  showDualCtas       Boolean @default(true) @map("show_dual_ctas")
+  primaryCtaLabel    String  @default("") @map("primary_cta_label")
+  primaryCtaHref     String  @default("") @map("primary_cta_href")
+  secondaryCtaLabel String @default("") @map("secondary_cta_label")
+  secondaryCtaHref   String  @default("") @map("secondary_cta_href")
+  soloCtaLabel       String  @default("") @map("solo_cta_label")
+  soloCtaHref        String  @default("") @map("solo_cta_href")
+
+  @@map("before_after_posts")
+}
+
+model Service {
+  id        Int             @id @default(autoincrement())
+  sortOrder Int             @map("sort_order")
+  name      String
+  portfolio PortfolioItem[]
+
+  @@map("services")
+}
+
+model PortfolioItem {
+  id        Int     @id @default(autoincrement())
+  sortOrder Int     @map("sort_order")
+  label     String
+  serviceId Int?    @map("service_id")
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  beforeUrl String  @map("before_url")
+  afterUrl  String  @map("after_url")
+  beforeAlt String  @map("before_alt")
+  afterAlt  String  @map("after_alt")
+
+  @@map("portfolio_items")
+}

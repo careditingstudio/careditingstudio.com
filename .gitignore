@@ -40,6 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# local CMS database (SQLite; migrate to Postgres in production if needed)
+/data/cms.sqlite
+/data/cms.sqlite-wal
+/data/cms.sqlite-shm
+
 # CMS uploads (keep folder via .gitkeep)
 /public/cms/uploads/*
 !/public/cms/uploads/.gitkeep
