@@ -60,36 +60,6 @@ export function AdminDashboard() {
 
   return (
     <div className="mx-auto max-w-5xl pb-8">
-      <header className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 px-6 py-8 sm:px-10 sm:py-10">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[var(--accent)]/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-violet-500/5 blur-3xl" />
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          Admin
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          Site dashboard
-        </h1>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400">
-          Choose a page below to customize what visitors see.{" "}
-          <span className="text-zinc-300">Home</span> includes hero banners, the
-          floating car image, and before/after sections. Use{" "}
-          <span className="font-medium text-zinc-200">Publish changes</span> when
-          you are finished.
-        </p>
-        {cms.updatedAt ? (
-          <p className="mt-5 text-xs text-zinc-500">
-            Last published{" "}
-            <time dateTime={cms.updatedAt} className="text-zinc-400">
-              {new Date(cms.updatedAt).toLocaleString()}
-            </time>
-          </p>
-        ) : (
-          <p className="mt-5 text-xs text-amber-200/80">
-            Nothing published from this panel yet — edit a page, then publish.
-          </p>
-        )}
-      </header>
-
       <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-zinc-500">
         Pages
       </h2>
@@ -151,12 +121,6 @@ export function AdminDashboard() {
             </span>
             <div>
               <h3 className="font-semibold text-white">Site-wide</h3>
-              <p className="mt-1 text-sm text-zinc-500">
-                Header, announcement bar, domain label on the hero
-              </p>
-              <span className="mt-3 inline-block text-sm font-medium text-sky-400 group-hover:underline">
-                Edit site settings →
-              </span>
             </div>
           </Link>
         </li>
@@ -170,12 +134,6 @@ export function AdminDashboard() {
             </span>
             <div>
               <h3 className="font-semibold text-white">Upload library</h3>
-              <p className="mt-1 text-sm text-zinc-500">
-                Files stored under <span className="font-mono text-zinc-400">/cms/uploads</span>
-              </p>
-              <span className="mt-3 inline-block text-sm font-medium text-amber-400/90 group-hover:underline">
-                Manage uploads →
-              </span>
             </div>
           </Link>
         </li>

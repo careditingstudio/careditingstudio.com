@@ -1,5 +1,5 @@
 import { AdminConsoleShell } from "@/components/admin/AdminConsoleShell";
-import { isAdminRequestHost } from "@/lib/admin-host";
+import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -16,8 +16,8 @@ export default async function EditorLayout({
 }: {
   children: ReactNode;
 }) {
-  const host = (await headers()).get("host");
-  if (!isAdminRequestHost(host)) {
+  const h = await headers();
+  if (!isAdminHostFromIncomingHeaders((name) => h.get(name))) {
     notFound();
   }
 

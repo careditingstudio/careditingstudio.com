@@ -1,6 +1,11 @@
 "use client";
 
-import type { BeforeAfterPair, CmsJson, SiteSettings } from "@/lib/cms-types";
+import {
+  type BeforeAfterPair,
+  type CmsJson,
+  defaultBeforeAfterPair,
+  type SiteSettings,
+} from "@/lib/cms-types";
 import {
   createContext,
   useCallback,
@@ -33,6 +38,7 @@ type AdminCmsContextValue = {
   setPair: (index: number, patch: Partial<BeforeAfterPair>) => void;
   addPair: () => void;
   removePair: (index: number) => void;
+  moveBeforeAfterPost: (index: number, dir: -1 | 1) => void;
 };
 
 const AdminCmsContext = createContext<AdminCmsContextValue | null>(null);
@@ -41,9 +47,24 @@ function sanitizePayload(cms: CmsJson): CmsJson {
   return {
     ...cms,
     heroBanners: cms.heroBanners.filter((u) => u.trim().length > 0),
-    beforeAfter: cms.beforeAfter.filter(
-      (p) => p.before.trim().length > 0 && p.after.trim().length > 0,
-    ),
+    beforeAfter: cms.beforeAfter.map((p) => ({
+      ...p,
+      before: p.before.trim(),
+      after: p.after.trim(),
+      title: p.title.trim(),
+      intro: p.intro.trim(),
+      priceNote: p.priceNote.trim(),
+      listTitle: p.listTitle.trim(),
+      includes: p.includes.map((s) => s.trim()).filter((s) => s.length > 0),
+      beforeAlt: p.beforeAlt.trim(),
+      afterAlt: p.afterAlt.trim(),
+      primaryCtaLabel: p.primaryCtaLabel.trim(),
+      primaryCtaHref: p.primaryCtaHref.trim(),
+      secondaryCtaLabel: p.secondaryCtaLabel.trim(),
+      secondaryCtaHref: p.secondaryCtaHref.trim(),
+      soloCtaLabel: p.soloCtaLabel.trim(),
+      soloCtaHref: p.soloCtaHref.trim(),
+    })),
     site: {
       ...cms.site,
       businessName: cms.site.businessName.trim(),
@@ -159,7 +180,15 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
 
   const addPair = useCallback(() => {
     setCms((c) =>
-      c ? { ...c, beforeAfter: [...c.beforeAfter, { before: "", after: "" }] } : c,
+      c
+        ? {
+            ...c,
+            beforeAfter: [
+              ...c.beforeAfter,
+              defaultBeforeAfterPair(c.beforeAfter.length),
+            ],
+          }
+        : c,
     );
   }, []);
 
@@ -169,6 +198,17 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
         ? { ...c, beforeAfter: c.beforeAfter.filter((_, k) => k !== index) }
         : c,
     );
+  }, []);
+
+  const moveBeforeAfterPost = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.beforeAfter.length) return c;
+      const next = [...c.beforeAfter];
+      [next[index], next[j]] = [next[j], next[index]];
+      return { ...c, beforeAfter: next };
+    });
   }, []);
 
   const value = useMemo(
@@ -193,6 +233,7 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       setPair,
       addPair,
       removePair,
+      moveBeforeAfterPost,
     }),
     [
       cms,
@@ -213,6 +254,7 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       setPair,
       addPair,
       removePair,
+      moveBeforeAfterPost,
     ],
   );
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { BeforeAfterPostEditModal } from "@/components/admin/BeforeAfterPostEditModal";
 import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
 import { useAdminCms } from "@/components/admin/AdminCmsContext";
 import { isUploadedAsset } from "@/lib/cms-types";
@@ -21,15 +22,29 @@ export function AdminHomePageContent() {
     setPair,
     addPair,
     removePair,
+    moveBeforeAfterPost,
     setCms,
     setFlash,
   } = useAdminCms();
   const pickHandlerRef = useRef<(url: string) => void>(() => {});
   const [mediaOpen, setMediaOpen] = useState(false);
+  const [editPostIndex, setEditPostIndex] = useState<number | null>(null);
 
   function openMediaPicker(onChosen: (url: string) => void) {
     pickHandlerRef.current = onChosen;
     setMediaOpen(true);
+  }
+
+  function reorderBeforeAfter(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (!cms || j < 0 || j >= cms.beforeAfter.length) return;
+    moveBeforeAfterPost(i, dir);
+    setEditPostIndex((cur) => {
+      if (cur === null) return null;
+      if (cur === i) return j;
+      if (cur === j) return i;
+      return cur;
+    });
   }
 
   if (!cms) return null;
@@ -48,17 +63,6 @@ export function AdminHomePageContent() {
         title="Choose image"
       />
 
-      <header className="border-b border-zinc-800 pb-8">
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Public page
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-white">Home</h1>
-        <p className="mt-2 font-mono text-sm text-[var(--accent)]">/</p>
-        <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-          Everything below appears only on the home page: full-screen hero
-          backgrounds, the floating car, and the before/after blocks.
-        </p>
-      </header>
 
       <section className="scroll-mt-8" id="hero-banners">
         <h2 className="text-lg font-semibold text-white">Hero banners</h2>
@@ -211,88 +215,114 @@ export function AdminHomePageContent() {
       </section>
 
       <section className="scroll-mt-8 border-t border-zinc-800 pt-16" id="before-after">
-        <h2 className="text-lg font-semibold text-white">Before / after</h2>
-        <p className="mt-2 text-sm text-zinc-400">
-          Pair 1 and 2 map to the two showcase rows on the home page.
-        </p>
-        <ul className="mt-8 space-y-10">
-          {cms.beforeAfter.map((pair, i) => (
-            <li
-              key={i}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6"
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-sm font-medium text-zinc-200">
-                  Pair {i + 1}
-                  {i === 0 ? " — first block" : i === 1 ? " — second block" : ""}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removePair(i)}
-                  className="text-xs text-red-400 hover:underline"
-                >
-                  Remove
-                </button>
-              </div>
-              <div className="grid gap-8 md:grid-cols-2">
-                {(["before", "after"] as const).map((side) => {
-                  const sideSrc = resolvedImageSrc(pair[side]);
-                  return (
-                    <div key={side} className="space-y-3">
-                      <p className="text-xs font-semibold uppercase text-zinc-500">
-                        {side}
-                      </p>
-                      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-zinc-950">
-                        {sideSrc ? (
-                          <Image
-                            src={sideSrc}
-                            alt=""
-                            fill
-                            className="object-cover"
-                            sizes="(max-width:768px) 100vw, 50vw"
-                            unoptimized={isUploadedAsset(sideSrc)}
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-xs text-zinc-600">
-                            Empty
-                          </div>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        value={pair[side]}
-                        onChange={(e) => setPair(i, { [side]: e.target.value })}
-                        className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-zinc-200"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          openMediaPicker((url) => {
-                            setPair(i, { [side]: url });
-                            setFlash({
-                              type: "ok",
-                              text: "Image set — publish when ready.",
-                            });
-                          })
-                        }
-                        className="inline-flex rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-3 py-2 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
-                      >
-                        Library — {side}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-white">Before / after</h2>
+          <button
+            type="button"
+            onClick={() => {
+              const next = cms.beforeAfter.length;
+              addPair();
+              setEditPostIndex(next);
+            }}
+            className="shrink-0 rounded-lg border border-zinc-600 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+          >
+            + Add
+          </button>
+        </div>
+
+        {editPostIndex !== null && cms.beforeAfter[editPostIndex] ? (
+          <BeforeAfterPostEditModal
+            open
+            postIndex={editPostIndex}
+            pair={cms.beforeAfter[editPostIndex]}
+            onClose={() => setEditPostIndex(null)}
+            setPairPatch={(patch) => {
+              const idx = editPostIndex;
+              if (idx !== null) setPair(idx, patch);
+            }}
+            pickFromLibrary={(cb) => openMediaPicker(cb)}
+            setFlash={setFlash}
+            onDelete={() => {
+              const idx = editPostIndex;
+              if (idx !== null) removePair(idx);
+              setEditPostIndex(null);
+            }}
+          />
+        ) : null}
+
+        <ul className="mt-4 space-y-1.5">
+          {cms.beforeAfter.length === 0 ? (
+            <li className="rounded-lg border border-zinc-800/80 px-3 py-5 text-center text-[11px] text-zinc-600">
+              —
             </li>
-          ))}
+          ) : (
+            cms.beforeAfter.map((pair, i) => {
+              const ready =
+                pair.before.trim().length > 0 && pair.after.trim().length > 0;
+              return (
+                <li
+                  key={`ba-${i}`}
+                  className="flex items-center gap-3 rounded-lg border border-zinc-800/90 bg-zinc-900/40 px-3 py-2"
+                >
+                  <span className="w-5 shrink-0 text-center text-[10px] font-medium text-zinc-600">
+                    {i + 1}
+                  </span>
+                  <div className="flex shrink-0 flex-col gap-0.5">
+                    <button
+                      type="button"
+                      aria-label="Move up"
+                      disabled={i === 0}
+                      onClick={() => reorderBeforeAfter(i, -1)}
+                      className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Move down"
+                      disabled={i === cms.beforeAfter.length - 1}
+                      onClick={() => reorderBeforeAfter(i, 1)}
+                      className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
+                    >
+                      ↓
+                    </button>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs text-zinc-200">
+                      {pair.title.trim() || "Untitled"}
+                    </p>
+                    <p className="truncate text-[10px] text-zinc-500">
+                      {ready ? "Live" : "Needs images"} · {pair.includes.length}{" "}
+                      bullets
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditPostIndex(i)}
+                      className="rounded-md border border-zinc-600 bg-zinc-800/60 px-2.5 py-1 text-[11px] font-medium text-zinc-200 hover:border-[var(--accent)]/40 hover:text-white"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        removePair(i);
+                        if (editPostIndex === i) setEditPostIndex(null);
+                        if (editPostIndex !== null && editPostIndex > i) {
+                          setEditPostIndex(editPostIndex - 1);
+                        }
+                      }}
+                      className="rounded-md px-2 py-1 text-[11px] text-zinc-500 hover:text-red-400"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              );
+            })
+          )}
         </ul>
-        <button
-          type="button"
-          onClick={() => addPair()}
-          className="mt-8 rounded-xl border border-zinc-600 px-5 py-3 text-sm text-zinc-300 hover:bg-zinc-800"
-        >
-          + Add pair
-        </button>
       </section>
     </div>
   );

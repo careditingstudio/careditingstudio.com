@@ -28,48 +28,29 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-const ROWS = [
-  {
-    title: "Studio-grade vehicle cleanup",
-    intro:
-      "Swap cluttered driveways for a clean studio look, tame reflections, and keep paint reading true—ideal for listings and ads.",
-    priceNote: "Typical projects start around $1–$3 per image depending on complexity.",
-    listTitle: "Includes:",
-    items: [
-      "Background replacement",
-      "Reflection & glare control",
-      "Wheel and trim cleanup",
-      "License plate handling",
-      "Shadows that ground the car",
-    ],
-    beforeSrc: "",
-    afterSrc: "",
-    beforeAlt: "Car photo before editing",
-    afterAlt: "Car photo after professional editing",
-    imageFirst: false,
-    showCtas: true,
-  },
-  {
-    title: "Color & exposure you can trust",
-    intro:
-      "Correct white balance and exposure so every body line and interior detail matches what buyers see in person.",
-    priceNote: "Color-focused edits often land around $0.50–$2.50 per frame.",
-    listTitle: "Includes:",
-    items: [
-      "White balance & exposure",
-      "Interior exposure matching",
-      "Paint color accuracy",
-      "Window sky cleanup",
-      "Batch consistency across sets",
-    ],
-    beforeSrc: "",
-    afterSrc: "",
-    beforeAlt: "Vehicle image before color correction",
-    afterAlt: "Vehicle image after color correction",
-    imageFirst: true,
-    showCtas: false,
-  },
-] as const;
+function CtaLink({
+  href,
+  className,
+  children,
+}: {
+  href: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  const h = href.trim() || "/";
+  if (h.startsWith("http://") || h.startsWith("https://")) {
+    return (
+      <a href={h} className={className} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link href={h} className={className}>
+      {children}
+    </Link>
+  );
+}
 
 type Props = {
   cms: CmsJson;
@@ -81,12 +62,7 @@ export function HomeBeforeAfterShowcase({ cms }: Props) {
       const before = pair.before.trim();
       const after = pair.after.trim();
       if (!before || !after) return null;
-      const template = ROWS[i % ROWS.length];
-      return {
-        ...template,
-        beforeSrc: before,
-        afterSrc: after,
-      };
+      return { pairIndex: i, pair };
     })
     .filter((row): row is NonNullable<typeof row> => row !== null);
 
@@ -101,85 +77,91 @@ export function HomeBeforeAfterShowcase({ cms }: Props) {
     >
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-16 lg:gap-20">
-          {rows.map((row, i) => (
+          {rows.map(({ pairIndex, pair }, i) => {
+            /** Odd rows: image left / text right; even rows: text left / image right */
+            const imageFirst = i % 2 === 1;
+            return (
             <div
-              key={row.title}
+              key={`before-after-${pairIndex}`}
               className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-14"
             >
               <div
                 className={
-                  row.imageFirst ? "lg:col-start-2 lg:row-start-1" : "lg:row-start-1"
+                  imageFirst ? "lg:col-start-2 lg:row-start-1" : "lg:row-start-1"
                 }
               >
                 <h3
                   className={`${display.className} text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl`}
                 >
-                  {row.title}
+                  {pair.title}
                 </h3>
                 <p
                   className={`${sans.className} mt-4 text-base leading-relaxed text-[var(--muted)]`}
                 >
-                  {row.intro}
+                  {pair.intro}
                 </p>
                 <p
                   className={`${sans.className} mt-3 text-sm font-medium text-[var(--foreground)] sm:text-[0.9375rem]`}
                 >
-                  {row.priceNote}
+                  {pair.priceNote}
                 </p>
                 <p
                   className={`${sans.className} mt-8 text-sm font-semibold text-[var(--foreground)]`}
                 >
-                  {row.listTitle}
+                  {pair.listTitle}
                 </p>
-                <ul className="mt-4 grid list-none gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-3">
-                  {row.items.map((item) => (
-                    <CheckItem key={item}>{item}</CheckItem>
-                  ))}
-                </ul>
+                {pair.includes.length > 0 ? (
+                  <ul className="mt-4 grid list-none gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-3">
+                    {pair.includes.map((item, j) => (
+                      <CheckItem key={`${pairIndex}-inc-${j}`}>{item}</CheckItem>
+                    ))}
+                  </ul>
+                ) : null}
 
-                {row.showCtas ? (
+                {pair.showDualCtas ? (
                   <div className="mt-8 flex flex-wrap gap-3">
-                    <Link
-                      href="/contact"
+                    <CtaLink
+                      href={pair.primaryCtaHref}
                       className={`${sans.className} inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
                     >
-                      Get a free trial
-                    </Link>
-                    <Link
-                      href="/services"
+                      {pair.primaryCtaLabel}
+                    </CtaLink>
+                    <CtaLink
+                      href={pair.secondaryCtaHref}
                       className={`${sans.className} inline-flex items-center justify-center rounded-full border border-[var(--line-strong)] bg-[var(--background)] px-5 py-2.5 text-sm font-semibold text-[var(--foreground)] transition duration-200 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
                     >
-                      View more
-                    </Link>
+                      {pair.secondaryCtaLabel}
+                    </CtaLink>
                   </div>
                 ) : (
                   <div className="mt-8">
-                    <Link
-                      href="/contact"
+                    <CtaLink
+                      href={pair.soloCtaHref}
                       className={`${sans.className} inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] transition hover:text-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
                     >
-                      Talk to us about your set
+                      {pair.soloCtaLabel}
                       <span aria-hidden>→</span>
-                    </Link>
+                    </CtaLink>
                   </div>
                 )}
               </div>
 
               <div
                 className={
-                  row.imageFirst ? "lg:col-start-1 lg:row-start-1" : "lg:col-start-2 lg:row-start-1"
+                  imageFirst ? "lg:col-start-1 lg:row-start-1" : "lg:col-start-2 lg:row-start-1"
                 }
               >
                 <BeforeAfterSlider
-                  beforeSrc={row.beforeSrc}
-                  afterSrc={row.afterSrc}
-                  beforeAlt={row.beforeAlt}
-                  afterAlt={row.afterAlt}
+                  beforeSrc={pair.before.trim()}
+                  afterSrc={pair.after.trim()}
+                  beforeAlt={pair.beforeAlt}
+                  afterAlt={pair.afterAlt}
                   priority={i === 0}
                 />
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

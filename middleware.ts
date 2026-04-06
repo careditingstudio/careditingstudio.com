@@ -1,4 +1,4 @@
-import { isAdminRequestHost } from "@/lib/admin-host";
+import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -17,9 +17,8 @@ function shouldRewriteAdminPath(pathname: string) {
 }
 
 export function middleware(request: NextRequest) {
-  const host = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
-  const isAdmin = isAdminRequestHost(host);
+  const isAdmin = isAdminHostFromIncomingHeaders((n) => request.headers.get(n));
 
   if (!isAdmin && pathname.startsWith("/api/admin")) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

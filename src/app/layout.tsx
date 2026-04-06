@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { isAdminRequestHost } from "@/lib/admin-host";
+import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
 import { HomeChromeProvider } from "@/components/HomeChromeProvider";
 import { SiteTopChromeWrapper } from "@/components/SiteTopChromeWrapper";
@@ -39,8 +39,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const h = await headers();
-  const isAdminHost =
-    isAdminRequestHost(h.get("host")) || h.get("x-cms-admin") === "1";
+  const isAdminHost = isAdminHostFromIncomingHeaders((name) => h.get(name));
 
   if (isAdminHost) {
     return (
