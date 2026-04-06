@@ -2,7 +2,7 @@
 
 import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 import type { CmsJson, PortfolioGridItem } from "@/lib/cms-types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const ALL = "__all__";
 const OTHER = "__other__";
@@ -37,6 +37,24 @@ export function PortfolioGrid({ cms }: { cms: CmsJson }) {
     [complete, serviceIds],
   );
 
+  /** Services that have at least one live tile — only these appear as filter chips. */
+  const filterableServices = useMemo(() => {
+    const used = new Set(
+      complete
+        .map((i) => i.serviceId)
+        .filter((id): id is number => id !== null),
+    );
+    return cms.services.filter((s) => used.has(s.id));
+  }, [cms.services, complete]);
+
+  useEffect(() => {
+    if (filter === ALL || filter === OTHER) return;
+    const fid = Number(filter);
+    if (!filterableServices.some((s) => s.id === fid)) {
+      setFilter(ALL);
+    }
+  }, [filter, filterableServices]);
+
   const filtered = useMemo(() => {
     if (filter === ALL) return complete;
     if (filter === OTHER) {
@@ -66,7 +84,7 @@ export function PortfolioGrid({ cms }: { cms: CmsJson }) {
           selected={filter === ALL}
           onClick={() => setFilter(ALL)}
         />
-        {cms.services.map((svc) => (
+        {filterableServices.map((svc) => (
           <FilterPill
             key={svc.id}
             label={svc.name.trim() || "Untitled"}
@@ -95,7 +113,7 @@ export function PortfolioGrid({ cms }: { cms: CmsJson }) {
               className="mx-auto w-full max-w-[22rem] sm:max-w-none"
             >
               <BeforeAfterSlider
-                layout="portfolio"
+                layout="square"
                 beforeSrc={item.before}
                 afterSrc={item.after}
                 beforeAlt={item.beforeAlt}
