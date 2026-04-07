@@ -9,6 +9,7 @@ import { useEffect, useState, type ReactNode } from "react";
 const DASH = { href: "/admin-panel", label: "Dashboard" } as const;
 const SITE_LINK = { href: "/admin-panel/settings", label: "Settings" } as const;
 const LIBRARY = { href: "/admin-panel/library", label: "Upload library" } as const;
+const MAILBOX = { href: "/admin-panel/mailbox", label: "Mailbox" } as const;
 
 function normPath(p: string) {
   return p.length > 1 && p.endsWith("/") ? p.slice(0, -1) : p;
@@ -27,6 +28,7 @@ function AdminChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [publicSiteUrl, setPublicSiteUrl] = useState("");
   const { cms, loading, loadError, saving, flash, save, refresh } = useAdminCms();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     const { protocol, hostname, port } = window.location;
@@ -56,6 +58,15 @@ function AdminChrome({ children }: { children: ReactNode }) {
         Loading admin…
       </div>
     );
+  }
+
+  async function logout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
+    } finally {
+      window.location.href = "/admin-panel/login";
+    }
   }
 
   return (
@@ -104,7 +115,7 @@ function AdminChrome({ children }: { children: ReactNode }) {
           <p className="px-3 pb-0.5 pt-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
             More
           </p>
-          {[SITE_LINK, LIBRARY].map((item) => {
+          {[SITE_LINK, LIBRARY, MAILBOX].map((item) => {
             const on = pathActive(pathname, item.href);
             return (
               <Link
@@ -122,7 +133,7 @@ function AdminChrome({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-zinc-800 p-3">
+        <div className="border-t border-zinc-800 p-3 space-y-2">
           {publicSiteUrl ? (
             <a
               href={publicSiteUrl}
@@ -135,6 +146,14 @@ function AdminChrome({ children }: { children: ReactNode }) {
           ) : (
             <span className="block py-2 text-center text-xs text-zinc-600">…</span>
           )}
+          <button
+            type="button"
+            onClick={() => void logout()}
+            disabled={loggingOut}
+            className="flex w-full items-center justify-center rounded-lg border border-zinc-700 py-2 text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-60"
+          >
+            {loggingOut ? "Logging out…" : "Logout"}
+          </button>
         </div>
       </aside>
 

@@ -9,6 +9,11 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+enum MailboxKind {
+  CONTACT
+  FREE_TRIAL
+}
+
 model SiteSettings {
   id              Int    @id @default(1)
   businessName    String @map("business_name")
@@ -23,6 +28,27 @@ model SiteSettings {
   updatedAt       String @default("") @map("updated_at")
 
   @@map("site_settings")
+}
+
+model MailboxMessage {
+  id        Int         @id @default(autoincrement())
+  kind      MailboxKind
+  createdAt DateTime    @default(now()) @map("created_at")
+  readAt    DateTime?   @map("read_at")
+
+  fullName        String  @map("full_name")
+  email           String?
+  whatsapp        String?
+  country         String?
+  message         String
+  requirements    String?
+
+  ip        String? @map("ip")
+  userAgent String? @map("user_agent")
+
+  @@index([kind, createdAt(sort: Desc)])
+  @@index([readAt])
+  @@map("mailbox_messages")
 }
 
 model HeroBanner {

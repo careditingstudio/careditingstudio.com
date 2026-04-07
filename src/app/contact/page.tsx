@@ -1,5 +1,6 @@
 import { InnerPageBody } from "@/components/InnerPageBody";
 import { PageHeading } from "@/components/PageHeading";
+import { ContactForm } from "@/components/forms/ContactForm";
 import { siteConfig } from "@/config/site";
 import type { Metadata } from "next";
 
@@ -15,13 +16,13 @@ export default function ContactPage() {
     <>
       <PageHeading
         title="Contact Us"
-        description="Reach us by email or WhatsApp — a form can be added here later."
+        description="Send us your details and a message — we’ll reply by email or WhatsApp."
       />
       <InnerPageBody>
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="grid gap-5 sm:grid-cols-2">
           <a
             href={`mailto:${siteConfig.email}`}
-            className="group rounded-xl border border-[var(--line)] bg-[var(--background)] p-6 transition hover:border-[var(--accent)]/35 hover:shadow-sm"
+            className="group rounded-2xl border border-[var(--line)] bg-[var(--background)] p-6 shadow-sm transition hover:border-[var(--accent)]/35 hover:shadow-md"
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
               Email
@@ -29,12 +30,15 @@ export default function ContactPage() {
             <p className="mt-2 text-[var(--foreground)] transition group-hover:text-[var(--accent)]">
               {siteConfig.email}
             </p>
+            <p className="mt-3 text-sm text-[var(--muted)]">
+              Best for detailed requests and reference links.
+            </p>
           </a>
           <a
             href={wa}
             target="_blank"
             rel="noopener noreferrer"
-            className="group rounded-xl border border-[var(--line)] bg-[var(--background)] p-6 transition hover:border-[var(--accent)]/35 hover:shadow-sm"
+            className="group rounded-2xl border border-[var(--line)] bg-[var(--background)] p-6 shadow-sm transition hover:border-[var(--accent)]/35 hover:shadow-md"
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
               WhatsApp
@@ -42,8 +46,13 @@ export default function ContactPage() {
             <p className="mt-2 text-[var(--foreground)] transition group-hover:text-[var(--accent)]">
               {siteConfig.whatsappDisplay}
             </p>
+            <p className="mt-3 text-sm text-[var(--muted)]">
+              Best for quick messages and fast replies.
+            </p>
           </a>
         </div>
+
+        <ContactForm />
       </InnerPageBody>
     </>
   );

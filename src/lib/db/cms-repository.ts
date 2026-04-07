@@ -260,7 +260,8 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
   const now = new Date().toISOString();
   const site = cms.site;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(
+    async (tx) => {
     await tx.siteSettings.upsert({
       where: { id: 1 },
       create: {
@@ -389,7 +390,10 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         })),
       });
     }
-  });
+    },
+    // Interactive transaction can exceed Prisma default (5s) in dev.
+    { maxWait: 15_000, timeout: 60_000 },
+  );
 
   const r = await readCmsFromDb();
   return r.cms;
