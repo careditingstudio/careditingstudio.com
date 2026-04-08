@@ -54,7 +54,14 @@ export function TurnstileWidget({
 }) {
   const boxRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const onTokenRef = useRef(onToken);
+  const onStatusRef = useRef(onStatus);
   const theme = useMemo<"light" | "dark" | "auto">(() => "auto", []);
+
+  useEffect(() => {
+    onTokenRef.current = onToken;
+    onStatusRef.current = onStatus;
+  }, [onStatus, onToken]);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,22 +73,32 @@ export function TurnstileWidget({
         if (!boxRef.current) return;
         if (!window.turnstile) throw new Error("captcha");
 
+        // Clean up any previous widget instance (e.g. when siteKey changes).
+        if (widgetIdRef.current) {
+          try {
+            window.turnstile.remove(widgetIdRef.current);
+          } catch {
+            // ignore
+          }
+          widgetIdRef.current = null;
+        }
+
         widgetIdRef.current = window.turnstile.render(boxRef.current, {
           sitekey: siteKey,
           theme,
-          callback: (token) => onToken(token),
+          callback: (token) => onTokenRef.current(token),
           "expired-callback": () => {
-            onToken("");
-            onStatus?.("expired");
+            onTokenRef.current("");
+            onStatusRef.current?.("expired");
           },
           "error-callback": () => {
-            onToken("");
-            onStatus?.("error");
+            onTokenRef.current("");
+            onStatusRef.current?.("error");
           },
         });
-        onStatus?.("ready");
+        onStatusRef.current?.("ready");
       } catch {
-        onStatus?.("error");
+        onStatusRef.current?.("error");
       }
     }
 
@@ -98,7 +115,7 @@ export function TurnstileWidget({
       }
       widgetIdRef.current = null;
     };
-  }, [onStatus, onToken, siteKey, theme]);
+  }, [siteKey, theme]);
 
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--background)] p-4 shadow-sm">
