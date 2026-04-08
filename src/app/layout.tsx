@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { Analytics } from "@vercel/analytics/next";
 import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
 import { HomeChromeProvider } from "@/components/HomeChromeProvider";
@@ -69,6 +70,7 @@ export default async function RootLayout({
           suppressHydrationWarning
         >
           {children}
+          <Analytics />
         </body>
       </html>
     );
@@ -85,6 +87,7 @@ export default async function RootLayout({
             <SiteTopChromeWrapper>{children}</SiteTopChromeWrapper>
           </ChromeScrollLockProvider>
         </HomeChromeProvider>
+        <Analytics />
       </body>
     </html>
   );
