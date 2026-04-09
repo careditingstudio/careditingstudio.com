@@ -57,26 +57,24 @@ export function TrustedClientsMarquee({
     <section
       className="relative z-20 overflow-hidden px-5 py-14 text-[var(--foreground)] sm:px-8 sm:py-16"
       aria-label="Trusted clients"
-      style={{ ["--home-trust-marquee-secs" as never]: "68s" }}
+      style={{ ["--home-trust-marquee-secs" as never]: "96s" }}
     >
       <div
-        className="pointer-events-none absolute inset-0 z-0 bg-black/55 backdrop-blur-xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-80"
+        className="pointer-events-none absolute inset-0 z-0 bg-black/35 backdrop-blur-md"
         style={{
-          background:
-            "radial-gradient(600px 200px at 50% 0%, rgba(224, 122, 69, 0.22), transparent 60%), radial-gradient(520px 240px at 10% 30%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(520px 240px at 90% 40%, rgba(255,255,255,0.06), transparent 60%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent, black 18%, black 82%, transparent)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent, black 18%, black 82%, transparent)",
         }}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-16 bg-gradient-to-b from-black/80 to-transparent sm:h-20"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 bg-gradient-to-t from-black/80 to-transparent sm:h-20"
+        className="pointer-events-none absolute inset-0 z-0 opacity-70"
+        style={{
+          background:
+            "radial-gradient(600px 200px at 50% 0%, rgba(224, 122, 69, 0.22), transparent 60%), radial-gradient(520px 240px at 10% 30%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(520px 240px at 90% 40%, rgba(255,255,255,0.06), transparent 60%)",
+        }}
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-6xl">
@@ -91,7 +89,7 @@ export function TrustedClientsMarquee({
           </h2>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 px-3 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:px-5">
+        <div className="mt-10 rounded-2xl border border-white/10 bg-white/6 px-3 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:px-5">
           <div
             className="relative overflow-hidden"
             style={{
@@ -105,14 +103,22 @@ export function TrustedClientsMarquee({
               {loop.map((logo, idx) => (
                 <div
                   key={`${logo.src}-${idx}`}
-                  className="flex h-12 w-36 items-center justify-center px-2 sm:h-14 sm:w-40"
+                  className="group relative flex h-12 w-36 items-center justify-center px-2 sm:h-14 sm:w-40"
                 >
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-35 blur-xl"
+                    style={{
+                      background:
+                        "radial-gradient(closest-side, rgba(255,255,255,0.55), rgba(255,255,255,0))",
+                    }}
+                    aria-hidden
+                  />
                   <Image
                     src={logo.src}
                     alt={logo.alt}
                     width={160}
                     height={64}
-                    className="h-8 w-auto max-w-[10rem] object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.28)] transition sm:h-9"
+                    className="relative h-9 w-auto max-w-[11rem] object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.22)] transition sm:h-10"
                   />
                 </div>
               ))}
