@@ -3,11 +3,15 @@ import "server-only";
 import {
   type BeforeAfterPair,
   type CmsJson,
+  type HomeReviewsBlock,
   type PortfolioGridItem,
   type ServiceRow,
   type SiteSettings,
   defaultCmsJson,
+  defaultHomeReviewsBlock,
+  defaultHomeServiceFeaturesBlock,
   defaultSiteSettings,
+  parseHomeServiceFeaturesFromJson,
 } from "@/lib/cms-types";
 import { ENV_VERCEL_SUPABASE } from "@/config/deployment-env";
 import { Prisma } from "@prisma/client";
@@ -50,9 +54,14 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
       whatsappDial: site.whatsappDial,
       whatsappDisplay: site.whatsappDisplay,
       socialLinksJson: JSON.stringify(site.socialLinks ?? []),
+      officeLocationsJson: JSON.stringify(site.officeLocations ?? []),
       siteTagsText: site.siteTagsText ?? "",
       siteTagsSeparator: site.siteTagsSeparator ?? "newline",
       floatingCar: "",
+      homeReviewsEyebrow: "",
+      homeReviewsTitle: "",
+      homeReviewsSubtitle: "",
+      homeServiceFeaturesJson: JSON.stringify(defaultHomeServiceFeaturesBlock()),
       updatedAt: now,
     },
     update: {
@@ -151,6 +160,28 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       email: siteRow.email,
       whatsappDial: siteRow.whatsappDial,
       whatsappDisplay: siteRow.whatsappDisplay,
+      officeLocations: (() => {
+        try {
+          const parsed = JSON.parse(siteRow.officeLocationsJson || "[]") as unknown;
+          if (!Array.isArray(parsed)) return [];
+          const out: { label: string; address: string; mapUrl: string }[] = [];
+          for (const row of parsed) {
+            if (!row || typeof row !== "object") continue;
+            const p = row as Record<string, unknown>;
+            if (
+              typeof p.label !== "string" ||
+              typeof p.address !== "string" ||
+              typeof p.mapUrl !== "string"
+            ) {
+              continue;
+            }
+            out.push({ label: p.label, address: p.address, mapUrl: p.mapUrl });
+          }
+          return out;
+        } catch {
+          return [];
+        }
+      })(),
       socialLinks: (() => {
         try {
           const parsed = JSON.parse(siteRow.socialLinksJson || "[]") as unknown;
@@ -225,6 +256,30 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       afterAlt: r.afterAlt,
     }));
 
+    const reviewRows = await prisma.clientReview.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+    const hrDefaults = defaultHomeReviewsBlock();
+    const eyebrow = (siteRow.homeReviewsEyebrow ?? "").trim();
+    const hrTitle = (siteRow.homeReviewsTitle ?? "").trim();
+    const hrSubtitle = (siteRow.homeReviewsSubtitle ?? "").trim();
+    const homeReviews: HomeReviewsBlock = {
+      eyebrow: eyebrow || hrDefaults.eyebrow,
+      title: hrTitle || hrDefaults.title,
+      subtitle: hrSubtitle || hrDefaults.subtitle,
+      items: reviewRows.map((r) => ({
+        quote: r.message,
+        name: r.clientName,
+        role: r.role,
+        rating: Math.min(5, Math.max(1, Math.round(r.rating))),
+        avatarSrc: r.avatarUrl,
+      })),
+    };
+
+    const homeServiceFeatures = parseHomeServiceFeaturesFromJson(
+      siteRow.homeServiceFeaturesJson,
+    );
+
     return {
       cms: {
         site,
@@ -233,6 +288,8 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         beforeAfter,
         services,
         portfolioGrid,
+        homeReviews,
+        homeServiceFeatures,
         updatedAt: siteRow.updatedAt ?? "",
       },
       devDbUnreachable: false,
@@ -272,9 +329,14 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         whatsappDial: site.whatsappDial,
         whatsappDisplay: site.whatsappDisplay,
           socialLinksJson: JSON.stringify(site.socialLinks ?? []),
+          officeLocationsJson: JSON.stringify(site.officeLocations ?? []),
           siteTagsText: site.siteTagsText ?? "",
           siteTagsSeparator: site.siteTagsSeparator ?? "newline",
         floatingCar: cms.floatingCar.trim(),
+        homeReviewsEyebrow: cms.homeReviews.eyebrow.trim(),
+        homeReviewsTitle: cms.homeReviews.title.trim(),
+        homeReviewsSubtitle: cms.homeReviews.subtitle.trim(),
+        homeServiceFeaturesJson: JSON.stringify(cms.homeServiceFeatures),
         updatedAt: now,
       },
       update: {
@@ -284,9 +346,14 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         whatsappDial: site.whatsappDial,
         whatsappDisplay: site.whatsappDisplay,
           socialLinksJson: JSON.stringify(site.socialLinks ?? []),
+          officeLocationsJson: JSON.stringify(site.officeLocations ?? []),
           siteTagsText: site.siteTagsText ?? "",
           siteTagsSeparator: site.siteTagsSeparator ?? "newline",
         floatingCar: cms.floatingCar.trim(),
+        homeReviewsEyebrow: cms.homeReviews.eyebrow.trim(),
+        homeReviewsTitle: cms.homeReviews.title.trim(),
+        homeReviewsSubtitle: cms.homeReviews.subtitle.trim(),
+        homeServiceFeaturesJson: JSON.stringify(cms.homeServiceFeatures),
         updatedAt: now,
       },
     });
@@ -387,6 +454,23 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
           afterUrl: p.after,
           beforeAlt: p.beforeAlt,
           afterAlt: p.afterAlt,
+        })),
+      });
+    }
+
+    await tx.clientReview.deleteMany();
+    const reviewItems = cms.homeReviews.items.filter(
+      (r) => r.name.trim().length > 0 && r.quote.trim().length > 0,
+    );
+    if (reviewItems.length > 0) {
+      await tx.clientReview.createMany({
+        data: reviewItems.map((r, sortOrder) => ({
+          sortOrder,
+          clientName: r.name.trim(),
+          role: r.role.trim(),
+          rating: Math.min(5, Math.max(1, Math.round(r.rating))),
+          message: r.quote.trim(),
+          avatarUrl: r.avatarSrc.trim(),
         })),
       });
     }

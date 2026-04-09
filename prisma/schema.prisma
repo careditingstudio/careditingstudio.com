@@ -22,12 +22,29 @@ model SiteSettings {
   whatsappDial    String @map("whatsapp_dial")
   whatsappDisplay String @map("whatsapp_display")
   socialLinksJson String @default("[]") @map("social_links_json")
+  officeLocationsJson String @default("[]") @map("office_locations_json")
   siteTagsText    String @default("") @map("site_tags_text")
   siteTagsSeparator String @default("newline") @map("site_tags_separator")
   floatingCar     String @default("") @map("floating_car")
+  homeReviewsEyebrow  String @default("") @map("home_reviews_eyebrow")
+  homeReviewsTitle    String @default("") @map("home_reviews_title")
+  homeReviewsSubtitle String @default("") @map("home_reviews_subtitle")
+  homeServiceFeaturesJson String @default("{}") @map("home_service_features_json")
   updatedAt       String @default("") @map("updated_at")
 
   @@map("site_settings")
+}
+
+model ClientReview {
+  id         Int    @id @default(autoincrement())
+  sortOrder  Int    @map("sort_order")
+  clientName String @map("client_name")
+  role       String @default("")
+  rating     Int    @default(5)
+  message    String
+  avatarUrl  String @default("") @map("avatar_url")
+
+  @@map("client_reviews")
 }
 
 model MailboxMessage {

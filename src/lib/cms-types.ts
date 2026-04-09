@@ -98,6 +98,11 @@ export type SiteSettings = {
   email: string;
   whatsappDial: string;
   whatsappDisplay: string;
+  officeLocations: {
+    label: string;
+    address: string;
+    mapUrl: string;
+  }[];
   /** Social links rendered in the public footer (label + URL). */
   socialLinks: { label: string; url: string }[];
   /**
@@ -137,6 +142,102 @@ export function defaultPortfolioGridItem(): PortfolioGridItem {
   };
 }
 
+/** One client testimonial on the home page (editable in admin). */
+export type HomeReviewItem = {
+  quote: string;
+  name: string;
+  role: string;
+  /** 1–5 */
+  rating: number;
+  /** Cloudinary or `/cms/...` headshot; empty = initials avatar */
+  avatarSrc: string;
+};
+
+export type HomeReviewsBlock = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  items: HomeReviewItem[];
+};
+
+export function defaultHomeReviewItem(): HomeReviewItem {
+  return {
+    quote: "",
+    name: "",
+    role: "",
+    rating: 5,
+    avatarSrc: "",
+  };
+}
+
+export function defaultHomeReviewsBlock(): HomeReviewsBlock {
+  return {
+    eyebrow: "Testimonials",
+    title: "What clients say",
+    subtitle:
+      "Real feedback from teams who rely on consistent, retail-ready vehicle imagery.",
+    items: [],
+  };
+}
+
+/** One icon card in the home “Our Services Features” strip. */
+export type HomeServiceFeatureItem = {
+  iconKey: string;
+  title: string;
+  body: string;
+};
+
+export type HomeServiceFeaturesBlock = {
+  intro: string;
+  sectionTitle: string;
+  ctaLabel: string;
+  ctaHref: string;
+  items: HomeServiceFeatureItem[];
+};
+
+export function defaultHomeServiceFeatureItem(): HomeServiceFeatureItem {
+  return {
+    iconKey: "sparkles",
+    title: "",
+    body: "",
+  };
+}
+
+export function defaultHomeServiceFeaturesBlock(): HomeServiceFeaturesBlock {
+  return {
+    intro: "",
+    sectionTitle: "Our Services Features",
+    ctaLabel: "See more",
+    ctaHref: "/services",
+    items: [
+      {
+        iconKey: "creditCard",
+        title: "Easy Payment System",
+        body:
+          "Our payment system is secure and hassle free. Payment can be completed via PayPal or bank account/check (for US).",
+      },
+      {
+        iconKey: "lock",
+        title: "Secure File Transfer",
+        body:
+          "We use secure FTP, WeTransfer, Dropbox so you can send up to 500 GB file safely.",
+      },
+      {
+        iconKey: "percent",
+        title: "Discount",
+        body:
+          "We offer amazing discount offers for large quantity of images. Sample trial available.",
+      },
+      {
+        iconKey: "zap",
+        title: "Rush Service",
+        body:
+          "Urgent work? No problem. We provide express service on request to meet your deadlines.",
+      },
+    ],
+  };
+}
+
 export type CmsJson = {
   site: SiteSettings;
   heroBanners: string[];
@@ -144,6 +245,8 @@ export type CmsJson = {
   beforeAfter: BeforeAfterPair[];
   services: ServiceRow[];
   portfolioGrid: PortfolioGridItem[];
+  homeReviews: HomeReviewsBlock;
+  homeServiceFeatures: HomeServiceFeaturesBlock;
   updatedAt: string;
 };
 
@@ -154,6 +257,10 @@ export function defaultSiteSettings(): SiteSettings {
     email: siteConfig.email,
     whatsappDial: siteConfig.whatsappDial,
     whatsappDisplay: siteConfig.whatsappDisplay,
+    officeLocations: [
+      { label: "Main office", address: "", mapUrl: "" },
+      { label: "UK office", address: "", mapUrl: "" },
+    ],
     socialLinks: [
       { label: "Facebook", url: "" },
       { label: "Instagram", url: "" },
@@ -176,6 +283,8 @@ export function defaultCmsJson(): CmsJson {
     beforeAfter: [],
     services: [],
     portfolioGrid: [],
+    homeReviews: defaultHomeReviewsBlock(),
+    homeServiceFeatures: defaultHomeServiceFeaturesBlock(),
     updatedAt: "",
   };
 }
@@ -252,6 +361,117 @@ function normalizePortfolioGridItem(
     after: p.after,
     beforeAlt: strField(p, "beforeAlt", "Before editing"),
     afterAlt: strField(p, "afterAlt", "After editing"),
+  };
+}
+
+function clampInt(n: number, min: number, max: number): number {
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, Math.trunc(n)));
+}
+
+function normalizeHomeReviewItem(item: unknown): HomeReviewItem | null {
+  if (!item || typeof item !== "object") return null;
+  const p = item as Record<string, unknown>;
+  const quote =
+    typeof p.quote === "string"
+      ? p.quote
+      : typeof p.message === "string"
+        ? p.message
+        : "";
+  const name =
+    typeof p.name === "string"
+      ? p.name
+      : typeof p.clientName === "string"
+        ? p.clientName
+        : "";
+  const role = typeof p.role === "string" ? p.role : "";
+  const ratingRaw =
+    typeof p.rating === "number"
+      ? p.rating
+      : typeof p.rating === "string"
+        ? Number(p.rating)
+        : 5;
+  const avatarSrc =
+    typeof p.avatarSrc === "string"
+      ? p.avatarSrc
+      : typeof p.avatarUrl === "string"
+        ? p.avatarUrl
+        : "";
+  return {
+    quote: quote.trim(),
+    name: name.trim(),
+    role: role.trim(),
+    rating: clampInt(ratingRaw, 1, 5),
+    avatarSrc: avatarSrc.trim(),
+  };
+}
+
+function normalizeHomeServiceFeatureItem(
+  item: unknown,
+): HomeServiceFeatureItem | null {
+  if (!item || typeof item !== "object") return null;
+  const p = item as Record<string, unknown>;
+  const title = typeof p.title === "string" ? p.title.trim() : "";
+  const body =
+    typeof p.body === "string"
+      ? p.body.trim()
+      : typeof p.description === "string"
+        ? p.description.trim()
+        : "";
+  const iconKey =
+    typeof p.iconKey === "string" && p.iconKey.trim().length > 0
+      ? p.iconKey.trim()
+      : "sparkles";
+  return { iconKey, title, body };
+}
+
+function normalizeHomeServiceFeaturesBlock(
+  raw: unknown,
+  fallback: HomeServiceFeaturesBlock,
+): HomeServiceFeaturesBlock {
+  if (!raw || typeof raw !== "object") return fallback;
+  const o = raw as Record<string, unknown>;
+  const items: HomeServiceFeatureItem[] = [];
+  let usedExplicitItems = false;
+  if (Array.isArray(o.items)) {
+    usedExplicitItems = true;
+    for (const x of o.items) {
+      const row = normalizeHomeServiceFeatureItem(x);
+      if (row) items.push(row);
+    }
+  }
+  const base: HomeServiceFeaturesBlock = {
+    intro: strField(o, "intro", fallback.intro).trim() || fallback.intro,
+    sectionTitle:
+      strField(o, "sectionTitle", fallback.sectionTitle).trim() ||
+      fallback.sectionTitle,
+    ctaLabel: strField(o, "ctaLabel", fallback.ctaLabel).trim() || fallback.ctaLabel,
+    ctaHref: strField(o, "ctaHref", fallback.ctaHref).trim() || fallback.ctaHref,
+    items: usedExplicitItems ? items : fallback.items,
+  };
+  return base;
+}
+
+function normalizeHomeReviewsBlock(
+  raw: unknown,
+  fallback: HomeReviewsBlock,
+): HomeReviewsBlock {
+  if (!raw || typeof raw !== "object") return fallback;
+  const o = raw as Record<string, unknown>;
+  const items: HomeReviewItem[] = [];
+  if (Array.isArray(o.items)) {
+    for (const x of o.items) {
+      const row = normalizeHomeReviewItem(x);
+      if (row) items.push(row);
+    }
+  }
+  return {
+    eyebrow:
+      typeof o.eyebrow === "string" ? o.eyebrow.trim() : fallback.eyebrow,
+    title: typeof o.title === "string" ? o.title.trim() : fallback.title,
+    subtitle:
+      typeof o.subtitle === "string" ? o.subtitle.trim() : fallback.subtitle,
+    items,
   };
 }
 
@@ -355,6 +575,31 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       }
       if (out.length > 0) d.socialLinks = out;
     }
+
+    if (Array.isArray(s.officeLocations)) {
+      const out: { label: string; address: string; mapUrl: string }[] = [];
+      const seen = new Set<string>();
+      for (const row of s.officeLocations) {
+        if (!row || typeof row !== "object") continue;
+        const p = row as Record<string, unknown>;
+        if (
+          typeof p.label !== "string" ||
+          typeof p.address !== "string" ||
+          typeof p.mapUrl !== "string"
+        ) {
+          continue;
+        }
+        const label = p.label.trim();
+        const address = p.address.trim();
+        const mapUrl = p.mapUrl.trim();
+        if (label.length === 0) continue;
+        const key = label.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ label, address, mapUrl });
+      }
+      if (out.length > 0) d.officeLocations = out;
+    }
     base.site = d;
   }
 
@@ -410,9 +655,29 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     base.portfolioGrid = grid;
   }
 
+  base.homeReviews = normalizeHomeReviewsBlock(o.homeReviews, base.homeReviews);
+
+  base.homeServiceFeatures = normalizeHomeServiceFeaturesBlock(
+    o.homeServiceFeatures,
+    base.homeServiceFeatures,
+  );
+
   if (typeof o.updatedAt === "string") base.updatedAt = o.updatedAt;
 
   return base;
+}
+
+/** Parse DB JSON string into a block (used by `cms-repository`). */
+export function parseHomeServiceFeaturesFromJson(
+  raw: string | null | undefined,
+): HomeServiceFeaturesBlock {
+  const fallback = defaultHomeServiceFeaturesBlock();
+  if (!raw?.trim()) return fallback;
+  try {
+    return normalizeHomeServiceFeaturesBlock(JSON.parse(raw) as unknown, fallback);
+  } catch {
+    return fallback;
+  }
 }
 
 /** Legacy local files under /public/cms/uploads — use unoptimized Next/Image. */

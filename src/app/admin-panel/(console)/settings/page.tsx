@@ -157,6 +157,89 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
+        <section className="space-y-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-white">Office locations</h2>
+              <p className="mt-1 text-sm text-zinc-400">
+                Shown in the footer and on the Contact page.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                updateSite({
+                  officeLocations: [
+                    ...site.officeLocations,
+                    { label: "New office", address: "", mapUrl: "" },
+                  ],
+                })
+              }
+              className="rounded-lg bg-zinc-800 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700"
+            >
+              Add office
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {site.officeLocations.map((row, i) => (
+              <div
+                key={`${row.label}-${i}`}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4"
+              >
+                <div className="grid gap-4 sm:grid-cols-[1fr,2fr,2fr,auto] sm:items-end">
+                  <TextField
+                    id={`office-label-${i}`}
+                    label="Label"
+                    value={row.label}
+                    onChange={(v) => {
+                      const next = [...site.officeLocations];
+                      next[i] = { ...next[i]!, label: v };
+                      updateSite({ officeLocations: next });
+                    }}
+                    placeholder="Main office"
+                  />
+                  <TextField
+                    id={`office-address-${i}`}
+                    label="Address"
+                    value={row.address}
+                    onChange={(v) => {
+                      const next = [...site.officeLocations];
+                      next[i] = { ...next[i]!, address: v };
+                      updateSite({ officeLocations: next });
+                    }}
+                    placeholder="Street, City, Postcode, Country"
+                  />
+                  <TextField
+                    id={`office-map-${i}`}
+                    label="Map URL"
+                    type="url"
+                    value={row.mapUrl}
+                    onChange={(v) => {
+                      const next = [...site.officeLocations];
+                      next[i] = { ...next[i]!, mapUrl: v };
+                      updateSite({ officeLocations: next });
+                    }}
+                    placeholder="https://maps.google.com/..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateSite({
+                        officeLocations: site.officeLocations.filter((_, k) => k !== i),
+                      })
+                    }
+                    className="h-11 rounded-lg border border-zinc-700 px-3 text-sm font-medium text-zinc-200 hover:bg-zinc-900"
+                    aria-label={`Remove ${row.label || "office"}`}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="space-y-6">
           <h2 className="text-base font-semibold text-white">Site tags (SEO)</h2>
           <p className="text-sm text-zinc-400">

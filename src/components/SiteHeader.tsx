@@ -30,7 +30,7 @@ function NavLink({
         href={href}
         onClick={onNavigate}
         className={[
-          "rounded-md px-2.5 py-1.5 text-[12px] font-medium leading-tight tracking-tight transition-colors sm:text-[13px]",
+          "rounded-md px-3 py-2 text-[13px] font-medium leading-tight tracking-tight transition-colors sm:text-[14px]",
           active
             ? "text-white underline decoration-[var(--accent)] decoration-2 underline-offset-[8px]"
             : "text-white/75 hover:text-white",
@@ -46,7 +46,7 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       className={[
-        "rounded-md px-2.5 py-1.5 text-[12px] font-medium leading-tight tracking-tight transition-colors sm:text-[13px]",
+        "rounded-md px-3 py-2 text-[13px] font-medium leading-tight tracking-tight transition-colors sm:text-[14px]",
         active
           ? "bg-[var(--accent-subtle)] text-[var(--foreground)]"
           : "text-[var(--muted)] hover:bg-black/[0.04] hover:text-[var(--foreground)] dark:hover:bg-white/[0.06]",
@@ -182,7 +182,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
 
   const servicesTriggerClasses = (hovering: boolean) =>
     [
-      "inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[12px] font-medium leading-tight tracking-tight transition-colors sm:text-[13px]",
+      "inline-flex items-center gap-1 rounded-md px-3 py-2 text-[13px] font-medium leading-tight tracking-tight transition-colors sm:text-[14px]",
       navVariant === "overlay"
         ? [
             servicesActive || hovering
@@ -206,7 +206,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
       ].join(" ")}
       role="banner"
     >
-      <div className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between gap-3 px-4 sm:gap-4 sm:px-6">
+      <div className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6">
         <Link
           href="/"
           className={[
@@ -218,7 +218,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
         </Link>
 
         <nav
-          className="hidden min-w-0 items-center gap-0 lg:flex"
+          className="hidden min-w-0 flex-1 items-center justify-center gap-1.5 lg:flex"
           aria-label="Main"
         >
           {navItems.map(({ href, label }) => {
@@ -303,7 +303,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
         <div className="hidden shrink-0 items-center lg:flex">
           <Link
             href="/order"
-            className="rounded-md bg-[var(--accent)] px-3 py-1.5 text-[12px] font-semibold leading-tight text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)] sm:px-3.5 sm:text-[13px]"
+            className="rounded-md bg-[var(--accent)] px-4 py-2 text-[13px] font-semibold leading-tight text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)] sm:text-[14px]"
           >
             Order Now
           </Link>

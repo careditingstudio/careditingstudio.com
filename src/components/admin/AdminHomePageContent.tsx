@@ -1,6 +1,9 @@
 "use client";
 
+import { AdminServiceFeaturesEditor } from "@/components/admin/AdminServiceFeaturesEditor";
 import { BeforeAfterPostEditModal } from "@/components/admin/BeforeAfterPostEditModal";
+import { HomeReviewEditModal } from "@/components/admin/HomeReviewEditModal";
+import { HomeReviewsSectionEditModal } from "@/components/admin/HomeReviewsSectionEditModal";
 import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
 import { useAdminCms } from "@/components/admin/AdminCmsContext";
 import { isUploadedAsset } from "@/lib/cms-types";
@@ -23,12 +26,19 @@ export function AdminHomePageContent() {
     addPair,
     removePair,
     moveBeforeAfterPost,
+    patchHomeReviews,
+    setHomeReviewItem,
+    addHomeReview,
+    removeHomeReview,
+    moveHomeReview,
     setCms,
     setFlash,
   } = useAdminCms();
   const pickHandlerRef = useRef<(url: string) => void>(() => {});
   const [mediaOpen, setMediaOpen] = useState(false);
   const [editPostIndex, setEditPostIndex] = useState<number | null>(null);
+  const [reviewsSectionOpen, setReviewsSectionOpen] = useState(false);
+  const [editReviewIndex, setEditReviewIndex] = useState<number | null>(null);
 
   function openMediaPicker(onChosen: (url: string) => void) {
     pickHandlerRef.current = onChosen;
@@ -63,6 +73,8 @@ export function AdminHomePageContent() {
         title="Choose image"
       />
 
+
+      <AdminServiceFeaturesEditor />
 
       <section className="scroll-mt-8" id="hero-banners">
         <h2 className="text-lg font-semibold text-white">Hero banners</h2>
@@ -289,6 +301,145 @@ export function AdminHomePageContent() {
                         if (editPostIndex === i) setEditPostIndex(null);
                         if (editPostIndex !== null && editPostIndex > i) {
                           setEditPostIndex(editPostIndex - 1);
+                        }
+                      }}
+                      className="rounded-md px-2 py-1 text-[11px] text-zinc-500 hover:text-red-400"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      </section>
+
+      <section className="scroll-mt-8 border-t border-zinc-800 pt-16" id="home-reviews">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Home — reviews</h2>
+            <p className="mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
+              Shown in an auto-scrolling strip at the bottom of the public homepage
+              (above the footer). Edits apply after you publish.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setReviewsSectionOpen(true)}
+            className="shrink-0 rounded-lg border border-zinc-600 bg-zinc-900/50 px-4 py-2 text-xs font-medium text-zinc-200 hover:border-[var(--accent)]/35 hover:text-white"
+          >
+            Edit section text
+          </button>
+        </div>
+
+        <HomeReviewsSectionEditModal
+          open={reviewsSectionOpen}
+          onClose={() => setReviewsSectionOpen(false)}
+          block={cms.homeReviews}
+          patch={patchHomeReviews}
+        />
+
+        {editReviewIndex !== null && cms.homeReviews.items[editReviewIndex] ? (
+          <HomeReviewEditModal
+            open
+            onClose={() => setEditReviewIndex(null)}
+            index={editReviewIndex}
+            item={cms.homeReviews.items[editReviewIndex]!}
+            setPatch={(patch) => setHomeReviewItem(editReviewIndex, patch)}
+            pickFromLibrary={(cb) => openMediaPicker(cb)}
+            setFlash={setFlash}
+            onDelete={() => {
+              removeHomeReview(editReviewIndex);
+              setEditReviewIndex(null);
+            }}
+          />
+        ) : null}
+
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-600">
+            {cms.homeReviews.items.length} review
+            {cms.homeReviews.items.length === 1 ? "" : "s"}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              addHomeReview();
+              setEditReviewIndex(cms.homeReviews.items.length);
+            }}
+            className="rounded-lg border border-zinc-600 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+          >
+            + Add review
+          </button>
+        </div>
+
+        <ul className="mt-3 space-y-1.5">
+          {cms.homeReviews.items.length === 0 ? (
+            <li className="rounded-lg border border-zinc-800/80 px-3 py-5 text-center text-[11px] text-zinc-600">
+              No reviews yet — add one to show the strip on the live site.
+            </li>
+          ) : (
+            cms.homeReviews.items.map((rev, i) => {
+              const preview =
+                rev.quote.trim().slice(0, 72) +
+                (rev.quote.trim().length > 72 ? "…" : "");
+              return (
+                <li
+                  key={`rev-${i}-${rev.name}`}
+                  className="flex items-center gap-3 rounded-lg border border-zinc-800/90 bg-zinc-900/40 px-3 py-2"
+                >
+                  <span className="w-5 shrink-0 text-center text-[10px] font-medium text-zinc-600">
+                    {i + 1}
+                  </span>
+                  <div className="flex shrink-0 flex-col gap-0.5">
+                    <button
+                      type="button"
+                      aria-label="Move up"
+                      disabled={i === 0}
+                      onClick={() => moveHomeReview(i, -1)}
+                      className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Move down"
+                      disabled={i === cms.homeReviews.items.length - 1}
+                      onClick={() => moveHomeReview(i, 1)}
+                      className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
+                    >
+                      ↓
+                    </button>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-zinc-200">
+                      {rev.name.trim() || "Unnamed"}{" "}
+                      <span className="font-normal text-zinc-500">
+                        · {rev.rating}★
+                      </span>
+                    </p>
+                    <p className="mt-0.5 line-clamp-2 text-[11px] text-zinc-500">
+                      {preview || "—"}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditReviewIndex(i)}
+                      className="rounded-md border border-zinc-600 bg-zinc-800/60 px-2.5 py-1 text-[11px] font-medium text-zinc-200 hover:border-[var(--accent)]/40 hover:text-white"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        removeHomeReview(i);
+                        if (editReviewIndex === i) setEditReviewIndex(null);
+                        if (
+                          editReviewIndex !== null &&
+                          editReviewIndex > i
+                        ) {
+                          setEditReviewIndex(editReviewIndex - 1);
                         }
                       }}
                       className="rounded-md px-2 py-1 text-[11px] text-zinc-500 hover:text-red-400"

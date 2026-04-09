@@ -4,7 +4,13 @@ import {
   type BeforeAfterPair,
   type CmsJson,
   defaultBeforeAfterPair,
+  defaultHomeReviewItem,
+  defaultHomeServiceFeatureItem,
   defaultPortfolioGridItem,
+  type HomeReviewItem,
+  type HomeReviewsBlock,
+  type HomeServiceFeatureItem,
+  type HomeServiceFeaturesBlock,
   type PortfolioGridItem,
   type SiteSettings,
 } from "@/lib/cms-types";
@@ -60,6 +66,19 @@ type AdminCmsContextValue = {
   removeService: (index: number) => void;
   moveService: (index: number, dir: -1 | 1) => void;
   setService: (index: number, patch: { name?: string }) => void;
+  patchHomeReviews: (patch: Partial<HomeReviewsBlock>) => void;
+  setHomeReviewItem: (index: number, patch: Partial<HomeReviewItem>) => void;
+  addHomeReview: () => void;
+  removeHomeReview: (index: number) => void;
+  moveHomeReview: (index: number, dir: -1 | 1) => void;
+  patchHomeServiceFeatures: (patch: Partial<HomeServiceFeaturesBlock>) => void;
+  setServiceFeatureItem: (
+    index: number,
+    patch: Partial<HomeServiceFeatureItem>,
+  ) => void;
+  addServiceFeatureItem: () => void;
+  removeServiceFeatureItem: (index: number) => void;
+  moveServiceFeatureItem: (index: number, dir: -1 | 1) => void;
 };
 
 const AdminCmsContext = createContext<AdminCmsContextValue | null>(null);
@@ -107,6 +126,32 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       beforeAlt: p.beforeAlt.trim(),
       afterAlt: p.afterAlt.trim(),
     })),
+    homeReviews: {
+      ...cms.homeReviews,
+      eyebrow: cms.homeReviews.eyebrow.trim(),
+      title: cms.homeReviews.title.trim(),
+      subtitle: cms.homeReviews.subtitle.trim(),
+      items: cms.homeReviews.items.map((r) => ({
+        ...r,
+        quote: r.quote.trim(),
+        name: r.name.trim(),
+        role: r.role.trim(),
+        avatarSrc: r.avatarSrc.trim(),
+        rating: Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5))),
+      })),
+    },
+    homeServiceFeatures: {
+      ...cms.homeServiceFeatures,
+      intro: cms.homeServiceFeatures.intro.trim(),
+      sectionTitle: cms.homeServiceFeatures.sectionTitle.trim(),
+      ctaLabel: cms.homeServiceFeatures.ctaLabel.trim(),
+      ctaHref: cms.homeServiceFeatures.ctaHref.trim(),
+      items: cms.homeServiceFeatures.items.map((it) => ({
+        iconKey: it.iconKey.trim() || "sparkles",
+        title: it.title.trim(),
+        body: it.body.trim(),
+      })),
+    },
     site: {
       ...cms.site,
       businessName: cms.site.businessName.trim(),
@@ -116,6 +161,11 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       whatsappDisplay: cms.site.whatsappDisplay.trim(),
       siteTagsText: cms.site.siteTagsText,
       siteTagsSeparator: cms.site.siteTagsSeparator,
+      officeLocations: cms.site.officeLocations.map((o) => ({
+        label: o.label.trim(),
+        address: o.address.trim(),
+        mapUrl: o.mapUrl.trim(),
+      })),
       socialLinks: (() => {
         const seen = new Set<string>();
         const out: { label: string; url: string }[] = [];
@@ -372,6 +422,138 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const patchHomeReviews = useCallback((patch: Partial<HomeReviewsBlock>) => {
+    setCms((c) =>
+      c ? { ...c, homeReviews: { ...c.homeReviews, ...patch } } : c,
+    );
+  }, []);
+
+  const setHomeReviewItem = useCallback(
+    (index: number, patch: Partial<HomeReviewItem>) => {
+      setCms((c) => {
+        if (!c) return c;
+        const items = c.homeReviews.items.map((it, k) =>
+          k === index ? { ...it, ...patch } : it,
+        );
+        return { ...c, homeReviews: { ...c.homeReviews, items } };
+      });
+    },
+    [],
+  );
+
+  const addHomeReview = useCallback(() => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            homeReviews: {
+              ...c.homeReviews,
+              items: [...c.homeReviews.items, defaultHomeReviewItem()],
+            },
+          }
+        : c,
+    );
+  }, []);
+
+  const removeHomeReview = useCallback((index: number) => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            homeReviews: {
+              ...c.homeReviews,
+              items: c.homeReviews.items.filter((_, k) => k !== index),
+            },
+          }
+        : c,
+    );
+  }, []);
+
+  const moveHomeReview = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.homeReviews.items.length) return c;
+      const items = [...c.homeReviews.items];
+      [items[index], items[j]] = [items[j]!, items[index]!];
+      return { ...c, homeReviews: { ...c.homeReviews, items } };
+    });
+  }, []);
+
+  const patchHomeServiceFeatures = useCallback(
+    (patch: Partial<HomeServiceFeaturesBlock>) => {
+      setCms((c) =>
+        c
+          ? { ...c, homeServiceFeatures: { ...c.homeServiceFeatures, ...patch } }
+          : c,
+      );
+    },
+    [],
+  );
+
+  const setServiceFeatureItem = useCallback(
+    (index: number, patch: Partial<HomeServiceFeatureItem>) => {
+      setCms((c) => {
+        if (!c) return c;
+        const items = c.homeServiceFeatures.items.map((it, k) =>
+          k === index ? { ...it, ...patch } : it,
+        );
+        return {
+          ...c,
+          homeServiceFeatures: { ...c.homeServiceFeatures, items },
+        };
+      });
+    },
+    [],
+  );
+
+  const addServiceFeatureItem = useCallback(() => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            homeServiceFeatures: {
+              ...c.homeServiceFeatures,
+              items: [
+                ...c.homeServiceFeatures.items,
+                defaultHomeServiceFeatureItem(),
+              ],
+            },
+          }
+        : c,
+    );
+  }, []);
+
+  const removeServiceFeatureItem = useCallback((index: number) => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            homeServiceFeatures: {
+              ...c.homeServiceFeatures,
+              items: c.homeServiceFeatures.items.filter((_, k) => k !== index),
+            },
+          }
+        : c,
+    );
+  }, []);
+
+  const moveServiceFeatureItem = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.homeServiceFeatures.items.length) return c;
+      const items = [...c.homeServiceFeatures.items];
+      [items[index], items[j]] = [items[j]!, items[index]!];
+      return {
+        ...c,
+        homeServiceFeatures: { ...c.homeServiceFeatures, items },
+      };
+    });
+  }, []);
+
+  /* Stable CMS actions are useCallback([]); including every handler bounces eslint either
+     “unnecessary” or “missing” — value must track `cms` and loading state only. */
   const value = useMemo(
     () => ({
       cms,
@@ -403,7 +585,18 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       removeService,
       moveService,
       setService,
+      patchHomeReviews,
+      setHomeReviewItem,
+      addHomeReview,
+      removeHomeReview,
+      moveHomeReview,
+      patchHomeServiceFeatures,
+      setServiceFeatureItem,
+      addServiceFeatureItem,
+      removeServiceFeatureItem,
+      moveServiceFeatureItem,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       cms,
       loading,
@@ -432,6 +625,11 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       removeService,
       moveService,
       setService,
+      patchHomeReviews,
+      setHomeReviewItem,
+      addHomeReview,
+      removeHomeReview,
+      moveHomeReview,
     ],
   );
 

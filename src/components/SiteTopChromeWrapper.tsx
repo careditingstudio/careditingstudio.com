@@ -1,4 +1,5 @@
 import { DevPostgresDisconnectedBanner } from "@/components/DevPostgresDisconnectedBanner";
+import { SiteLocationsMapSection } from "@/components/SiteLocationsMapSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteTopChrome } from "@/components/SiteTopChrome";
 import { readCmsWithDbStatus } from "@/lib/cms-store";
@@ -11,6 +12,7 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
       <DevPostgresDisconnectedBanner show={devDbUnreachable} />
       <SiteTopChrome site={cms.site}>
         {children}
+        <SiteLocationsMapSection site={cms.site} />
         <SiteFooter site={cms.site} />
       </SiteTopChrome>
     </>

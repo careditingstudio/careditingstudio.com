@@ -30,6 +30,8 @@ export async function POST(request: Request) {
     const created = await createMailboxMessage({
       kind: "FREE_TRIAL",
       fullName: b.fullName,
+      email: b.email,
+      whatsapp: b.whatsapp,
       emailOrWhatsapp: b.emailOrWhatsapp,
       country: b.country,
       requirements: b.requirements,

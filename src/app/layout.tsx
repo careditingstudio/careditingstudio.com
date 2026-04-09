@@ -80,6 +80,27 @@ export default async function RootLayout({
         className={`${sans.className} flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] antialiased`}
         suppressHydrationWarning
       >
+        <script
+          type="application/ld+json"
+          // Keep simple, stable schema to help Google understand site structure.
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  name: "Car Editing Studio",
+                  url: "https://careditingstudio.com/",
+                },
+                {
+                  "@type": "Organization",
+                  name: "Car Editing Studio",
+                  url: "https://careditingstudio.com/",
+                },
+              ],
+            }),
+          }}
+        />
         <HomeChromeProvider>
           <ChromeScrollLockProvider>
             <SiteTopChromeWrapper>{children}</SiteTopChromeWrapper>

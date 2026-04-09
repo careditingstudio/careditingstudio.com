@@ -1,51 +1,35 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { TRIAL_COUNTRY_OPTIONS, trialCountryLabelFromCode } from "@/config/countries";
 import { Field, Input, PrimaryButton, Select, Textarea } from "@/components/forms/FormFields";
 import { TurnstileWidget } from "@/components/forms/TurnstileWidget";
 
-function validEmailOrWhatsapp(v: string): boolean {
-  const s = v.trim();
-  if (!s) return false;
-  if (s.includes("@")) return s.includes(".") && !s.startsWith("@") && !s.endsWith("@");
+function validEmail(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  return (
+    t.includes("@") &&
+    !t.startsWith("@") &&
+    !t.endsWith("@") &&
+    t.length <= 254
+  );
+}
+
+function validWhatsapp(s: string): boolean {
   const digits = s.replace(/\D/g, "");
   return digits.length >= 7;
 }
 
-const COUNTRIES: { code: string; name: string }[] = [
+const COUNTRY_SELECT: { code: string; name: string }[] = [
   { code: "", name: "Select your country" },
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "CA", name: "Canada" },
-  { code: "AU", name: "Australia" },
-  { code: "DE", name: "Germany" },
-  { code: "FR", name: "France" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "NL", name: "Netherlands" },
-  { code: "SE", name: "Sweden" },
-  { code: "NO", name: "Norway" },
-  { code: "DK", name: "Denmark" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "IN", name: "India" },
-  { code: "PK", name: "Pakistan" },
-  { code: "BD", name: "Bangladesh" },
-  { code: "SG", name: "Singapore" },
-  { code: "MY", name: "Malaysia" },
-  { code: "PH", name: "Philippines" },
-  { code: "ID", name: "Indonesia" },
-  { code: "JP", name: "Japan" },
-  { code: "KR", name: "South Korea" },
-  { code: "BR", name: "Brazil" },
-  { code: "MX", name: "Mexico" },
-  { code: "ZA", name: "South Africa" },
-  { code: "Other", name: "Other" },
+  ...TRIAL_COUNTRY_OPTIONS,
 ];
 
 export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }) {
   const [fullName, setFullName] = useState("");
-  const [emailOrWhatsapp, setEmailOrWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [country, setCountry] = useState("");
   const [requirements, setRequirements] = useState("");
   const [message, setMessage] = useState("");
@@ -59,11 +43,12 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   const captchaRequired = Boolean(turnstileSiteKey);
+  const contactOk = validEmail(email) || validWhatsapp(whatsapp);
 
   const canSubmit = useMemo(() => {
     const basic =
       fullName.trim().length >= 2 &&
-      validEmailOrWhatsapp(emailOrWhatsapp) &&
+      contactOk &&
       country.trim().length > 0 &&
       message.trim().length >= 5 &&
       !submitting;
@@ -73,8 +58,8 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
   }, [
     captchaRequired,
     captchaState,
+    contactOk,
     country,
-    emailOrWhatsapp,
     fullName,
     message,
     submitting,
@@ -88,13 +73,15 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
 
     const nextErr: { [k: string]: string } = {};
     if (fullName.trim().length < 2) nextErr.fullName = "Please enter your full name.";
-    if (!validEmailOrWhatsapp(emailOrWhatsapp))
-      nextErr.emailOrWhatsapp = "Enter a valid email or WhatsApp number.";
+    if (!contactOk)
+      nextErr.contact = "Enter a valid email and/or WhatsApp number (at least one).";
     if (!country.trim()) nextErr.country = "Please select a country.";
     if (message.trim().length < 5) nextErr.message = "Please describe what you want.";
     if (captchaRequired && !turnstileToken) nextErr.captcha = "Please complete the captcha.";
     setErrors(nextErr);
     if (Object.keys(nextErr).length) return;
+
+    const countryLabel = trialCountryLabelFromCode(country);
 
     setSubmitting(true);
     try {
@@ -103,8 +90,9 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName,
-          emailOrWhatsapp,
-          country,
+          email: email.trim() || undefined,
+          whatsapp: whatsapp.trim() || undefined,
+          country: countryLabel,
           requirements,
           message,
           turnstileToken,
@@ -115,7 +103,8 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
 
       setSuccessId(typeof j.id === "number" ? j.id : 1);
       setFullName("");
-      setEmailOrWhatsapp("");
+      setEmail("");
+      setWhatsapp("");
       setCountry("");
       setRequirements("");
       setMessage("");
@@ -173,25 +162,43 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
                 />
               )}
             </Field>
-            <Field label="Email or WhatsApp" error={errors.emailOrWhatsapp}>
+            <div aria-hidden className="hidden sm:block" />
+            <Field label="Email (optional)">
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
-                  value={emailOrWhatsapp}
-                  onChange={setEmailOrWhatsapp}
-                  placeholder="name@email.com or +8801…"
+                  value={email}
+                  onChange={setEmail}
+                  placeholder="you@example.com"
+                  type="email"
                   autoComplete="email"
                 />
               )}
             </Field>
+            <Field label="WhatsApp (optional)" hint="Include country code if you can.">
+              {(id, describedBy) => (
+                <Input
+                  id={id}
+                  describedBy={describedBy}
+                  value={whatsapp}
+                  onChange={setWhatsapp}
+                  placeholder="+1 234 567 8900"
+                  type="tel"
+                  autoComplete="tel"
+                />
+              )}
+            </Field>
+            {errors.contact ? (
+              <p className="sm:col-span-2 text-xs font-medium text-red-500">{errors.contact}</p>
+            ) : null}
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <Field label="Country" error={errors.country}>
               {(id, describedBy) => (
                 <Select id={id} describedBy={describedBy} value={country} onChange={setCountry}>
-                  {COUNTRIES.map((c) => (
+                  {COUNTRY_SELECT.map((c) => (
                     <option key={c.code || "blank"} value={c.code}>
                       {c.name}
                     </option>
@@ -254,7 +261,7 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
 
           <div className="grid gap-3 sm:grid-cols-[1fr,auto] sm:items-center">
             <p className="text-xs text-[var(--muted-2)]">
-              We’ll reply using the contact you provided.
+              We’ll reply using the contact details you provided.
             </p>
             <div className="sm:min-w-[220px]">
               <PrimaryButton type="submit" disabled={!canSubmit}>
@@ -267,4 +274,3 @@ export function FreeTrialForm({ turnstileSiteKey }: { turnstileSiteKey: string }
     </section>
   );
 }
-

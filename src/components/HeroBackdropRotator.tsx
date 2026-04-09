@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const INTERVAL_MS = 9000;
+const INTERVAL_MS = 2900;
 
 export function HeroBackdropRotator({ images }: { images: string[] }) {
   const list = images.filter((u) => u.trim().length > 0);
@@ -32,7 +32,7 @@ export function HeroBackdropRotator({ images }: { images: string[] }) {
       {list.map((src, i) => (
         <div
           key={src}
-          className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat motion-reduce:scale-100 motion-safe:transition-opacity motion-safe:duration-[1.4s] motion-safe:ease-out motion-reduce:transition-none"
+          className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat motion-reduce:scale-100 motion-safe:transition-opacity motion-safe:duration-[0.45s] motion-safe:ease-out motion-reduce:transition-none"
           style={{
             backgroundImage: `url('${src}')`,
             opacity: i === index ? 1 : 0,

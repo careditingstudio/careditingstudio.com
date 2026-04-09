@@ -4,20 +4,6 @@ import { prisma } from "@/lib/db/prisma";
 import type { MailboxKind } from "@/lib/mailbox-types";
 import { cleanEmail, cleanPhoneOrWhatsapp, cleanText } from "@/lib/mailbox-validate";
 
-export type CreateContactMessageInput = {
-  fullName: unknown;
-  emailOrWhatsapp: unknown;
-  message: unknown;
-};
-
-export type CreateFreeTrialMessageInput = {
-  fullName: unknown;
-  emailOrWhatsapp: unknown;
-  country: unknown;
-  requirements: unknown;
-  message: unknown;
-};
-
 function parseEmailOrWhatsapp(v: unknown): { email?: string; whatsapp?: string } {
   const raw = typeof v === "string" ? v.trim() : "";
   const asEmail = cleanEmail(raw);
@@ -30,7 +16,9 @@ function parseEmailOrWhatsapp(v: unknown): { email?: string; whatsapp?: string }
 export async function createMailboxMessage(args: {
   kind: MailboxKind;
   fullName: unknown;
-  emailOrWhatsapp: unknown;
+  email?: unknown;
+  whatsapp?: unknown;
+  emailOrWhatsapp?: unknown;
   country?: unknown;
   message: unknown;
   requirements?: unknown;
@@ -38,8 +26,23 @@ export async function createMailboxMessage(args: {
   userAgent?: string | null;
 }): Promise<{ id: number }> {
   const fullName = cleanText(args.fullName, 120);
-  const { email, whatsapp } = parseEmailOrWhatsapp(args.emailOrWhatsapp);
-  const country = cleanText(args.country, 80) || null;
+  const fromFields = {
+    email: cleanEmail(args.email) || null,
+    whatsapp: cleanPhoneOrWhatsapp(args.whatsapp) || null,
+  };
+  let email = fromFields.email;
+  let whatsapp = fromFields.whatsapp;
+  if (!email && !whatsapp) {
+    const fb = parseEmailOrWhatsapp(args.emailOrWhatsapp);
+    email = fb.email ?? null;
+    whatsapp = fb.whatsapp ?? null;
+  }
+  if (!email && whatsapp && whatsapp.includes("@")) {
+    const fixed = cleanEmail(whatsapp);
+    email = fixed || null;
+    whatsapp = fixed ? null : whatsapp;
+  }
+  const country = cleanText(args.country, 120) || null;
   const message = cleanText(args.message, 4000);
   const requirements = cleanText(args.requirements, 4000) || null;
 

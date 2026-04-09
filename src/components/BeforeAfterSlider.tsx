@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { isUploadedAsset } from "@/lib/cms-types";
+import { isCloudinaryUrl, isUploadedAsset } from "@/lib/cms-types";
 
 type BeforeAfterSliderProps = {
   beforeSrc: string;
@@ -31,7 +31,10 @@ export function BeforeAfterSlider({
   priority = false,
 }: BeforeAfterSliderProps) {
   const unopt =
-    isUploadedAsset(beforeSrc) || isUploadedAsset(afterSrc);
+    isUploadedAsset(beforeSrc) ||
+    isUploadedAsset(afterSrc) ||
+    !isCloudinaryUrl(beforeSrc) ||
+    !isCloudinaryUrl(afterSrc);
   const aspectClass =
     layout === "square" || layout === "portfolio"
       ? "aspect-square"

@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { isUploadedAsset } from "@/lib/cms-types";
 
 const FADE_DISTANCE = 200;
 
@@ -52,14 +50,14 @@ export function FloatingCar({ bandBottom, src, width = 960, height = 540, sizes 
           transformOrigin: "center center",
         }}
       >
-        <Image
+        <img
           src={src}
           alt=""
           width={width}
           height={height}
-          priority
           draggable={false}
-          unoptimized={isUploadedAsset(src)}
+          loading="eager"
+          decoding="async"
           className="h-auto w-full select-none object-contain outline-none ring-0 [filter:drop-shadow(0_32px_48px_rgba(0,0,0,0.34))] sm:[filter:drop-shadow(0_38px_56px_rgba(0,0,0,0.28))]"
           sizes={sizes}
         />
