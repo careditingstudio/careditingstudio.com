@@ -30,6 +30,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: baseDescription,
     keywords: tags.length > 0 ? tags : undefined,
+    icons: {
+      icon: [
+        { url: "/icon.png", type: "image/png" },
+      ],
+      apple: [
+        { url: "/icon.png", type: "image/png" },
+      ],
+    },
     openGraph: {
       title: "Car Editing Studio",
       description: baseDescription,
