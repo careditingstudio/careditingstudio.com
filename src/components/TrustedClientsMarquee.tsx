@@ -2,18 +2,54 @@ import { display } from "@/app/fonts";
 import Image from "next/image";
 
 type TrustedClientsMarqueeProps = {
-  logoCount?: number;
+  maxLogos?: number;
   heading?: string;
 };
 
 export function TrustedClientsMarquee({
-  logoCount = 18,
+  maxLogos = 30,
   heading = "Trusted Clients",
 }: TrustedClientsMarqueeProps) {
-  const logos = Array.from({ length: logoCount }, (_, idx) => ({
-    src: `/homepage/trust/logo${idx + 1}.webp`,
-    alt: `Trusted client logo ${idx + 1}`,
-  }));
+  const brandFiles = [
+    "ac.webp",
+    "ariel.webp",
+    "aston-martin.webp",
+    "audi.webp",
+    "bmw.webp",
+    "bmw-m.webp",
+    "byd.webp",
+    "cadillac.webp",
+    "chevrolet.webp",
+    "citroen.webp",
+    "daihatsu.webp",
+    "ford.webp",
+    "honda.webp",
+    "hyundai.webp",
+    "kia.webp",
+    "lexus.webp",
+    "mazda.webp",
+    "mercedes-benz.webp",
+    "mitsubishi.webp",
+    "subaru.webp",
+    "suzuki.webp",
+    "tata.webp",
+    "tesla.webp",
+    "toyota.webp",
+    "zinoro.webp",
+    "zotye.webp",
+  ].slice(0, Math.max(1, maxLogos));
+
+  const logos = brandFiles.map((file) => {
+    const label = file
+      .replace(/\.(png|jpe?g|webp|svg)$/i, "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    return {
+      src: `/brands/${file}`,
+      alt: `${label} logo`,
+    };
+  });
 
   const loop = [...logos, ...logos];
 
@@ -21,6 +57,7 @@ export function TrustedClientsMarquee({
     <section
       className="relative z-20 overflow-hidden px-5 py-14 text-[var(--foreground)] sm:px-8 sm:py-16"
       aria-label="Trusted clients"
+      style={{ ["--home-trust-marquee-secs" as never]: "68s" }}
     >
       <div
         className="pointer-events-none absolute inset-0 z-0 bg-black/55 backdrop-blur-xl"
@@ -64,18 +101,18 @@ export function TrustedClientsMarquee({
                 "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
             }}
           >
-            <div className="home-trust-marquee-track flex w-max items-center gap-4 pr-4 sm:gap-5 sm:pr-5">
+            <div className="home-trust-marquee-track flex w-max items-center gap-2 pr-2 sm:gap-3 sm:pr-3">
               {loop.map((logo, idx) => (
                 <div
                   key={`${logo.src}-${idx}`}
-                  className="flex h-14 w-40 items-center justify-center rounded-xl border border-white/10 bg-white/90 px-4 shadow-[0_1px_0_rgba(0,0,0,0.08)] sm:h-16 sm:w-44"
+                  className="flex h-12 w-36 items-center justify-center px-2 sm:h-14 sm:w-40"
                 >
                   <Image
                     src={logo.src}
                     alt={logo.alt}
                     width={160}
                     height={64}
-                    className="h-8 w-auto max-w-[10rem] object-contain opacity-95 grayscale transition hover:opacity-100 hover:grayscale-0 sm:h-9"
+                    className="h-8 w-auto max-w-[10rem] object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.28)] transition sm:h-9"
                   />
                 </div>
               ))}
