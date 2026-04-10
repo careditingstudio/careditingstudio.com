@@ -238,6 +238,77 @@ export function defaultHomeServiceFeaturesBlock(): HomeServiceFeaturesBlock {
   };
 }
 
+/** One pillar card in the home “Why choose us” column (icons fixed by order in UI). */
+export type HomeWhyChoosePillar = {
+  title: string;
+  body: string;
+};
+
+/** One step in the “How it works” grid (icons fixed by order in UI). */
+export type HomeWhyChooseWorkflowStep = {
+  title: string;
+  subtitle: string;
+};
+
+/** Full editable home “Why choose us” + workflow section (stored as JSON in DB). */
+export type HomeWhyChooseUsBlock = {
+  headline: string;
+  intro: string;
+  /** Short label e.g. “Manual + AI” — shown as a highlight pill before the three badges. */
+  manualAiLabel: string;
+  /** Three pill labels (badges row). */
+  badges: string[];
+  easyCommunicationTitle: string;
+  easyCommunicationBody: string;
+  pillars: HomeWhyChoosePillar[];
+  workflowTitle: string;
+  /** Cloudinary or `/cms/...` URL; empty = placeholder */
+  teamPhotoSrc: string;
+  teamPhotoAlt: string;
+  /** Exactly five steps in UI (first four in 2×2, fifth full width). */
+  workflowSteps: HomeWhyChooseWorkflowStep[];
+};
+
+export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
+  return {
+    headline: "Why choose our company for car photo editing services?",
+    intro:
+      "With precision editing, fast delivery, and consistent quality, our dedicated team works all year with strong commitment. We keep support responsive via email and WhatsApp so your questions are answered quickly and clearly.",
+    manualAiLabel: "Manual + AI",
+    badges: ["24h service", "IELTS-qualified team", "Fast turnaround"],
+    easyCommunicationTitle: "Easy Communication",
+    easyCommunicationBody:
+      "Our marketing and client support executives provide round-the-clock help to keep communication smooth, friendly, and reliable so you always feel confident with every order.",
+    pillars: [
+      {
+        title: "Precision + Consistency",
+        body:
+          "Precision editing, fast delivery, and consistent quality from a dedicated year-round team.",
+      },
+      {
+        title: "Friendly Support",
+        body:
+          "Our support team is ready anytime via email and WhatsApp with clear, quick responses.",
+      },
+      {
+        title: "Honest Service",
+        body:
+          "We guarantee high-quality work and set realistic expectations, never false promises.",
+      },
+    ],
+    workflowTitle: "How Car Editing Studio Works",
+    teamPhotoSrc: "",
+    teamPhotoAlt: "Our editing team",
+    workflowSteps: [
+      { title: "Get A Quote", subtitle: "Take first step" },
+      { title: "Upload Your", subtitle: "Photos" },
+      { title: "Assigned to", subtitle: "Production" },
+      { title: "Two Steps", subtitle: "Quality Checking" },
+      { title: "Download", subtitle: "Edited File" },
+    ],
+  };
+}
+
 export type CmsJson = {
   site: SiteSettings;
   heroBanners: string[];
@@ -247,6 +318,7 @@ export type CmsJson = {
   portfolioGrid: PortfolioGridItem[];
   homeReviews: HomeReviewsBlock;
   homeServiceFeatures: HomeServiceFeaturesBlock;
+  homeWhyChooseUs: HomeWhyChooseUsBlock;
   updatedAt: string;
 };
 
@@ -285,6 +357,7 @@ export function defaultCmsJson(): CmsJson {
     portfolioGrid: [],
     homeReviews: defaultHomeReviewsBlock(),
     homeServiceFeatures: defaultHomeServiceFeaturesBlock(),
+    homeWhyChooseUs: defaultHomeWhyChooseUsBlock(),
     updatedAt: "",
   };
 }
@@ -450,6 +523,104 @@ function normalizeHomeServiceFeaturesBlock(
     items: usedExplicitItems ? items : fallback.items,
   };
   return base;
+}
+
+function normalizeHomeWhyChoosePillar(
+  item: unknown,
+  fallback: HomeWhyChoosePillar,
+): HomeWhyChoosePillar {
+  if (!item || typeof item !== "object") return { ...fallback };
+  const p = item as Record<string, unknown>;
+  return {
+    title:
+      typeof p.title === "string" ? p.title.trim() : fallback.title,
+    body: typeof p.body === "string" ? p.body.trim() : fallback.body,
+  };
+}
+
+function normalizeHomeWhyChooseWorkflowStep(
+  item: unknown,
+  fallback: HomeWhyChooseWorkflowStep,
+): HomeWhyChooseWorkflowStep {
+  if (!item || typeof item !== "object") return { ...fallback };
+  const p = item as Record<string, unknown>;
+  return {
+    title: typeof p.title === "string" ? p.title.trim() : fallback.title,
+    subtitle:
+      typeof p.subtitle === "string" ? p.subtitle.trim() : fallback.subtitle,
+  };
+}
+
+function normalizeHomeWhyChooseUsBlock(
+  raw: unknown,
+  fallback: HomeWhyChooseUsBlock,
+): HomeWhyChooseUsBlock {
+  const fb = defaultHomeWhyChooseUsBlock();
+  if (!raw || typeof raw !== "object") return fallback;
+  const o = raw as Record<string, unknown>;
+
+  const badges: string[] = [];
+  if (Array.isArray(o.badges)) {
+    for (const x of o.badges) {
+      if (typeof x === "string" && x.trim()) badges.push(x.trim());
+    }
+  }
+  while (badges.length < 3) {
+    badges.push(fb.badges[badges.length] ?? "");
+  }
+  if (badges.length > 3) badges.length = 3;
+
+  const pillars: HomeWhyChoosePillar[] = [];
+  if (Array.isArray(o.pillars)) {
+    for (let i = 0; i < Math.min(o.pillars.length, 3); i++) {
+      pillars.push(
+        normalizeHomeWhyChoosePillar(o.pillars[i], fb.pillars[i]!),
+      );
+    }
+  }
+  while (pillars.length < 3) {
+    pillars.push({ ...fb.pillars[pillars.length]! });
+  }
+
+  const workflowSteps: HomeWhyChooseWorkflowStep[] = [];
+  if (Array.isArray(o.workflowSteps)) {
+    for (let i = 0; i < Math.min(o.workflowSteps.length, 5); i++) {
+      workflowSteps.push(
+        normalizeHomeWhyChooseWorkflowStep(
+          o.workflowSteps[i],
+          fb.workflowSteps[i]!,
+        ),
+      );
+    }
+  }
+  while (workflowSteps.length < 5) {
+    workflowSteps.push({ ...fb.workflowSteps[workflowSteps.length]! });
+  }
+
+  return {
+    headline:
+      strField(o, "headline", fallback.headline).trim() || fb.headline,
+    intro: strField(o, "intro", fallback.intro).trim() || fb.intro,
+    manualAiLabel:
+      strField(o, "manualAiLabel", fallback.manualAiLabel).trim() ||
+      fb.manualAiLabel,
+    badges,
+    easyCommunicationTitle:
+      strField(o, "easyCommunicationTitle", fallback.easyCommunicationTitle).trim() ||
+      fb.easyCommunicationTitle,
+    easyCommunicationBody:
+      strField(o, "easyCommunicationBody", fallback.easyCommunicationBody).trim() ||
+      fb.easyCommunicationBody,
+    pillars,
+    workflowTitle:
+      strField(o, "workflowTitle", fallback.workflowTitle).trim() ||
+      fb.workflowTitle,
+    teamPhotoSrc: strField(o, "teamPhotoSrc", fallback.teamPhotoSrc).trim(),
+    teamPhotoAlt:
+      strField(o, "teamPhotoAlt", fallback.teamPhotoAlt).trim() ||
+      fb.teamPhotoAlt,
+    workflowSteps,
+  };
 }
 
 function normalizeHomeReviewsBlock(
@@ -662,6 +833,11 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     base.homeServiceFeatures,
   );
 
+  base.homeWhyChooseUs = normalizeHomeWhyChooseUsBlock(
+    o.homeWhyChooseUs,
+    base.homeWhyChooseUs,
+  );
+
   if (typeof o.updatedAt === "string") base.updatedAt = o.updatedAt;
 
   return base;
@@ -675,6 +851,19 @@ export function parseHomeServiceFeaturesFromJson(
   if (!raw?.trim()) return fallback;
   try {
     return normalizeHomeServiceFeaturesBlock(JSON.parse(raw) as unknown, fallback);
+  } catch {
+    return fallback;
+  }
+}
+
+/** Parse DB JSON string into home Why choose us block (used by `cms-repository`). */
+export function parseHomeWhyChooseUsFromJson(
+  raw: string | null | undefined,
+): HomeWhyChooseUsBlock {
+  const fallback = defaultHomeWhyChooseUsBlock();
+  if (!raw?.trim()) return fallback;
+  try {
+    return normalizeHomeWhyChooseUsBlock(JSON.parse(raw) as unknown, fallback);
   } catch {
     return fallback;
   }

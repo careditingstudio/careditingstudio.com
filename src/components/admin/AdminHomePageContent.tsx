@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminServiceFeaturesEditor } from "@/components/admin/AdminServiceFeaturesEditor";
+import { AdminWhyChooseUsEditor } from "@/components/admin/AdminWhyChooseUsEditor";
 import { BeforeAfterPostEditModal } from "@/components/admin/BeforeAfterPostEditModal";
 import { HomeReviewEditModal } from "@/components/admin/HomeReviewEditModal";
 import { HomeReviewsSectionEditModal } from "@/components/admin/HomeReviewsSectionEditModal";
@@ -75,6 +76,8 @@ export function AdminHomePageContent() {
 
 
       <AdminServiceFeaturesEditor />
+
+      <AdminWhyChooseUsEditor />
 
       <section className="scroll-mt-8" id="hero-banners">
         <h2 className="text-lg font-semibold text-white">Hero banners</h2>

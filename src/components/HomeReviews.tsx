@@ -7,7 +7,9 @@ import {
   type HomeReviewsBlock,
 } from "@/lib/cms-types";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const PREVIEW_LEN = 140;
 
 const AVATAR_GRADIENTS = [
   "from-amber-600 to-orange-500",
@@ -84,7 +86,7 @@ function IconGoogle() {
   );
 }
 
-function Stars({ value, label }: { value: number; label: string }) {
+function StarsDark({ value, label }: { value: number; label: string }) {
   const full = Math.min(5, Math.max(0, Math.round(value)));
   return (
     <div className="flex gap-0.5" role="img" aria-label={label}>
@@ -93,15 +95,13 @@ function Stars({ value, label }: { value: number; label: string }) {
         return (
           <svg
             key={i}
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill={on ? "currentColor" : "none"}
             stroke="currentColor"
             strokeWidth={on ? 0 : 1.5}
-            className={
-              on ? "text-[var(--accent)]" : "text-zinc-600 opacity-[0.5]"
-            }
+            className={on ? "text-amber-400" : "text-white/25"}
             aria-hidden
           >
             <path
@@ -156,16 +156,47 @@ function AvatarSmall({ item }: { item: HomeReviewItem }) {
     <ClientAvatar
       item={item}
       gradient={g}
-      className="h-10 w-10 ring-2 ring-black/5 sm:h-11 sm:w-11"
+      className="h-9 w-9 ring-2 ring-white/15 sm:h-10 sm:w-10"
     />
+  );
+}
+
+function ReviewQuote({ quote }: { quote: string }) {
+  const full = quote.trim();
+  const needsToggle = full.length > PREVIEW_LEN;
+  const [expanded, setExpanded] = useState(false);
+
+  const text =
+    needsToggle && !expanded
+      ? `${full.slice(0, PREVIEW_LEN).trim()}…`
+      : full;
+
+  return (
+    <div className="mt-3">
+      <p
+        className={`${sans.className} text-[0.8125rem] leading-relaxed text-zinc-300 sm:text-sm`}
+      >
+        {text}
+      </p>
+      {needsToggle ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className={`${sans.className} mt-2 text-left text-xs font-semibold text-[var(--accent)] transition hover:text-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      ) : null}
+    </div>
   );
 }
 
 type Props = {
   block: HomeReviewsBlock;
+  embedded?: boolean;
 };
 
-export function HomeReviews({ block }: Props) {
+export function HomeReviews({ block, embedded = false }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const items = useMemo(
     () =>
@@ -176,18 +207,7 @@ export function HomeReviews({ block }: Props) {
   );
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
-  // No activeIndex state: scroll position drives the UI.
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    if (items.length <= 1) return;
-    const t = window.setInterval(() => {
-      scrollByCards(1);
-    }, 6500);
-    return () => window.clearInterval(t);
-  }, [items.length, reducedMotion]);
-
-  function scrollByCards(dir: -1 | 1) {
+  const scrollByCards = useCallback((dir: -1 | 1) => {
     const el = scrollerRef.current;
     if (!el) return;
     const first = el.querySelector<HTMLElement>("[data-review-card]");
@@ -196,16 +216,29 @@ export function HomeReviews({ block }: Props) {
     const gap = Number.parseFloat(style.columnGap || style.gap || "0") || 0;
     const w = first.offsetWidth + gap;
     el.scrollBy({ left: dir * w, behavior: "smooth" });
-  }
+  }, []);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    if (items.length <= 1) return;
+    const t = window.setInterval(() => {
+      scrollByCards(1);
+    }, 6500);
+    return () => window.clearInterval(t);
+  }, [items.length, reducedMotion, scrollByCards]);
 
   if (items.length === 0) return null;
 
   return (
     <section
-      className="relative z-20 border-t border-white/[0.06] bg-[#0a0a0a] py-14 text-white sm:py-16"
+      className={
+        embedded
+          ? "relative z-10 border-t-0 bg-transparent pb-14 pt-10 text-white sm:pb-16 sm:pt-12"
+          : "relative z-20 border-t border-white/[0.06] bg-[#0a0a0a] py-14 text-white sm:py-16"
+      }
       aria-labelledby="home-reviews-heading"
     >
-      <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <h2
           id="home-reviews-heading"
           className={`${display.className} text-balance text-center text-2xl font-semibold tracking-tight text-white sm:text-3xl`}
@@ -214,13 +247,13 @@ export function HomeReviews({ block }: Props) {
         </h2>
       </div>
 
-      <div className="relative mx-auto mt-10 max-w-6xl px-5 sm:mt-12 sm:px-8">
+      <div className="relative mx-auto mt-8 max-w-7xl px-4 sm:mt-10 sm:px-6">
         <div className="relative">
           <button
             type="button"
             onClick={() => scrollByCards(-1)}
             disabled={items.length <= 1}
-            className="absolute -left-10 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/15 disabled:opacity-40 sm:inline-flex lg:-left-14"
+            className="absolute left-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-lg backdrop-blur-md transition hover:bg-white/18 disabled:opacity-40 md:inline-flex lg:left-1"
             aria-label="Scroll reviews left"
           >
             <IconChevron dir="left" />
@@ -230,7 +263,7 @@ export function HomeReviews({ block }: Props) {
             type="button"
             onClick={() => scrollByCards(1)}
             disabled={items.length <= 1}
-            className="absolute -right-10 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/15 disabled:opacity-40 sm:inline-flex lg:-right-14"
+            className="absolute right-0 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-lg backdrop-blur-md transition hover:bg-white/18 disabled:opacity-40 md:inline-flex lg:right-1"
             aria-label="Scroll reviews right"
           >
             <IconChevron dir="right" />
@@ -238,46 +271,44 @@ export function HomeReviews({ block }: Props) {
 
           <div
             ref={scrollerRef}
-            className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-12 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-5 sm:px-14 [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 pl-1 pr-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 md:px-10 [&::-webkit-scrollbar]:hidden"
           >
             {items.map((it, idx) => {
               const r = Math.min(
                 5,
                 Math.max(1, Math.round(Number(it.rating) || 5)),
               );
-              const preview =
-                it.quote.trim().length > 120
-                  ? `${it.quote.trim().slice(0, 120)}…`
-                  : it.quote.trim();
 
               return (
                 <article
                   key={`${it.name}-${idx}`}
                   data-review-card
-                  className="relative min-w-[min(86vw,320px)] snap-start rounded-xl bg-white p-4 text-zinc-900 shadow-[0_18px_40px_-28px_rgba(0,0,0,0.65)] sm:min-w-[310px]"
+                  className="relative w-[min(78vw,252px)] shrink-0 snap-start rounded-2xl border border-white/[0.12] bg-white/[0.07] p-4 shadow-[0_12px_40px_-18px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:w-[min(42vw,268px)] lg:w-[260px]"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5">
+                  <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/[0.08] to-transparent" aria-hidden />
+
+                  <div className="relative flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <div className="mt-0.5 shrink-0">
                         <AvatarSmall item={it} />
                       </div>
                       <div className="min-w-0">
                         <p
-                          className={`${display.className} truncate text-sm font-semibold text-zinc-900`}
+                          className={`${display.className} truncate text-[0.8125rem] font-semibold text-white sm:text-sm`}
                         >
                           {it.name}
                         </p>
                         {it.role.trim() ? (
                           <p
-                            className={`${sans.className} mt-0.5 truncate text-[11px] text-zinc-500`}
+                            className={`${sans.className} mt-0.5 truncate text-[10px] text-zinc-400 sm:text-[11px]`}
                           >
                             {it.role.trim()}
                           </p>
                         ) : null}
-                        <div className="mt-1 flex items-center gap-1.5">
-                          <Stars value={r} label={`${r} out of 5 stars`} />
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <StarsDark value={r} label={`${r} out of 5 stars`} />
                           <span
-                            className={`${sans.className} text-[11px] text-zinc-500`}
+                            className={`${sans.className} text-[10px] text-zinc-500 sm:text-[11px]`}
                           >
                             {r}.0
                           </span>
@@ -285,26 +316,15 @@ export function HomeReviews({ block }: Props) {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-center rounded-full bg-zinc-100 p-1.5">
+                    <div
+                      className="flex shrink-0 items-center justify-center rounded-full bg-white/12 p-1.5 ring-1 ring-white/10"
+                      title="Google review"
+                    >
                       <IconGoogle />
                     </div>
                   </div>
 
-                  <p
-                    className={`${sans.className} mt-3 text-sm leading-relaxed text-zinc-700`}
-                  >
-                    {preview}
-                  </p>
-
-                  {it.quote.trim().length > 120 ? (
-                    <p
-                      className={`${sans.className} mt-3 text-xs font-medium text-zinc-500`}
-                    >
-                      Read more
-                    </p>
-                  ) : (
-                    <div className="mt-6" aria-hidden />
-                  )}
+                  <ReviewQuote quote={it.quote} />
                 </article>
               );
             })}

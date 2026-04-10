@@ -56,7 +56,7 @@ export function TurnstileWidget({
   const widgetIdRef = useRef<string | null>(null);
   const onTokenRef = useRef(onToken);
   const onStatusRef = useRef(onStatus);
-  const theme = useMemo<"light" | "dark" | "auto">(() => "auto", []);
+  const theme = useMemo<"light" | "dark" | "auto">(() => "dark", []);
 
   useEffect(() => {
     onTokenRef.current = onToken;

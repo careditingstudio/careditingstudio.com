@@ -1,7 +1,7 @@
 import { HeroBanner } from "@/components/HeroBanner";
 import { HomeBeforeAfterShowcase } from "@/components/HomeBeforeAfterShowcase";
-import { HomeReviews } from "@/components/HomeReviews";
 import { HomeServiceFeatures } from "@/components/HomeServiceFeatures";
+import { HomeWhyChooseReviewsBand } from "@/components/HomeWhyChooseReviewsBand";
 import { TrustedClientsMarquee } from "@/components/TrustedClientsMarquee";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { readCms } from "@/lib/cms-store";
@@ -44,8 +44,7 @@ export async function PublicHomePage() {
       <HomeServiceFeatures block={cms.homeServiceFeatures} />
 
       <HomeBeforeAfterShowcase cms={cms} />
-
-      <HomeReviews block={cms.homeReviews} />
+      <HomeWhyChooseReviewsBand cms={cms} />
 
       <TrustedClientsMarquee />
 

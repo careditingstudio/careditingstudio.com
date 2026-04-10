@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-const FADE_DISTANCE = 200;
+const REVEAL_DISTANCE = 70;
+const FADE_DISTANCE = 220;
 
 type Props = {
   bandBottom: string;
@@ -13,13 +14,11 @@ type Props = {
 };
 
 export function FloatingCar({ bandBottom, src, width = 960, height = 540, sizes }: Props) {
-  const [progress, setProgress] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     const onScroll = () => {
-      const y = window.scrollY;
-      const p = Math.min(1, Math.max(0, y / FADE_DISTANCE));
-      setProgress(p);
+      setScrollY(window.scrollY);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -28,8 +27,17 @@ export function FloatingCar({ bandBottom, src, width = 960, height = 540, sizes 
 
   if (!src.trim()) return null;
 
-  const scale = 1 - 0.42 * progress;
-  const opacity = Math.max(0, 1 - 1.05 * progress);
+  const reveal = Math.min(1, Math.max(0, scrollY / REVEAL_DISTANCE));
+  const fadeProgress = Math.min(
+    1,
+    Math.max(0, (scrollY - REVEAL_DISTANCE) / FADE_DISTANCE),
+  );
+  const appearScale = 0.72 + 0.28 * reveal;
+  const shrinkScale = 1 - 0.42 * fadeProgress;
+  const scale = appearScale * shrinkScale;
+  const appearOpacity = reveal;
+  const fadeOpacity = Math.max(0, 1 - 1.05 * fadeProgress);
+  const opacity = appearOpacity * fadeOpacity;
   const pointerEvents = opacity < 0.08 ? "none" : "auto";
 
   return (

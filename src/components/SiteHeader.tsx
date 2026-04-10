@@ -30,7 +30,7 @@ function NavLink({
         href={href}
         onClick={onNavigate}
         className={[
-          "rounded-md px-3 py-2 text-[13px] font-medium leading-tight tracking-tight transition-colors sm:text-[14px]",
+          "rounded-md px-3.5 py-2.5 text-[14px] font-medium leading-tight tracking-tight transition-colors sm:text-[15px]",
           active
             ? "text-white underline decoration-[var(--accent)] decoration-2 underline-offset-[8px]"
             : "text-white/75 hover:text-white",
@@ -46,7 +46,7 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       className={[
-        "rounded-md px-3 py-2 text-[13px] font-medium leading-tight tracking-tight transition-colors sm:text-[14px]",
+        "rounded-md px-3.5 py-2.5 text-[14px] font-medium leading-tight tracking-tight transition-colors sm:text-[15px]",
         active
           ? "bg-[var(--accent-subtle)] text-[var(--foreground)]"
           : "text-[var(--muted)] hover:bg-black/[0.04] hover:text-[var(--foreground)] dark:hover:bg-white/[0.06]",
@@ -182,7 +182,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
 
   const servicesTriggerClasses = (hovering: boolean) =>
     [
-      "inline-flex items-center gap-1 rounded-md px-3 py-2 text-[13px] font-medium leading-tight tracking-tight transition-colors sm:text-[14px]",
+      "inline-flex items-center gap-1 rounded-md px-3.5 py-2.5 text-[14px] font-medium leading-tight tracking-tight transition-colors sm:text-[15px]",
       navVariant === "overlay"
         ? [
             servicesActive || hovering
@@ -210,7 +210,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
         <Link
           href="/"
           className={[
-            `${display.className} shrink-0 text-base font-semibold leading-none tracking-tight transition-colors sm:text-[1.05rem]`,
+            `${display.className} shrink-0 text-[1.08rem] font-semibold leading-none tracking-tight transition-colors sm:text-[1.18rem]`,
             overlayNav ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
@@ -303,7 +303,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
         <div className="hidden shrink-0 items-center lg:flex">
           <Link
             href="/order"
-            className="rounded-md bg-[var(--accent)] px-4 py-2 text-[13px] font-semibold leading-tight text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)] sm:text-[14px]"
+            className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-[14px] font-semibold leading-tight text-white shadow-sm ring-1 ring-white/15 transition-colors hover:bg-[var(--accent-hover)] sm:text-[15px]"
           >
             Order Now
           </Link>
@@ -312,7 +312,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
         <button
           type="button"
           className={[
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors lg:hidden",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors lg:hidden",
             overlayNav
               ? "text-white hover:bg-white/10"
               : "text-[var(--foreground)] hover:bg-black/[0.05] dark:hover:bg-white/[0.08]",
@@ -344,7 +344,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
                     <button
                       type="button"
                       className={[
-                        "flex w-full items-center justify-between rounded-md px-2.5 py-2.5 text-left text-[13px] font-medium transition-colors",
+                        "flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-[14px] font-medium transition-colors",
                         overlayNav
                           ? "text-white/90 hover:bg-white/10"
                           : "text-[var(--foreground)] hover:bg-black/[0.05] dark:hover:bg-white/[0.06]",
@@ -391,7 +391,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
                             setServicesMobileOpen(false);
                           }}
                           className={[
-                            `${sans.className} mt-3 flex w-full items-center justify-center rounded-lg py-2.5 text-center text-[13px] font-semibold transition-colors`,
+                            `${sans.className} mt-3 flex w-full items-center justify-center rounded-lg py-2.5 text-center text-[14px] font-semibold transition-colors`,
                             overlayNav
                               ? "bg-white/15 text-white hover:bg-white/20"
                               : "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]",
@@ -422,7 +422,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
             <Link
               href="/order"
               onClick={() => setMenuOpen(false)}
-              className="mt-2 rounded-md bg-[var(--accent)] py-2.5 text-center text-[13px] font-semibold leading-tight text-white hover:bg-[var(--accent-hover)]"
+              className="mt-2 rounded-md bg-[var(--accent)] py-2.5 text-center text-[14px] font-semibold leading-tight text-white hover:bg-[var(--accent-hover)]"
             >
               Order Now
             </Link>

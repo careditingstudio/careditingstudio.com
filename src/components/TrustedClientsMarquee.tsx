@@ -8,7 +8,7 @@ type TrustedClientsMarqueeProps = {
 
 export function TrustedClientsMarquee({
   maxLogos = 30,
-  heading = "Trusted Clients",
+  heading = "Trusted by Leading Brands",
 }: TrustedClientsMarqueeProps) {
   const brandFiles = [
     "ac.webp",
@@ -60,38 +60,32 @@ export function TrustedClientsMarquee({
       style={{ ["--home-trust-marquee-secs" as never]: "68s" }}
     >
       <div
-        className="pointer-events-none absolute inset-0 z-0 bg-black/55 backdrop-blur-xl"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-16 bg-gradient-to-b from-black/60 via-black/20 to-transparent sm:h-20"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-80"
-        style={{
-          background:
-            "radial-gradient(600px 200px at 50% 0%, rgba(224, 122, 69, 0.22), transparent 60%), radial-gradient(520px 240px at 10% 30%, rgba(255,255,255,0.08), transparent 60%), radial-gradient(520px 240px at 90% 40%, rgba(255,255,255,0.06), transparent 60%)",
-        }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-16 bg-gradient-to-b from-black/80 to-transparent sm:h-20"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 bg-gradient-to-t from-black/80 to-transparent sm:h-20"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 bg-gradient-to-t from-[var(--background)]/75 via-[var(--background)]/25 to-transparent sm:h-20"
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2
-            className={`${display.className} text-balance text-3xl font-semibold tracking-tight sm:text-4xl`}
+            className={`${display.className} text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-[2.6rem] md:leading-tight`}
           >
-            <span className="text-white/90">{heading.split(" ")[0] ?? "Trusted"} </span>
-            <span className="text-[var(--accent)]">
-              {heading.split(" ").slice(1).join(" ") || "Clients"}
+            <span>{heading.split(" by ")[0] ?? "Trusted"}</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--accent)] via-orange-300 to-[var(--accent)] bg-[length:200%_100%] bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(224,122,69,0.3)] motion-safe:animate-[pulse_4s_ease-in-out_infinite]">
+              {heading.split(" by ").length > 1
+                ? `by ${heading.split(" by ")[1]}`
+                : "by Leading Brands"}
             </span>
           </h2>
+          <p className="max-w-3xl text-balance text-sm leading-relaxed text-[var(--muted)] motion-safe:animate-[ces-reveal-up_800ms_cubic-bezier(0.2,0.9,0.2,1)_both] sm:text-base md:text-lg">
+            We proudly collaborate with top companies who rely on our expertise
+            for high-quality car photo editing services.
+          </p>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 px-3 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:px-5">
+        <div className="mt-10 rounded-2xl border border-white/12 bg-transparent px-3 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.18)] sm:px-5">
           <div
             className="relative overflow-hidden"
             style={{

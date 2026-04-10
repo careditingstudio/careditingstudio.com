@@ -11,8 +11,10 @@ import {
   type HomeReviewsBlock,
   type HomeServiceFeatureItem,
   type HomeServiceFeaturesBlock,
+  type HomeWhyChooseUsBlock,
   type PortfolioGridItem,
   type SiteSettings,
+  defaultHomeWhyChooseUsBlock,
 } from "@/lib/cms-types";
 
 function nextTempServiceId(
@@ -79,6 +81,7 @@ type AdminCmsContextValue = {
   addServiceFeatureItem: () => void;
   removeServiceFeatureItem: (index: number) => void;
   moveServiceFeatureItem: (index: number, dir: -1 | 1) => void;
+  patchHomeWhyChooseUs: (patch: Partial<HomeWhyChooseUsBlock>) => void;
 };
 
 const AdminCmsContext = createContext<AdminCmsContextValue | null>(null);
@@ -152,6 +155,41 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         body: it.body.trim(),
       })),
     },
+    homeWhyChooseUs: (() => {
+      const fb = defaultHomeWhyChooseUsBlock();
+      const badges = cms.homeWhyChooseUs.badges.map((b) => b.trim());
+      while (badges.length < 3) badges.push(fb.badges[badges.length] ?? "");
+      const pillars = cms.homeWhyChooseUs.pillars.map((p) => ({
+        title: p.title.trim(),
+        body: p.body.trim(),
+      }));
+      while (pillars.length < 3) pillars.push({ ...fb.pillars[pillars.length]! });
+      const workflowSteps = cms.homeWhyChooseUs.workflowSteps.map((s) => ({
+        title: s.title.trim(),
+        subtitle: s.subtitle.trim(),
+      }));
+      while (workflowSteps.length < 5) {
+        workflowSteps.push({ ...fb.workflowSteps[workflowSteps.length]! });
+      }
+      return {
+        headline: cms.homeWhyChooseUs.headline.trim() || fb.headline,
+        intro: cms.homeWhyChooseUs.intro.trim() || fb.intro,
+        manualAiLabel:
+          (cms.homeWhyChooseUs.manualAiLabel ?? "").trim() || fb.manualAiLabel,
+        badges: badges.slice(0, 3),
+        easyCommunicationTitle:
+          cms.homeWhyChooseUs.easyCommunicationTitle.trim() ||
+          fb.easyCommunicationTitle,
+        easyCommunicationBody:
+          cms.homeWhyChooseUs.easyCommunicationBody.trim() ||
+          fb.easyCommunicationBody,
+        pillars: pillars.slice(0, 3),
+        workflowTitle: cms.homeWhyChooseUs.workflowTitle.trim() || fb.workflowTitle,
+        teamPhotoSrc: cms.homeWhyChooseUs.teamPhotoSrc.trim(),
+        teamPhotoAlt: cms.homeWhyChooseUs.teamPhotoAlt.trim() || fb.teamPhotoAlt,
+        workflowSteps: workflowSteps.slice(0, 5),
+      };
+    })(),
     site: {
       ...cms.site,
       businessName: cms.site.businessName.trim(),
@@ -538,6 +576,17 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const patchHomeWhyChooseUs = useCallback(
+    (patch: Partial<HomeWhyChooseUsBlock>) => {
+      setCms((c) =>
+        c
+          ? { ...c, homeWhyChooseUs: { ...c.homeWhyChooseUs, ...patch } }
+          : c,
+      );
+    },
+    [],
+  );
+
   const moveServiceFeatureItem = useCallback((index: number, dir: -1 | 1) => {
     setCms((c) => {
       if (!c) return c;
@@ -595,6 +644,7 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       addServiceFeatureItem,
       removeServiceFeatureItem,
       moveServiceFeatureItem,
+      patchHomeWhyChooseUs,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

@@ -10,8 +10,10 @@ import {
   defaultCmsJson,
   defaultHomeReviewsBlock,
   defaultHomeServiceFeaturesBlock,
+  defaultHomeWhyChooseUsBlock,
   defaultSiteSettings,
   parseHomeServiceFeaturesFromJson,
+  parseHomeWhyChooseUsFromJson,
 } from "@/lib/cms-types";
 import { ENV_VERCEL_SUPABASE } from "@/config/deployment-env";
 import { Prisma } from "@prisma/client";
@@ -62,6 +64,7 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
       homeReviewsTitle: "",
       homeReviewsSubtitle: "",
       homeServiceFeaturesJson: JSON.stringify(defaultHomeServiceFeaturesBlock()),
+      homeWhyChooseUsJson: JSON.stringify(defaultHomeWhyChooseUsBlock()),
       updatedAt: now,
     },
     update: {
@@ -280,6 +283,10 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       siteRow.homeServiceFeaturesJson,
     );
 
+    const homeWhyChooseUs = parseHomeWhyChooseUsFromJson(
+      siteRow.homeWhyChooseUsJson,
+    );
+
     return {
       cms: {
         site,
@@ -290,6 +297,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         portfolioGrid,
         homeReviews,
         homeServiceFeatures,
+        homeWhyChooseUs,
         updatedAt: siteRow.updatedAt ?? "",
       },
       devDbUnreachable: false,
@@ -337,6 +345,7 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         homeReviewsTitle: cms.homeReviews.title.trim(),
         homeReviewsSubtitle: cms.homeReviews.subtitle.trim(),
         homeServiceFeaturesJson: JSON.stringify(cms.homeServiceFeatures),
+        homeWhyChooseUsJson: JSON.stringify(cms.homeWhyChooseUs),
         updatedAt: now,
       },
       update: {
@@ -354,6 +363,7 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         homeReviewsTitle: cms.homeReviews.title.trim(),
         homeReviewsSubtitle: cms.homeReviews.subtitle.trim(),
         homeServiceFeaturesJson: JSON.stringify(cms.homeServiceFeatures),
+        homeWhyChooseUsJson: JSON.stringify(cms.homeWhyChooseUs),
         updatedAt: now,
       },
     });

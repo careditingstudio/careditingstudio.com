@@ -30,6 +30,7 @@ model SiteSettings {
   homeReviewsTitle    String @default("") @map("home_reviews_title")
   homeReviewsSubtitle String @default("") @map("home_reviews_subtitle")
   homeServiceFeaturesJson String @default("{}") @map("home_service_features_json")
+  homeWhyChooseUsJson     String @default("{}") @map("home_why_choose_us_json")
   updatedAt       String @default("") @map("updated_at")
 
   @@map("site_settings")
