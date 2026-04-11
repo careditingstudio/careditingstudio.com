@@ -169,6 +169,20 @@ export function BeforeAfterPostEditModal({
                 <input
                   type="checkbox"
                   className="rounded border-zinc-600"
+                  checked={pair.imageFirst}
+                  onChange={(e) =>
+                    setPairPatch({ imageFirst: e.target.checked })
+                  }
+                />
+                Image on the left on large screens (text on the right)
+              </label>
+            </div>
+
+            <div className="border-t border-zinc-800 pt-4">
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-300">
+                <input
+                  type="checkbox"
+                  className="rounded border-zinc-600"
                   checked={pair.showDualCtas}
                   onChange={(e) =>
                     setPairPatch({ showDualCtas: e.target.checked })

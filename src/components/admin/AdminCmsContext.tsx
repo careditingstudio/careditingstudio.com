@@ -121,14 +121,23 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       }
       return out;
     })(),
-    portfolioGrid: cms.portfolioGrid.map((p) => ({
-      ...p,
-      label: p.label.trim(),
-      before: p.before.trim(),
-      after: p.after.trim(),
-      beforeAlt: p.beforeAlt.trim(),
-      afterAlt: p.afterAlt.trim(),
-    })),
+    portfolioGrid: cms.portfolioGrid.map((p) => {
+      let homeFeaturedOrder: number | null = null;
+      const o = p.homeFeaturedOrder;
+      if (typeof o === "number" && Number.isFinite(o)) {
+        const t = Math.trunc(o);
+        if (t >= 1 && t <= 5) homeFeaturedOrder = t;
+      }
+      return {
+        ...p,
+        label: p.label.trim(),
+        before: p.before.trim(),
+        after: p.after.trim(),
+        beforeAlt: p.beforeAlt.trim(),
+        afterAlt: p.afterAlt.trim(),
+        homeFeaturedOrder,
+      };
+    }),
     homeReviews: {
       ...cms.homeReviews,
       eyebrow: cms.homeReviews.eyebrow.trim(),
@@ -149,6 +158,10 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       sectionTitle: cms.homeServiceFeatures.sectionTitle.trim(),
       ctaLabel: cms.homeServiceFeatures.ctaLabel.trim(),
       ctaHref: cms.homeServiceFeatures.ctaHref.trim(),
+      beforeAfterSectionEyebrow:
+        cms.homeServiceFeatures.beforeAfterSectionEyebrow.trim(),
+      beforeAfterSectionTitle:
+        cms.homeServiceFeatures.beforeAfterSectionTitle.trim(),
       items: cms.homeServiceFeatures.items.map((it) => ({
         iconKey: it.iconKey.trim() || "sparkles",
         title: it.title.trim(),
@@ -188,6 +201,12 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         teamPhotoSrc: cms.homeWhyChooseUs.teamPhotoSrc.trim(),
         teamPhotoAlt: cms.homeWhyChooseUs.teamPhotoAlt.trim() || fb.teamPhotoAlt,
         workflowSteps: workflowSteps.slice(0, 5),
+        portfolioStripTitle:
+          (cms.homeWhyChooseUs.portfolioStripTitle ?? "").trim() ||
+          fb.portfolioStripTitle,
+        portfolioStripCtaLabel:
+          (cms.homeWhyChooseUs.portfolioStripCtaLabel ?? "").trim() ||
+          fb.portfolioStripCtaLabel,
       };
     })(),
     site: {

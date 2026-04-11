@@ -257,6 +257,12 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       after: r.afterUrl,
       beforeAlt: r.beforeAlt,
       afterAlt: r.afterAlt,
+      homeFeaturedOrder:
+        r.homeFeaturedOrder != null &&
+        r.homeFeaturedOrder >= 1 &&
+        r.homeFeaturedOrder <= 5
+          ? r.homeFeaturedOrder
+          : null,
     }));
 
     const reviewRows = await prisma.clientReview.findMany({
@@ -464,6 +470,12 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
           afterUrl: p.after,
           beforeAlt: p.beforeAlt,
           afterAlt: p.afterAlt,
+          homeFeaturedOrder:
+            p.homeFeaturedOrder != null &&
+            p.homeFeaturedOrder >= 1 &&
+            p.homeFeaturedOrder <= 5
+              ? p.homeFeaturedOrder
+              : null,
         })),
       });
     }

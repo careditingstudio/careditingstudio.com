@@ -59,7 +59,13 @@ export function AdminPortfolioContent() {
       />
 
       <section className="scroll-mt-8" id="portfolio-grid">
-        <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] leading-relaxed text-zinc-500">
+          Homepage strip (below &quot;How Car Editing Studio Works&quot;): set{" "}
+          <span className="font-medium text-zinc-400">Home slot</span> to 1–5
+          for up to five tiles. Leave Off to use the first five complete tiles
+          when no slot is set.
+        </p>
+        <div className="mt-6 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-white">Portfolio grid</h2>
           <button
             type="button"
@@ -138,7 +144,34 @@ export function AdminPortfolioContent() {
                       {serviceLabel(cms.services, row.serviceId)}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:flex-nowrap">
+                    <label className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                      <span className="hidden sm:inline">Home</span>
+                      <select
+                        value={
+                          row.homeFeaturedOrder != null &&
+                          row.homeFeaturedOrder >= 1 &&
+                          row.homeFeaturedOrder <= 5
+                            ? String(row.homeFeaturedOrder)
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPortfolioItem(i, {
+                            homeFeaturedOrder:
+                              v === "" ? null : Number(v),
+                          });
+                        }}
+                        className="max-w-[5.5rem] rounded border border-zinc-700 bg-zinc-950 px-1.5 py-1 text-[11px] text-zinc-200"
+                      >
+                        <option value="">Off</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                      </select>
+                    </label>
                     <button
                       type="button"
                       onClick={() => setEditIndex(i)}

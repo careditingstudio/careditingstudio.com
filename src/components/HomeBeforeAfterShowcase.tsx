@@ -70,16 +70,38 @@ export function HomeBeforeAfterShowcase({ cms }: Props) {
     return null;
   }
 
+  const eyebrow = cms.homeServiceFeatures.beforeAfterSectionEyebrow.trim();
+  const sectionTitle = cms.homeServiceFeatures.beforeAfterSectionTitle.trim();
+  const showSectionHead = Boolean(eyebrow || sectionTitle);
+
   return (
     <section
       className="relative z-20 border-t border-[var(--line)] bg-[var(--background)] px-5 py-[clamp(3.5rem,8vw,5.5rem)] sm:px-8 sm:py-[clamp(4rem,9vw,6rem)]"
       aria-label="Before and after photo examples"
     >
       <div className="mx-auto max-w-6xl">
+        {showSectionHead ? (
+          <div className="mx-auto mb-[clamp(2.5rem,6vw,3.75rem)] max-w-3xl text-center">
+            {eyebrow ? (
+              <p
+                className={`${sans.className} text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]`}
+              >
+                {eyebrow}
+              </p>
+            ) : null}
+            {sectionTitle ? (
+              <h2
+                className={`${display.className} mt-3 text-balance text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl md:text-[2.05rem] md:leading-tight`}
+              >
+                {sectionTitle}
+              </h2>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-16 lg:gap-20">
           {rows.map(({ pairIndex, pair }, i) => {
-            /** Odd rows: image left / text right; even rows: text left / image right */
-            const imageFirst = i % 2 === 1;
+            const imageFirst = pair.imageFirst;
             return (
             <div
               key={`before-after-${pairIndex}`}

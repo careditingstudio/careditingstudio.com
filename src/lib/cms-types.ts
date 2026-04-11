@@ -129,6 +129,8 @@ export type PortfolioGridItem = {
   after: string;
   beforeAlt: string;
   afterAlt: string;
+  /** 1–5 = display slot on homepage portfolio strip; null = not featured there */
+  homeFeaturedOrder: number | null;
 };
 
 export function defaultPortfolioGridItem(): PortfolioGridItem {
@@ -139,6 +141,7 @@ export function defaultPortfolioGridItem(): PortfolioGridItem {
     after: "",
     beforeAlt: "Before editing",
     afterAlt: "After editing",
+    homeFeaturedOrder: null,
   };
 }
 
@@ -192,6 +195,9 @@ export type HomeServiceFeaturesBlock = {
   sectionTitle: string;
   ctaLabel: string;
   ctaHref: string;
+  /** Optional heading above the before/after posts block (leave empty to hide). */
+  beforeAfterSectionEyebrow: string;
+  beforeAfterSectionTitle: string;
   items: HomeServiceFeatureItem[];
 };
 
@@ -209,6 +215,8 @@ export function defaultHomeServiceFeaturesBlock(): HomeServiceFeaturesBlock {
     sectionTitle: "Our Services Features",
     ctaLabel: "See more",
     ctaHref: "/services",
+    beforeAfterSectionEyebrow: "",
+    beforeAfterSectionTitle: "",
     items: [
       {
         iconKey: "creditCard",
@@ -267,6 +275,9 @@ export type HomeWhyChooseUsBlock = {
   teamPhotoAlt: string;
   /** Exactly five steps in UI (first four in 2×2, fifth full width). */
   workflowSteps: HomeWhyChooseWorkflowStep[];
+  /** Homepage portfolio strip (below workflow, same band as reviews). */
+  portfolioStripTitle: string;
+  portfolioStripCtaLabel: string;
 };
 
 export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
@@ -295,6 +306,11 @@ export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
         body:
           "We guarantee high-quality work and set realistic expectations, never false promises.",
       },
+      {
+        title: "Easy Communication",
+        body:
+          "Our marketing and client support executives provide round-the-clock help to keep communication smooth, friendly, and reliable so you always feel confident with every order.",
+      }
     ],
     workflowTitle: "How Car Editing Studio Works",
     teamPhotoSrc: "",
@@ -306,6 +322,8 @@ export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
       { title: "Two Steps", subtitle: "Quality Checking" },
       { title: "Download", subtitle: "Edited File" },
     ],
+    portfolioStripTitle: "Our Creative Portfolio",
+    portfolioStripCtaLabel: "See more",
   };
 }
 
@@ -427,6 +445,12 @@ function normalizePortfolioGridItem(
     }
   }
 
+  let homeFeaturedOrder: number | null = null;
+  if (typeof p.homeFeaturedOrder === "number" && Number.isFinite(p.homeFeaturedOrder)) {
+    const o = Math.trunc(p.homeFeaturedOrder);
+    if (o >= 1 && o <= 5) homeFeaturedOrder = o;
+  }
+
   return {
     label: typeof p.label === "string" ? p.label : "",
     serviceId,
@@ -434,6 +458,7 @@ function normalizePortfolioGridItem(
     after: p.after,
     beforeAlt: strField(p, "beforeAlt", "Before editing"),
     afterAlt: strField(p, "afterAlt", "After editing"),
+    homeFeaturedOrder,
   };
 }
 
@@ -520,6 +545,16 @@ function normalizeHomeServiceFeaturesBlock(
       fallback.sectionTitle,
     ctaLabel: strField(o, "ctaLabel", fallback.ctaLabel).trim() || fallback.ctaLabel,
     ctaHref: strField(o, "ctaHref", fallback.ctaHref).trim() || fallback.ctaHref,
+    beforeAfterSectionEyebrow: strField(
+      o,
+      "beforeAfterSectionEyebrow",
+      fallback.beforeAfterSectionEyebrow,
+    ).trim(),
+    beforeAfterSectionTitle: strField(
+      o,
+      "beforeAfterSectionTitle",
+      fallback.beforeAfterSectionTitle,
+    ).trim(),
     items: usedExplicitItems ? items : fallback.items,
   };
   return base;
@@ -620,6 +655,12 @@ function normalizeHomeWhyChooseUsBlock(
       strField(o, "teamPhotoAlt", fallback.teamPhotoAlt).trim() ||
       fb.teamPhotoAlt,
     workflowSteps,
+    portfolioStripTitle:
+      strField(o, "portfolioStripTitle", fallback.portfolioStripTitle).trim() ||
+      fb.portfolioStripTitle,
+    portfolioStripCtaLabel:
+      strField(o, "portfolioStripCtaLabel", fallback.portfolioStripCtaLabel).trim() ||
+      fb.portfolioStripCtaLabel,
   };
 }
 

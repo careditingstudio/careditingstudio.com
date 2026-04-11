@@ -139,6 +139,37 @@ body {
   will-change: transform;
 }
 
+@keyframes home-portfolio-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.home-portfolio-card {
+  animation: home-portfolio-in 0.65s ease-out both;
+}
+
+@keyframes home-portfolio-see-more {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 0 transparent;
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 24px rgba(232, 90, 79, 0.45);
+  }
+}
+
+.home-portfolio-see-more {
+  animation: home-portfolio-see-more 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ces-reveal {
     opacity: 1;
@@ -159,5 +190,14 @@ body {
   }
   .home-trust-marquee-track {
     animation: none;
+  }
+  .home-portfolio-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .home-portfolio-see-more {
+    animation: none;
+    text-shadow: none;
   }
 }

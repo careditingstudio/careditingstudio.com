@@ -111,15 +111,17 @@ model Service {
 }
 
 model PortfolioItem {
-  id        Int     @id @default(autoincrement())
-  sortOrder Int     @map("sort_order")
-  label     String
-  serviceId Int?    @map("service_id")
-  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  beforeUrl String  @map("before_url")
-  afterUrl  String  @map("after_url")
-  beforeAlt String  @map("before_alt")
-  afterAlt  String  @map("after_alt")
+  id                 Int     @id @default(autoincrement())
+  sortOrder          Int     @map("sort_order")
+  label              String
+  serviceId          Int?    @map("service_id")
+  service            Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  beforeUrl          String  @map("before_url")
+  afterUrl           String  @map("after_url")
+  beforeAlt          String  @map("before_alt")
+  afterAlt           String  @map("after_alt")
+  /** 1–5 = slot on homepage strip; null = not featured */
+  homeFeaturedOrder  Int?    @map("home_featured_order")
 
   @@map("portfolio_items")
 }

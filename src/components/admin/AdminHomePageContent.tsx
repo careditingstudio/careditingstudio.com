@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminHomeFeaturedPortfolio } from "@/components/admin/AdminHomeFeaturedPortfolio";
 import { AdminServiceFeaturesEditor } from "@/components/admin/AdminServiceFeaturesEditor";
 import { AdminWhyChooseUsEditor } from "@/components/admin/AdminWhyChooseUsEditor";
 import { BeforeAfterPostEditModal } from "@/components/admin/BeforeAfterPostEditModal";
@@ -78,6 +79,8 @@ export function AdminHomePageContent() {
       <AdminServiceFeaturesEditor />
 
       <AdminWhyChooseUsEditor />
+
+      <AdminHomeFeaturedPortfolio />
 
       <section className="scroll-mt-8" id="hero-banners">
         <h2 className="text-lg font-semibold text-white">Hero banners</h2>

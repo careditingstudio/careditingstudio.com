@@ -1,6 +1,7 @@
 "use client";
 
 import DotGrid from "@/components/DotGrid";
+import { HomePortfolioShowcase } from "@/components/HomePortfolioShowcase";
 import { HomeReviews } from "@/components/HomeReviews";
 import { WhyChooseUsSection } from "@/components/WhyChooseUsSection";
 import type { CmsJson } from "@/lib/cms-types";
@@ -25,6 +26,7 @@ export function HomeWhyChooseReviewsBand({ cms }: { cms: CmsJson }) {
       </div>
       <div className="relative z-10">
         <WhyChooseUsSection block={cms.homeWhyChooseUs} />
+        <HomePortfolioShowcase cms={cms} embedded />
         <HomeReviews block={cms.homeReviews} embedded />
       </div>
     </div>
