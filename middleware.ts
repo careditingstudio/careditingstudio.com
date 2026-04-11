@@ -123,6 +123,6 @@ export const config = {
     "/page/:path*",
     "/editor",
     "/editor/:path*",
-    "/((?!_next/static|_next/image|favicon.ico|icon\\.svg|robots\\.txt).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon\\.svg|icon\\.png|robots\\.txt).*)",
   ],
 };
