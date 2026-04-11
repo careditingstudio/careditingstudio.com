@@ -9,7 +9,25 @@ import { parseSiteTags } from "@/lib/site-tags";
 import { sans } from "./fonts";
 import "./globals.css";
 
+function metadataBaseFromHeaders(h: Headers): URL {
+  const host =
+    h.get("x-forwarded-host")?.split(",")[0]?.trim() ??
+    h.get("host") ??
+    "careditingstudio.com";
+  const isLocal =
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.startsWith("[::1]");
+  const proto =
+    h.get("x-forwarded-proto")?.split(",")[0]?.trim() ??
+    (isLocal ? "http" : "https");
+  return new URL(`${proto}://${host}`);
+}
+
 export async function generateMetadata(): Promise<Metadata> {
+  const h = await headers();
+  const metadataBase = metadataBaseFromHeaders(h);
+
   // Keep metadata stable even if CMS is temporarily unavailable.
   let tags: string[] = [];
   try {
@@ -23,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     "Automotive retouching and graphics — car edits, composites, and visual work for brands and creators.";
 
   return {
-    metadataBase: new URL("https://careditingstudio.com"),
+    metadataBase,
     title: {
       default: "Car Editing Studio",
       template: "%s | Car Editing Studio",
