@@ -50,11 +50,10 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: tags.length > 0 ? tags : undefined,
     icons: {
       icon: [
-        { url: "/icon.png", type: "image/png" },
+        { url: "/favicon.ico", sizes: "any", type: "image/x-icon" },
+        { url: "/icon.png", type: "image/png", sizes: "512x512" },
       ],
-      apple: [
-        { url: "/icon.png", type: "image/png" },
-      ],
+      apple: [{ url: "/icon.png", type: "image/png", sizes: "180x180" }],
     },
     openGraph: {
       title: "Car Editing Studio",
