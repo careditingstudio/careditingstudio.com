@@ -93,7 +93,9 @@ export default function AdminSettingsPage() {
             <div>
               <h2 className="text-base font-semibold text-white">Social media</h2>
               <p className="mt-1 text-sm text-zinc-400">
-                Add any platform you want. Links show in the public footer.
+                Add platforms and URLs. The label picks the icon (e.g. Instagram,
+                Facebook). Icons appear in the top bar and footer; the top bar shows
+                icon-only links.
               </p>
             </div>
             <button

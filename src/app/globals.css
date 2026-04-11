@@ -2,8 +2,8 @@
 
 :root {
   /* Fixed chrome — used for overlay hero + scroll threshold */
-  --announcement-h: 2.75rem;
-  --header-h: 3.25rem;
+  --announcement-h: 3.125rem;
+  --header-h: 3.625rem;
   /* Full hero viewport below announcement + header across devices */
   --home-hero-band: calc(100dvh - var(--announcement-h) - var(--header-h));
   /* Band + overlap room for floating car before intro section starts */
@@ -44,6 +44,80 @@ body {
 ::selection {
   background: var(--accent-subtle);
   color: var(--foreground);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/*
+ * Home intro car — horizontal loop inside a clipped right column only.
+ * 0% and 100% must match for seamless infinite animation.
+ * Hiding is done by overflow-x-clip on the column + opaque text column — no fade over copy.
+ */
+@keyframes homeIntroCarLoop {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  12% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  34% {
+    transform: translate3d(-130%, 0, 0) scale(0.98);
+  }
+  /* Invisible jump: off left (clipped) → off right (clipped) */
+  34.6% {
+    transform: translate3d(130%, 0, 0) scale(0.98);
+  }
+  58% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  78% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes homeIntroCarLoopMobile {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  14% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  36% {
+    transform: translate3d(-125%, 0, 0) scale(0.98);
+  }
+  36.6% {
+    transform: translate3d(125%, 0, 0) scale(0.98);
+  }
+  60% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  82% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.home-intro-car-loop {
+  animation: homeIntroCarLoop 6.5s cubic-bezier(0.45, 0.05, 0.25, 1) infinite;
+  will-change: transform;
+}
+
+@media (max-width: 1023px) {
+  .home-intro-car-loop {
+    animation-name: homeIntroCarLoopMobile;
+    animation-duration: 5.5s;
+    animation-timing-function: cubic-bezier(0.45, 0.05, 0.25, 1);
+  }
 }
 
 @keyframes ces-float {
@@ -139,6 +213,27 @@ body {
   will-change: transform;
 }
 
+@keyframes admin-modal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.admin-modal-panel {
+  animation: admin-modal-in 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-modal-panel {
+    animation: none;
+  }
+}
+
 @keyframes home-portfolio-in {
   from {
     opacity: 0;
@@ -199,5 +294,10 @@ body {
   .home-portfolio-see-more {
     animation: none;
     text-shadow: none;
+  }
+  .home-intro-car-loop {
+    animation: none;
+    transform: none;
+    will-change: auto;
   }
 }

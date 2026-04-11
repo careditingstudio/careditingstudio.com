@@ -1,43 +1,88 @@
 "use client";
 
-import { AdminHomeFeaturedPortfolio } from "@/components/admin/AdminHomeFeaturedPortfolio";
-import { AdminServiceFeaturesEditor } from "@/components/admin/AdminServiceFeaturesEditor";
-import { AdminWhyChooseUsEditor } from "@/components/admin/AdminWhyChooseUsEditor";
+import { AdminFloatingCarEditModal } from "@/components/admin/AdminFloatingCarEditModal";
+import { AdminHeroEditModal } from "@/components/admin/AdminHeroEditModal";
+import { AdminHomeFeaturedPortfolioModal } from "@/components/admin/AdminHomeFeaturedPortfolioModal";
+import { AdminServiceFeaturesEditModal } from "@/components/admin/AdminServiceFeaturesEditModal";
+import { AdminWhyChooseUsEditModal } from "@/components/admin/AdminWhyChooseUsEditModal";
 import { BeforeAfterPostEditModal } from "@/components/admin/BeforeAfterPostEditModal";
 import { HomeReviewEditModal } from "@/components/admin/HomeReviewEditModal";
 import { HomeReviewsSectionEditModal } from "@/components/admin/HomeReviewsSectionEditModal";
 import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
 import { useAdminCms } from "@/components/admin/AdminCmsContext";
 import { isUploadedAsset } from "@/lib/cms-types";
+import { ServiceFeatureIcon } from "@/lib/service-feature-icons";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 function resolvedImageSrc(raw: string): string | null {
   const s = raw.trim();
   return s.length > 0 ? s : null;
 }
 
+function HomeEditSection({
+  id,
+  title,
+  description,
+  onEdit,
+  children,
+}: {
+  id?: string;
+  title: string;
+  description?: string;
+  onEdit: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      className="scroll-mt-8 rounded-2xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/40 to-zinc-950/90 p-5 sm:p-6"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold tracking-tight text-white">
+            {title}
+          </h2>
+          {description ? (
+            <p className="mt-1 max-w-xl text-xs leading-relaxed text-zinc-500">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="shrink-0 rounded-lg border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-4 py-2 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
+        >
+          Edit
+        </button>
+      </div>
+      <div className="mt-5 border-t border-zinc-800/80 pt-5">{children}</div>
+    </section>
+  );
+}
+
 export function AdminHomePageContent() {
   const {
     cms,
-    moveBanner,
-    removeBanner,
-    addBannerUrl,
-    setFloatingCar,
-    setPair,
-    addPair,
-    removePair,
     moveBeforeAfterPost,
+    removePair,
+    addPair,
+    setPair,
     patchHomeReviews,
     setHomeReviewItem,
     addHomeReview,
     removeHomeReview,
     moveHomeReview,
-    setCms,
     setFlash,
   } = useAdminCms();
   const pickHandlerRef = useRef<(url: string) => void>(() => {});
   const [mediaOpen, setMediaOpen] = useState(false);
+  const [heroOpen, setHeroOpen] = useState(false);
+  const [floatingCarOpen, setFloatingCarOpen] = useState(false);
+  const [serviceFeaturesOpen, setServiceFeaturesOpen] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
+  const [portfolioSlotsOpen, setPortfolioSlotsOpen] = useState(false);
   const [editPostIndex, setEditPostIndex] = useState<number | null>(null);
   const [reviewsSectionOpen, setReviewsSectionOpen] = useState(false);
   const [editReviewIndex, setEditReviewIndex] = useState<number | null>(null);
@@ -61,10 +106,11 @@ export function AdminHomePageContent() {
 
   if (!cms) return null;
 
-  const floatingSrc = resolvedImageSrc(cms.floatingCar);
+  const sf = cms.homeServiceFeatures;
+  const wu = cms.homeWhyChooseUs;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-16">
+    <div className="mx-auto max-w-5xl space-y-5 pb-8">
       <MediaLibraryModal
         open={mediaOpen}
         onClose={() => setMediaOpen(false)}
@@ -75,150 +121,182 @@ export function AdminHomePageContent() {
         title="Choose image"
       />
 
+      <AdminHeroEditModal
+        open={heroOpen}
+        onClose={() => setHeroOpen(false)}
+        openMediaPicker={openMediaPicker}
+      />
+      <AdminFloatingCarEditModal
+        open={floatingCarOpen}
+        onClose={() => setFloatingCarOpen(false)}
+        openMediaPicker={openMediaPicker}
+      />
+      <AdminServiceFeaturesEditModal
+        open={serviceFeaturesOpen}
+        onClose={() => setServiceFeaturesOpen(false)}
+      />
+      <AdminWhyChooseUsEditModal
+        open={whyOpen}
+        onClose={() => setWhyOpen(false)}
+        openMediaPicker={openMediaPicker}
+      />
+      <AdminHomeFeaturedPortfolioModal
+        open={portfolioSlotsOpen}
+        onClose={() => setPortfolioSlotsOpen(false)}
+      />
 
-      <AdminServiceFeaturesEditor />
+      <header className="rounded-2xl border border-zinc-800/80 bg-zinc-950/50 px-5 py-4 sm:px-6">
+        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+          Homepage
+        </p>
+        <h1 className="mt-1 text-lg font-semibold text-white">
+          Match the live page order — edit each block in a popup
+        </h1>
+        <p className="mt-2 max-w-2xl text-xs leading-relaxed text-zinc-500">
+          Previews update as you type inside an editor. Publish from the bar when you
+          are ready.
+        </p>
+      </header>
 
-      <AdminWhyChooseUsEditor />
-
-      <AdminHomeFeaturedPortfolio />
-
-      <section className="scroll-mt-8" id="hero-banners">
-        <h2 className="text-lg font-semibold text-white">Hero banners</h2>
-        <ul className="mt-6 space-y-3">
-          {cms.heroBanners.map((url, i) => {
-            const src = resolvedImageSrc(url);
-            return (
-              <li
-                key={`banner-${i}`}
-                className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:flex-row sm:items-center"
-              >
-                <div className="relative h-24 w-40 shrink-0 overflow-hidden rounded-lg bg-black">
+      <HomeEditSection
+        id="hero-banners"
+        title="Hero banner"
+        description="Rotating full-width backgrounds behind the homepage headline."
+        onEdit={() => setHeroOpen(true)}
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap gap-2">
+            {cms.heroBanners.slice(0, 8).map((url, i) => {
+              const src = resolvedImageSrc(url);
+              return (
+                <div
+                  key={`pv-b-${i}`}
+                  className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg border border-zinc-700 bg-black"
+                >
                   {src ? (
                     <Image
                       src={src}
                       alt=""
                       fill
                       className="object-cover"
-                      sizes="160px"
+                      sizes="80px"
                       unoptimized={isUploadedAsset(src)}
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center px-2 text-center text-[10px] text-zinc-600">
-                      No image
+                    <div className="flex h-full items-center justify-center text-[9px] text-zinc-600">
+                      —
                     </div>
                   )}
                 </div>
-                <p className="min-w-0 flex-1 break-all font-mono text-xs text-zinc-400">
-                  {url}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      openMediaPicker((picked) => {
-                        setCms((c) => {
-                          if (!c) return c;
-                          const next = [...c.heroBanners];
-                          next[i] = picked;
-                          return { ...c, heroBanners: next };
-                        });
-                        setFlash({ type: "ok", text: "Updated." });
-                      })
-                    }
-                    className="rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-3 py-1.5 text-xs text-[var(--accent)] hover:bg-[var(--accent)]/20"
-                  >
-                    Library
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveBanner(i, -1)}
-                    disabled={i === 0}
-                    className="rounded-lg border border-zinc-600 px-3 py-1.5 text-xs text-zinc-300 disabled:opacity-30"
-                  >
-                    Up
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveBanner(i, 1)}
-                    disabled={i === cms.heroBanners.length - 1}
-                    className="rounded-lg border border-zinc-600 px-3 py-1.5 text-xs text-zinc-300 disabled:opacity-30"
-                  >
-                    Down
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeBanner(i)}
-                    className="rounded-lg border border-red-900/50 px-3 py-1.5 text-xs text-red-400"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        <button
-          type="button"
-          onClick={() =>
-            openMediaPicker((url) => {
-              addBannerUrl(url);
-              setFlash({ type: "ok", text: "Added." });
-            })
-          }
-          className="mt-6 flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-600 bg-zinc-900/30 px-6 py-10 text-center transition hover:border-[var(--accent)]/50"
-        >
-          <span className="text-sm font-medium text-zinc-200">
-            Add banner
-          </span>
-        </button>
-      </section>
+              );
+            })}
+            {cms.heroBanners.length === 0 ? (
+              <span className="text-xs text-zinc-600">No banners yet</span>
+            ) : null}
+          </div>
+          <p className="text-xs text-zinc-500">
+            <span className="font-medium text-zinc-300">
+              {cms.heroBanners.length} banner
+              {cms.heroBanners.length === 1 ? "" : "s"}
+            </span>
+            {cms.heroBanners.length > 8 ? (
+              <span className="text-zinc-600">
+                {" "}
+                (showing first 8)
+              </span>
+            ) : null}
+          </p>
+        </div>
+      </HomeEditSection>
 
-      <section className="scroll-mt-8 border-t border-zinc-800 pt-16" id="floating-car">
-        <h2 className="text-lg font-semibold text-white">Floating car</h2>
-        <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-          <div className="relative mx-auto aspect-[16/10] max-w-md bg-zinc-950">
-            {floatingSrc ? (
+      <HomeEditSection
+        id="floating-car"
+        title="Intro floating car"
+        description="PNG cutout on the dark band below the hero — text on the left, vehicle on the right. Edit to upload or pick from the library."
+        onEdit={() => setFloatingCarOpen(true)}
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-zinc-700 bg-black">
+            {resolvedImageSrc(cms.floatingCar) ? (
               <Image
-                src={floatingSrc}
+                src={resolvedImageSrc(cms.floatingCar)!}
                 alt=""
                 fill
-                className="object-contain p-4"
-                sizes="(max-width:768px) 100vw, 448px"
-                unoptimized={isUploadedAsset(floatingSrc)}
+                className="object-contain p-0.5"
+                sizes="112px"
+                unoptimized={isUploadedAsset(resolvedImageSrc(cms.floatingCar)!)}
               />
             ) : (
-              <div className="flex h-full min-h-[12rem] items-center justify-center px-4 text-center text-sm text-zinc-600">
+              <div className="flex h-full items-center justify-center px-1 text-center text-[9px] text-zinc-600">
                 —
               </div>
             )}
           </div>
-          <label className="mt-6 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Image URL
-          </label>
-          <input
-            type="text"
-            value={cms.floatingCar}
-            onChange={(e) => setFloatingCar(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 font-mono text-sm text-zinc-200 outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/30"
-          />
-          <button
-            type="button"
-            onClick={() =>
-              openMediaPicker((url) => {
-                setFloatingCar(url);
-                setFlash({ type: "ok", text: "Updated." });
-              })
-            }
-            className="mt-4 rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-4 py-2.5 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
-          >
-            Library
-          </button>
+          <p className="text-xs text-zinc-500">
+            <span className="font-medium text-zinc-300">
+              {cms.floatingCar.trim() ? "Image set" : "No image"}
+            </span>
+            {" · "}
+            <span className="text-zinc-600">Edit to upload or choose</span>
+          </p>
         </div>
-      </section>
+      </HomeEditSection>
 
-      <section className="scroll-mt-8 border-t border-zinc-800 pt-16" id="before-after">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-white">Before / after</h2>
+      <HomeEditSection
+        id="service-features"
+        title="Service features"
+        description="Intro, grid cards, CTA, and the heading above the before/after examples."
+        onEdit={() => setServiceFeaturesOpen(true)}
+      >
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-zinc-200">
+            {sf.sectionTitle.trim() || "Untitled section"}
+          </p>
+          <p className="line-clamp-2 text-xs text-zinc-500">
+            {sf.intro.trim() || "No intro"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {sf.items.slice(0, 4).map((card, i) => (
+              <div
+                key={`pv-sf-${i}`}
+                className="flex max-w-[11rem] items-start gap-2 rounded-lg border border-zinc-800/90 bg-zinc-900/50 px-2.5 py-2"
+              >
+                <ServiceFeatureIcon
+                  iconKey={card.iconKey}
+                  className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]"
+                />
+                <span className="line-clamp-2 text-[11px] leading-snug text-zinc-400">
+                  {card.title.trim() || "Card"}
+                </span>
+              </div>
+            ))}
+            {sf.items.length > 4 ? (
+              <span className="self-center text-[11px] text-zinc-600">
+                +{sf.items.length - 4} more
+              </span>
+            ) : null}
+          </div>
+          <p className="text-[11px] text-zinc-600">
+            {sf.items.length} card{sf.items.length === 1 ? "" : "s"} · CTA:{" "}
+            <span className="text-zinc-500">
+              {sf.ctaLabel.trim() || "—"}
+            </span>
+          </p>
+        </div>
+      </HomeEditSection>
+
+      <section
+        className="scroll-mt-8 rounded-2xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/40 to-zinc-950/90 p-5 sm:p-6"
+        id="before-after"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-white">Before / after</h2>
+            <p className="mt-1 max-w-xl text-xs text-zinc-500">
+              Section titles are edited under Service features. Use Edit on each row
+              for images and copy.
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => {
@@ -226,9 +304,9 @@ export function AdminHomePageContent() {
               addPair();
               setEditPostIndex(next);
             }}
-            className="shrink-0 rounded-lg border border-zinc-600 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+            className="shrink-0 rounded-lg border border-zinc-600 px-3 py-2 text-xs font-medium text-zinc-200 hover:bg-zinc-800"
           >
-            + Add
+            + Add example
           </button>
         </div>
 
@@ -252,93 +330,115 @@ export function AdminHomePageContent() {
           />
         ) : null}
 
-        <ul className="mt-4 space-y-1.5">
+        <ul className="mt-5 space-y-1.5 border-t border-zinc-800/80 pt-5">
           {cms.beforeAfter.length === 0 ? (
             <li className="rounded-lg border border-zinc-800/80 px-3 py-5 text-center text-[11px] text-zinc-600">
-              —
+              No examples yet — add one or edit under Service features for section
+              headings.
             </li>
           ) : (
-            cms.beforeAfter.map((pair, i) => {
-              return (
-                <li
-                  key={`ba-${i}`}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-800/90 bg-zinc-900/40 px-3 py-2"
-                >
-                  <span className="w-5 shrink-0 text-center text-[10px] font-medium text-zinc-600">
-                    {i + 1}
-                  </span>
-                  <div className="flex shrink-0 flex-col gap-0.5">
-                    <button
-                      type="button"
-                      aria-label="Move up"
-                      disabled={i === 0}
-                      onClick={() => reorderBeforeAfter(i, -1)}
-                      className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Move down"
-                      disabled={i === cms.beforeAfter.length - 1}
-                      onClick={() => reorderBeforeAfter(i, 1)}
-                      className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
-                    >
-                      ↓
-                    </button>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs text-zinc-200">
-                      {pair.title.trim() || "Untitled"}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setEditPostIndex(i)}
-                      className="rounded-md border border-zinc-600 bg-zinc-800/60 px-2.5 py-1 text-[11px] font-medium text-zinc-200 hover:border-[var(--accent)]/40 hover:text-white"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        removePair(i);
-                        if (editPostIndex === i) setEditPostIndex(null);
-                        if (editPostIndex !== null && editPostIndex > i) {
-                          setEditPostIndex(editPostIndex - 1);
-                        }
-                      }}
-                      className="rounded-md px-2 py-1 text-[11px] text-zinc-500 hover:text-red-400"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              );
-            })
+            cms.beforeAfter.map((pair, i) => (
+              <li
+                key={`ba-${i}`}
+                className="flex items-center gap-3 rounded-lg border border-zinc-800/90 bg-zinc-900/40 px-3 py-2"
+              >
+                <span className="w-5 shrink-0 text-center text-[10px] font-medium text-zinc-600">
+                  {i + 1}
+                </span>
+                <div className="flex shrink-0 flex-col gap-0.5">
+                  <button
+                    type="button"
+                    aria-label="Move up"
+                    disabled={i === 0}
+                    onClick={() => reorderBeforeAfter(i, -1)}
+                    className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Move down"
+                    disabled={i === cms.beforeAfter.length - 1}
+                    onClick={() => reorderBeforeAfter(i, 1)}
+                    className="rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-25"
+                  >
+                    ↓
+                  </button>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-zinc-200">
+                    {pair.title.trim() || "Untitled"}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditPostIndex(i)}
+                    className="rounded-md border border-zinc-600 bg-zinc-800/60 px-2.5 py-1 text-[11px] font-medium text-zinc-200 hover:border-[var(--accent)]/40 hover:text-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      removePair(i);
+                      if (editPostIndex === i) setEditPostIndex(null);
+                      if (editPostIndex !== null && editPostIndex > i) {
+                        setEditPostIndex(editPostIndex - 1);
+                      }
+                    }}
+                    className="rounded-md px-2 py-1 text-[11px] text-zinc-500 hover:text-red-400"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            ))
           )}
         </ul>
       </section>
 
-      <section className="scroll-mt-8 border-t border-zinc-800 pt-16" id="home-reviews">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Home — reviews</h2>
-            <p className="mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
-              Shown in an auto-scrolling strip at the bottom of the public homepage
-              (above the footer). Edits apply after you publish.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setReviewsSectionOpen(true)}
-            className="shrink-0 rounded-lg border border-zinc-600 bg-zinc-900/50 px-4 py-2 text-xs font-medium text-zinc-200 hover:border-[var(--accent)]/35 hover:text-white"
-          >
-            Edit section text
-          </button>
+      <HomeEditSection
+        id="why-choose-us"
+        title="Why choose us & how it works"
+        description="Headline, pillars, workflow, team photo, and portfolio strip wording."
+        onEdit={() => setWhyOpen(true)}
+      >
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-zinc-200">
+            {wu.headline.trim() || "No headline"}
+          </p>
+          <p className="line-clamp-2 text-xs text-zinc-500">
+            {wu.intro.trim() || "No intro"}
+          </p>
+          <p className="text-[11px] text-zinc-600">
+            {wu.pillars.length} pillar cards · {wu.workflowSteps.length} workflow
+            steps
+          </p>
         </div>
+      </HomeEditSection>
 
+      <HomeEditSection
+        id="home-featured-portfolio"
+        title="Homepage portfolio slots"
+        description="Which portfolio tiles appear in slots 1–5 on the strip."
+        onEdit={() => setPortfolioSlotsOpen(true)}
+      >
+        <p className="text-xs text-zinc-500">
+          {cms.portfolioGrid.length === 0
+            ? "No portfolio items — add rows under Portfolio in the sidebar."
+            : (cms.homeFeaturedPortfolioOrder?.length ?? 0) > 0
+              ? `${cms.homeFeaturedPortfolioOrder!.length} featured in order · ${cms.portfolioGrid.length} portfolio row(s) total`
+              : `Auto (first complete tiles) · ${cms.portfolioGrid.length} portfolio row(s) total`}
+        </p>
+      </HomeEditSection>
+
+      <HomeEditSection
+        id="home-reviews"
+        title="Reviews strip"
+        description="Auto-scrolling testimonials above the footer."
+        onEdit={() => setReviewsSectionOpen(true)}
+      >
         <HomeReviewsSectionEditModal
           open={reviewsSectionOpen}
           onClose={() => setReviewsSectionOpen(false)}
@@ -362,7 +462,7 @@ export function AdminHomePageContent() {
           />
         ) : null}
 
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-600">
             {cms.homeReviews.items.length} review
             {cms.homeReviews.items.length === 1 ? "" : "s"}
@@ -458,7 +558,7 @@ export function AdminHomePageContent() {
             })
           )}
         </ul>
-      </section>
+      </HomeEditSection>
     </div>
   );
 }

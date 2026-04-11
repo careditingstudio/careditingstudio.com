@@ -12,6 +12,7 @@ import {
   defaultHomeServiceFeaturesBlock,
   defaultHomeWhyChooseUsBlock,
   defaultSiteSettings,
+  dedupeFeaturedPortfolioOrder,
   parseHomeServiceFeaturesFromJson,
   parseHomeWhyChooseUsFromJson,
 } from "@/lib/cms-types";
@@ -31,6 +32,30 @@ const DEFAULT_SERVICE_NAMES = [
 ];
 
 let seedAttempted = false;
+
+/**
+ * Prisma schema expects `home_featured_portfolio_order_json`. If the DB was never
+ * migrated, `findUnique` throws P2022. We add the column once (IF NOT EXISTS) so
+ * local/prod recover without a failed deploy; still prefer `npm run db:migrate`.
+ */
+let homeFeaturedPortfolioOrderColumnEnsureAttempted = false;
+
+async function ensureHomeFeaturedPortfolioOrderColumnOnce(): Promise<void> {
+  if (homeFeaturedPortfolioOrderColumnEnsureAttempted) return;
+  homeFeaturedPortfolioOrderColumnEnsureAttempted = true;
+  try {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "site_settings" ADD COLUMN IF NOT EXISTS "home_featured_portfolio_order_json" TEXT NOT NULL DEFAULT '[]'`,
+    );
+  } catch (e) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[cms] Could not ensure home_featured_portfolio_order_json column exists. Run: npx prisma migrate deploy",
+        e,
+      );
+    }
+  }
+}
 
 async function seedDefaultServices(): Promise<void> {
   const n = await prisma.service.count();
@@ -65,6 +90,7 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
       homeReviewsSubtitle: "",
       homeServiceFeaturesJson: JSON.stringify(defaultHomeServiceFeaturesBlock()),
       homeWhyChooseUsJson: JSON.stringify(defaultHomeWhyChooseUsBlock()),
+      homeFeaturedPortfolioOrderJson: "[]",
       updatedAt: now,
     },
     update: {
@@ -147,6 +173,7 @@ export type ReadCmsFromDbResult = {
 
 export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
   try {
+    await ensureHomeFeaturedPortfolioOrderColumnOnce();
     await ensureCmsSeededIfEmpty();
 
     const siteRow = await prisma.siteSettings.findUnique({
@@ -257,13 +284,41 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       after: r.afterUrl,
       beforeAlt: r.beforeAlt,
       afterAlt: r.afterAlt,
-      homeFeaturedOrder:
-        r.homeFeaturedOrder != null &&
-        r.homeFeaturedOrder >= 1 &&
-        r.homeFeaturedOrder <= 5
-          ? r.homeFeaturedOrder
-          : null,
     }));
+
+    let homeFeaturedPortfolioOrder: number[] = [];
+    const rawOrderJson = siteRow.homeFeaturedPortfolioOrderJson ?? "[]";
+    try {
+      const parsed = JSON.parse(rawOrderJson) as unknown;
+      if (Array.isArray(parsed)) {
+        const nums = parsed.filter(
+          (x): x is number => typeof x === "number" && Number.isFinite(x),
+        );
+        homeFeaturedPortfolioOrder = dedupeFeaturedPortfolioOrder(
+          nums.map((x) => Math.trunc(x)),
+          portfolioGrid.length,
+        );
+      }
+    } catch {
+      homeFeaturedPortfolioOrder = [];
+    }
+    if (homeFeaturedPortfolioOrder.length === 0) {
+      const legacy = pfRows
+        .map((r, idx) => ({
+          idx,
+          slot: r.homeFeaturedOrder,
+        }))
+        .filter(
+          (x) =>
+            x.slot != null && x.slot >= 1 && x.slot <= 5,
+        )
+        .sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0) || a.idx - b.idx)
+        .map((x) => x.idx);
+      homeFeaturedPortfolioOrder = dedupeFeaturedPortfolioOrder(
+        legacy,
+        portfolioGrid.length,
+      );
+    }
 
     const reviewRows = await prisma.clientReview.findMany({
       orderBy: { sortOrder: "asc" },
@@ -301,6 +356,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         beforeAfter,
         services,
         portfolioGrid,
+        homeFeaturedPortfolioOrder,
         homeReviews,
         homeServiceFeatures,
         homeWhyChooseUs,
@@ -326,6 +382,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
 }
 
 async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
+  await ensureHomeFeaturedPortfolioOrderColumnOnce();
   await ensureCmsSeededIfEmpty();
 
   const now = new Date().toISOString();
@@ -352,6 +409,9 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         homeReviewsSubtitle: cms.homeReviews.subtitle.trim(),
         homeServiceFeaturesJson: JSON.stringify(cms.homeServiceFeatures),
         homeWhyChooseUsJson: JSON.stringify(cms.homeWhyChooseUs),
+        homeFeaturedPortfolioOrderJson: JSON.stringify(
+          cms.homeFeaturedPortfolioOrder ?? [],
+        ),
         updatedAt: now,
       },
       update: {
@@ -370,6 +430,9 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         homeReviewsSubtitle: cms.homeReviews.subtitle.trim(),
         homeServiceFeaturesJson: JSON.stringify(cms.homeServiceFeatures),
         homeWhyChooseUsJson: JSON.stringify(cms.homeWhyChooseUs),
+        homeFeaturedPortfolioOrderJson: JSON.stringify(
+          cms.homeFeaturedPortfolioOrder ?? [],
+        ),
         updatedAt: now,
       },
     });
@@ -470,12 +533,7 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
           afterUrl: p.after,
           beforeAlt: p.beforeAlt,
           afterAlt: p.afterAlt,
-          homeFeaturedOrder:
-            p.homeFeaturedOrder != null &&
-            p.homeFeaturedOrder >= 1 &&
-            p.homeFeaturedOrder <= 5
-              ? p.homeFeaturedOrder
-              : null,
+          homeFeaturedOrder: null,
         })),
       });
     }

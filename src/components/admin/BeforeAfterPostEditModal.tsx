@@ -98,15 +98,6 @@ export function BeforeAfterPostEditModal({
               />
             </div>
             <div>
-              <label className={lab}>Description</label>
-              <textarea
-                value={pair.intro}
-                onChange={(e) => setPairPatch({ intro: e.target.value })}
-                rows={4}
-                className={`mt-1.5 resize-y ${inp}`}
-              />
-            </div>
-            <div>
               <label className={lab}>Pricing / note</label>
               <input
                 type="text"
@@ -116,7 +107,16 @@ export function BeforeAfterPostEditModal({
               />
             </div>
             <div>
-              <label className={lab}>List heading</label>
+              <label className={lab}>Description</label>
+              <textarea
+                value={pair.intro}
+                onChange={(e) => setPairPatch({ intro: e.target.value })}
+                rows={4}
+                className={`mt-1.5 resize-y ${inp}`}
+              />
+            </div>
+            <div>
+              <label className={lab}>Feature list heading</label>
               <input
                 type="text"
                 value={pair.listTitle}
@@ -125,7 +125,7 @@ export function BeforeAfterPostEditModal({
               />
             </div>
             <div>
-              <p className={lab}>Includes</p>
+              <p className={lab}>Feature lines</p>
               <ul className="mt-2 space-y-2">
                 {pair.includes.map((line, li) => (
                   <li key={li} className="flex gap-2">

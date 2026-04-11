@@ -31,6 +31,8 @@ model SiteSettings {
   homeReviewsSubtitle String @default("") @map("home_reviews_subtitle")
   homeServiceFeaturesJson String @default("{}") @map("home_service_features_json")
   homeWhyChooseUsJson     String @default("{}") @map("home_why_choose_us_json")
+  /** JSON array of 0-based indices into portfolio grid — homepage featured strip order (unlimited). */
+  homeFeaturedPortfolioOrderJson String @default("[]") @map("home_featured_portfolio_order_json")
   updatedAt       String @default("") @map("updated_at")
 
   @@map("site_settings")
@@ -120,7 +122,7 @@ model PortfolioItem {
   afterUrl           String  @map("after_url")
   beforeAlt          String  @map("before_alt")
   afterAlt           String  @map("after_alt")
-  /** 1–5 = slot on homepage strip; null = not featured */
+  /** Legacy — unused; homepage order lives in SiteSettings.homeFeaturedPortfolioOrderJson */
   homeFeaturedOrder  Int?    @map("home_featured_order")
 
   @@map("portfolio_items")

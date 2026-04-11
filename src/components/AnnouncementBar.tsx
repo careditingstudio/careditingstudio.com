@@ -1,15 +1,18 @@
 "use client";
 
 import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
+import { cleanSocialUrl, SocialMediaIcon } from "@/components/SocialMediaIcon";
 import type { SiteSettings } from "@/lib/cms-types";
+import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
 function IconMail({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -24,31 +27,140 @@ function IconMail({ className }: { className?: string }) {
   );
 }
 
-function IconWhatsApp({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  );
-}
-
 type Props = {
   contact: SiteSettings;
 };
+
+function PhoneContactDialog({
+  open,
+  onClose,
+  digits,
+  phoneDisplay,
+  titleId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  digits: string;
+  phoneDisplay: string;
+  titleId: string;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!mounted || !open) return null;
+
+  const telHref = `tel:+${digits}`;
+  const waMessage = `https://wa.me/${digits}`;
+  const waCall = `whatsapp://call?phone=${digits}`;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[250] flex items-center justify-center p-4"
+      role="presentation"
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
+        onClick={onClose}
+        aria-label="Close contact options"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="relative z-10 w-full max-w-[min(100%,20rem)] rounded-2xl border border-white/12 bg-zinc-950/98 p-5 shadow-2xl ring-1 ring-white/10"
+      >
+        <p id={titleId} className="text-center text-sm font-medium text-white">
+          Contact options
+        </p>
+        <p className="mt-1 text-center text-sm tabular-nums text-zinc-300">
+          {phoneDisplay}
+        </p>
+        <p className="mt-0.5 text-center text-xs text-zinc-500">
+          Choose how to reach this number
+        </p>
+        <ul className="mt-5 flex flex-col gap-2">
+          <li>
+            <a
+              href={telHref}
+              onClick={onClose}
+              className="flex w-full items-center justify-center rounded-xl bg-white/[0.08] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.12]"
+            >
+              Call
+            </a>
+          </li>
+          <li>
+            <a
+              href={waCall}
+              onClick={onClose}
+              className="flex w-full items-center justify-center rounded-xl bg-[#25D366]/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#25D366]/25"
+            >
+              WhatsApp call
+            </a>
+          </li>
+          <li>
+            <a
+              href={waMessage}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+              className="flex w-full items-center justify-center rounded-xl border border-white/12 bg-transparent px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.06]"
+            >
+              WhatsApp message
+            </a>
+          </li>
+        </ul>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-4 w-full text-center text-sm text-zinc-500 transition hover:text-zinc-300"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 export function AnnouncementBar({ contact }: Props) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
   const overlay = isHome && !chromeSolid;
-  const wa = `https://wa.me/${contact.whatsappDial}`;
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const dialogTitleId = useId();
+
+  const digits = contact.whatsappDial.replace(/\D/g, "");
+  const phoneDisplay =
+    contact.whatsappDisplay.trim() || (digits ? digits : "");
+
+  const socials = (contact.socialLinks ?? [])
+    .map((s) => ({ label: s.label.trim(), url: cleanSocialUrl(s.url) }))
+    .filter((s) => s.label.length > 0 && s.url.length > 0);
+
+  const linkClass = [
+    "transition-colors",
+    overlay
+      ? "text-white/75 hover:text-white"
+      : "text-[var(--announcement-fg)] hover:text-[var(--announcement-hover)]",
+  ].join(" ");
+
+  const iconMuted = overlay
+    ? "opacity-70 group-hover:opacity-100"
+    : "opacity-60 group-hover:opacity-100";
 
   return (
     <div
@@ -61,51 +173,77 @@ export function AnnouncementBar({ contact }: Props) {
       role="region"
       aria-label="Contact shortcuts"
     >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6">
-        <a
-          href={`mailto:${contact.email}`}
-          className={[
-            "group flex min-w-0 items-center gap-2 text-[13px] transition-colors",
-            overlay
-              ? "text-white/75 hover:text-white"
-              : "text-[var(--announcement-fg)] hover:text-[var(--announcement-hover)]",
-          ].join(" ")}
-        >
-          <IconMail
-            className={[
-              "shrink-0 transition-opacity",
-              overlay
-                ? "opacity-70 group-hover:opacity-100"
-                : "opacity-60 group-hover:opacity-100",
-            ].join(" ")}
-          />
-          <span className="truncate">{contact.email}</span>
-        </a>
-        <a
-          href={wa}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={[
-            "group flex shrink-0 items-center gap-2 text-[13px] transition-colors",
-            overlay
-              ? "text-white/75 hover:text-white"
-              : "text-[var(--announcement-fg)] hover:text-[var(--announcement-hover)]",
-          ].join(" ")}
-        >
-          <IconWhatsApp
-            className={[
-              "shrink-0 transition-opacity",
-              overlay
-                ? "opacity-70 group-hover:opacity-100"
-                : "opacity-60 group-hover:opacity-100",
-            ].join(" ")}
-          />
-          <span className="tabular-nums">
-            <span className="hidden sm:inline">WhatsApp · </span>
-            {contact.whatsappDisplay}
-          </span>
-        </a>
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4">
+          <a
+            href={`mailto:${contact.email}`}
+            className={`group flex min-w-0 items-center gap-2.5 text-[14px] leading-snug sm:text-[15px] ${linkClass}`}
+          >
+            <IconMail className={`shrink-0 transition-opacity ${iconMuted}`} />
+            <span className="truncate">{contact.email}</span>
+          </a>
+
+          {digits.length > 0 ? (
+            <>
+              <span
+                className={[
+                  "select-none px-0.5 text-[15px] leading-none",
+                  overlay ? "text-white/35" : "text-zinc-600",
+                ].join(" ")}
+                aria-hidden
+              >
+                ·
+              </span>
+              <button
+                type="button"
+                onClick={() => setPhoneOpen(true)}
+                className={`shrink-0 text-left text-[14px] tabular-nums leading-snug underline-offset-2 transition-colors hover:underline sm:text-[15px] ${linkClass}`}
+                aria-haspopup="dialog"
+                aria-expanded={phoneOpen}
+              >
+                {phoneDisplay}
+              </button>
+            </>
+          ) : null}
+        </div>
+
+        {socials.length > 0 ? (
+          <ul
+            className="flex shrink-0 items-center gap-3.5 sm:gap-4"
+            aria-label="Social media"
+          >
+            {socials.map((s) => (
+              <li key={`${s.label}-${s.url}`}>
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  className={[
+                    "block text-current transition-opacity",
+                    overlay
+                      ? "text-white/70 hover:opacity-100 hover:text-white"
+                      : "text-[var(--announcement-fg)] opacity-80 hover:opacity-100",
+                  ].join(" ")}
+                >
+                  <SocialMediaIcon label={s.label} size={22} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
+
+      {digits.length > 0 ? (
+        <PhoneContactDialog
+          open={phoneOpen}
+          onClose={() => setPhoneOpen(false)}
+          digits={digits}
+          phoneDisplay={phoneDisplay}
+          titleId={dialogTitleId}
+        />
+      ) : null}
     </div>
   );
 }

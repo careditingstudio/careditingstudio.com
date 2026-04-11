@@ -8,25 +8,26 @@ function isComplete(item: PortfolioGridItem) {
   return item.before.trim().length > 0 && item.after.trim().length > 0;
 }
 
-function resolveShowcaseItems(grid: PortfolioGridItem[]): PortfolioGridItem[] {
-  const complete = grid.filter(isComplete);
-  const featured = complete
-    .map((item, portfolioIndex) => ({ item, portfolioIndex }))
-    .filter(
-      ({ item }) =>
-        item.homeFeaturedOrder != null &&
-        item.homeFeaturedOrder >= 1 &&
-        item.homeFeaturedOrder <= 5,
-    )
-    .sort((a, b) => {
-      const d = a.item.homeFeaturedOrder! - b.item.homeFeaturedOrder!;
-      if (d !== 0) return d;
-      return a.portfolioIndex - b.portfolioIndex;
-    })
-    .map(({ item }) => item);
+function resolveShowcaseItems(
+  grid: PortfolioGridItem[],
+  order: number[],
+): PortfolioGridItem[] {
+  const completeIndices = grid
+    .map((item, i) => ({ item, i }))
+    .filter(({ item }) => isComplete(item));
 
-  if (featured.length > 0) return featured.slice(0, 5);
-  return complete.slice(0, 5);
+  const seen = new Set<number>();
+  const featured: PortfolioGridItem[] = [];
+  for (const idx of order) {
+    if (idx < 0 || idx >= grid.length || seen.has(idx)) continue;
+    const item = grid[idx];
+    if (!item || !isComplete(item)) continue;
+    seen.add(idx);
+    featured.push(item);
+  }
+  if (featured.length > 0) return featured;
+
+  return completeIndices.slice(0, 12).map(({ item }) => item);
 }
 
 type Props = {
@@ -36,7 +37,10 @@ type Props = {
 };
 
 export function HomePortfolioShowcase({ cms, embedded = false }: Props) {
-  const items = resolveShowcaseItems(cms.portfolioGrid);
+  const items = resolveShowcaseItems(
+    cms.portfolioGrid,
+    cms.homeFeaturedPortfolioOrder ?? [],
+  );
   if (items.length === 0) return null;
 
   const strip = cms.homeWhyChooseUs;

@@ -9,8 +9,10 @@ type Props = {
 
 export function HomeServiceFeatures({ block }: Props) {
   const items = block.items.filter((c) => c.title.trim() || c.body.trim());
-  const title =
-    block.sectionTitle.trim() || "Our Services Features";
+  const sectionTitle = block.sectionTitle.trim();
+  const headingText = sectionTitle || "Our Services Features";
+  /** Same copy as before; show under the heading whenever the optional “intro” slot above isn’t used (not tied to section title). */
+  const showDefaultBlurb = !block.intro.trim();
 
   return (
     <section
@@ -26,12 +28,24 @@ export function HomeServiceFeatures({ block }: Props) {
           </p>
         ) : null}
 
-        <h2
-          id="home-service-features-heading"
-          className={`${display.className} text-balance text-center text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl md:text-[1.65rem] md:leading-tight`}
-        >
-          {title}
-        </h2>
+        <div className="mx-auto max-w-3xl text-center">
+          <h2
+            id="home-service-features-heading"
+            className={`${display.className} text-balance text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl md:text-[1.65rem] md:leading-tight`}
+          >
+            {headingText}
+          </h2>
+          {showDefaultBlurb ? (
+            <p
+              className={`${sans.className} mt-3 text-sm font-normal leading-relaxed text-zinc-600 dark:text-zinc-400 sm:mt-4 sm:text-[0.9375rem]`}
+            >
+              We have been delivering professional car image editing services for the
+              past 10+ years.
+              <br />
+              Here are the key features that ensure high quality results.
+            </p>
+          ) : null}
+        </div>
 
         {items.length === 0 ? (
           <p
@@ -42,24 +56,28 @@ export function HomeServiceFeatures({ block }: Props) {
         ) : (
           <ul className="mt-8 grid list-none gap-3 sm:grid-cols-2 sm:gap-4 lg:mt-10 lg:grid-cols-4">
             {items.map((card, idx) => (
-              <li key={`${card.title}-${idx}`}>
-                <article className="group flex h-full flex-col rounded-xl bg-[var(--background)] px-4 py-4 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition duration-300 ease-out sm:px-5 sm:py-5 dark:shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--accent-subtle)] text-[var(--accent)] transition duration-300 group-hover:scale-[1.03]">
+              <li key={`svc-${idx}-${card.iconKey}`} className="min-w-0">
+                <article className="group flex flex-col rounded-xl bg-[var(--background)] px-4 py-4 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition duration-300 ease-out sm:px-5 sm:py-5 dark:shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+                  <div className="mx-auto mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-subtle)] text-[var(--accent)] transition duration-300 group-hover:scale-[1.03]">
                     <ServiceFeatureIcon
                       iconKey={card.iconKey}
                       className="h-5 w-5"
                     />
                   </div>
-                  <h3
-                    className={`${display.className} text-base font-semibold text-[var(--foreground)] sm:text-[1.05rem]`}
-                  >
-                    {card.title}
-                  </h3>
-                  <p
-                    className={`${sans.className} mt-2 flex-1 text-xs leading-relaxed text-[var(--muted)] sm:text-[0.8125rem]`}
-                  >
-                    {card.body}
-                  </p>
+                  {card.title.trim() ? (
+                    <h3
+                      className={`${display.className} text-base font-semibold leading-snug text-[var(--foreground)] sm:text-[1.05rem]`}
+                    >
+                      {card.title.trim()}
+                    </h3>
+                  ) : null}
+                  {card.body.trim() ? (
+                    <p
+                      className={`${sans.className} mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 ${card.title.trim() ? "" : "mt-1"}`}
+                    >
+                      {card.body.trim()}
+                    </p>
+                  ) : null}
                 </article>
               </li>
             ))}

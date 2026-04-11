@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
+import {
+  BeforeAfterSlider,
+  BeforeAfterSliderHeader,
+} from "@/components/BeforeAfterSlider";
 import { display, sans } from "@/app/fonts";
-import type { CmsJson } from "@/lib/cms-types";
+import type { BeforeAfterPair, CmsJson } from "@/lib/cms-types";
 
 function CheckItem({ children }: { children: React.ReactNode }) {
   return (
@@ -56,6 +59,109 @@ type Props = {
   cms: CmsJson;
 };
 
+function BeforeAfterCopyColumn({
+  pair,
+  pairIndex,
+}: {
+  pair: BeforeAfterPair;
+  pairIndex: number;
+}) {
+  const title = pair.title.trim();
+  const price = pair.priceNote.trim();
+  const intro = pair.intro.trim();
+  const listHeading = pair.listTitle.trim();
+  const listItems = pair.includes
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  const primaryOk =
+    pair.primaryCtaLabel.trim() && pair.primaryCtaHref.trim();
+  const secondaryOk =
+    pair.secondaryCtaLabel.trim() && pair.secondaryCtaHref.trim();
+  const soloOk = pair.soloCtaLabel.trim() && pair.soloCtaHref.trim();
+
+  return (
+    <>
+      <div className="space-y-4">
+        {title ? (
+          <h3
+            className={`${display.className} text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl`}
+          >
+            {title}
+          </h3>
+        ) : null}
+        {price ? (
+          <p
+            className={`${sans.className} text-sm font-medium text-[var(--foreground)] sm:text-[0.9375rem]`}
+          >
+            {price}
+          </p>
+        ) : null}
+        {intro ? (
+          <p
+            className={`${sans.className} text-base leading-relaxed text-[var(--muted)]`}
+          >
+            {intro}
+          </p>
+        ) : null}
+      </div>
+
+      {listHeading || listItems.length > 0 ? (
+        <div className="mt-8">
+          {listHeading ? (
+            <p
+              className={`${sans.className} text-sm font-semibold text-[var(--foreground)]`}
+            >
+              {listHeading}
+            </p>
+          ) : null}
+          {listItems.length > 0 ? (
+            <ul
+              className={`grid list-none gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-3 ${listHeading ? "mt-4" : ""}`}
+            >
+              {listItems.map((item, j) => (
+                <CheckItem key={`${pairIndex}-inc-${j}`}>{item}</CheckItem>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      {pair.showDualCtas ? (
+        primaryOk || secondaryOk ? (
+          <div className="mt-8 flex flex-wrap gap-3">
+            {primaryOk ? (
+              <CtaLink
+                href={pair.primaryCtaHref}
+                className={`${sans.className} inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
+              >
+                {pair.primaryCtaLabel.trim()}
+              </CtaLink>
+            ) : null}
+            {secondaryOk ? (
+              <CtaLink
+                href={pair.secondaryCtaHref}
+                className={`${sans.className} inline-flex items-center justify-center rounded-full border border-[var(--line-strong)] bg-[var(--background)] px-5 py-2.5 text-sm font-semibold text-[var(--foreground)] transition duration-200 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
+              >
+                {pair.secondaryCtaLabel.trim()}
+              </CtaLink>
+            ) : null}
+          </div>
+        ) : null
+      ) : soloOk ? (
+        <div className="mt-8">
+          <CtaLink
+            href={pair.soloCtaHref}
+            className={`${sans.className} inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] transition hover:text-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
+          >
+            {pair.soloCtaLabel.trim()}
+            <span aria-hidden>→</span>
+          </CtaLink>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 export function HomeBeforeAfterShowcase({ cms }: Props) {
   const rows = cms.beforeAfter
     .map((pair, i) => {
@@ -97,7 +203,9 @@ export function HomeBeforeAfterShowcase({ cms }: Props) {
               </h2>
             ) : null}
           </div>
-        ) : null}
+        ) : (
+          <BeforeAfterSliderHeader />
+        )}
 
         <div className="flex flex-col gap-16 lg:gap-20">
           {rows.map(({ pairIndex, pair }, i) => {
@@ -112,60 +220,7 @@ export function HomeBeforeAfterShowcase({ cms }: Props) {
                   imageFirst ? "lg:col-start-2 lg:row-start-1" : "lg:row-start-1"
                 }
               >
-                <h3
-                  className={`${display.className} text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl`}
-                >
-                  {pair.title}
-                </h3>
-                <p
-                  className={`${sans.className} mt-4 text-base leading-relaxed text-[var(--muted)]`}
-                >
-                  {pair.intro}
-                </p>
-                <p
-                  className={`${sans.className} mt-3 text-sm font-medium text-[var(--foreground)] sm:text-[0.9375rem]`}
-                >
-                  {pair.priceNote}
-                </p>
-                <p
-                  className={`${sans.className} mt-8 text-sm font-semibold text-[var(--foreground)]`}
-                >
-                  {pair.listTitle}
-                </p>
-                {pair.includes.length > 0 ? (
-                  <ul className="mt-4 grid list-none gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-3">
-                    {pair.includes.map((item, j) => (
-                      <CheckItem key={`${pairIndex}-inc-${j}`}>{item}</CheckItem>
-                    ))}
-                  </ul>
-                ) : null}
-
-                {pair.showDualCtas ? (
-                  <div className="mt-8 flex flex-wrap gap-3">
-                    <CtaLink
-                      href={pair.primaryCtaHref}
-                      className={`${sans.className} inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
-                    >
-                      {pair.primaryCtaLabel}
-                    </CtaLink>
-                    <CtaLink
-                      href={pair.secondaryCtaHref}
-                      className={`${sans.className} inline-flex items-center justify-center rounded-full border border-[var(--line-strong)] bg-[var(--background)] px-5 py-2.5 text-sm font-semibold text-[var(--foreground)] transition duration-200 hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
-                    >
-                      {pair.secondaryCtaLabel}
-                    </CtaLink>
-                  </div>
-                ) : (
-                  <div className="mt-8">
-                    <CtaLink
-                      href={pair.soloCtaHref}
-                      className={`${sans.className} inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] transition hover:text-[var(--accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
-                    >
-                      {pair.soloCtaLabel}
-                      <span aria-hidden>→</span>
-                    </CtaLink>
-                  </div>
-                )}
+                <BeforeAfterCopyColumn pair={pair} pairIndex={pairIndex} />
               </div>
 
               <div

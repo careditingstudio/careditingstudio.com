@@ -15,8 +15,8 @@ export default async function PortfolioPage() {
   return (
     <>
       <PageHeading
-        title="Portfolio"
-        description="Drag the slider on each tile to compare before and after."
+        title="Explore Our Creative Portfolio"
+        description="Our showcase highlights the quality and creativity behind our work. It offers a glimpse into our success stories, demonstrating real results and professional excellence."
       />
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <PortfolioGrid cms={cms} />

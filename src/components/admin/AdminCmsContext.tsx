@@ -11,10 +11,15 @@ import {
   type HomeReviewsBlock,
   type HomeServiceFeatureItem,
   type HomeServiceFeaturesBlock,
+  type HomeWhyChoosePillar,
   type HomeWhyChooseUsBlock,
   type PortfolioGridItem,
   type SiteSettings,
+  dedupeFeaturedPortfolioOrder,
+  defaultHomeWhyChoosePillar,
   defaultHomeWhyChooseUsBlock,
+  remapFeaturedOrderAfterRemove,
+  remapFeaturedOrderAfterSwap,
 } from "@/lib/cms-types";
 
 function nextTempServiceId(
@@ -82,6 +87,14 @@ type AdminCmsContextValue = {
   removeServiceFeatureItem: (index: number) => void;
   moveServiceFeatureItem: (index: number, dir: -1 | 1) => void;
   patchHomeWhyChooseUs: (patch: Partial<HomeWhyChooseUsBlock>) => void;
+  setWhyChoosePillarItem: (
+    index: number,
+    patch: Partial<HomeWhyChoosePillar>,
+  ) => void;
+  addWhyChoosePillar: () => void;
+  removeWhyChoosePillar: (index: number) => void;
+  moveWhyChoosePillar: (index: number, dir: -1 | 1) => void;
+  setHomeFeaturedPortfolioOrder: (order: number[]) => void;
 };
 
 const AdminCmsContext = createContext<AdminCmsContextValue | null>(null);
@@ -89,6 +102,7 @@ const AdminCmsContext = createContext<AdminCmsContextValue | null>(null);
 function sanitizePayload(cms: CmsJson): CmsJson {
   return {
     ...cms,
+    floatingCar: cms.floatingCar.trim(),
     heroBanners: cms.heroBanners.filter((u) => u.trim().length > 0),
     beforeAfter: cms.beforeAfter.map((p) => ({
       ...p,
@@ -121,23 +135,18 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       }
       return out;
     })(),
-    portfolioGrid: cms.portfolioGrid.map((p) => {
-      let homeFeaturedOrder: number | null = null;
-      const o = p.homeFeaturedOrder;
-      if (typeof o === "number" && Number.isFinite(o)) {
-        const t = Math.trunc(o);
-        if (t >= 1 && t <= 5) homeFeaturedOrder = t;
-      }
-      return {
-        ...p,
-        label: p.label.trim(),
-        before: p.before.trim(),
-        after: p.after.trim(),
-        beforeAlt: p.beforeAlt.trim(),
-        afterAlt: p.afterAlt.trim(),
-        homeFeaturedOrder,
-      };
-    }),
+    portfolioGrid: cms.portfolioGrid.map((p) => ({
+      ...p,
+      label: p.label.trim(),
+      before: p.before.trim(),
+      after: p.after.trim(),
+      beforeAlt: p.beforeAlt.trim(),
+      afterAlt: p.afterAlt.trim(),
+    })),
+    homeFeaturedPortfolioOrder: dedupeFeaturedPortfolioOrder(
+      cms.homeFeaturedPortfolioOrder ?? [],
+      cms.portfolioGrid.length,
+    ),
     homeReviews: {
       ...cms.homeReviews,
       eyebrow: cms.homeReviews.eyebrow.trim(),
@@ -176,7 +185,6 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         title: p.title.trim(),
         body: p.body.trim(),
       }));
-      while (pillars.length < 3) pillars.push({ ...fb.pillars[pillars.length]! });
       const workflowSteps = cms.homeWhyChooseUs.workflowSteps.map((s) => ({
         title: s.title.trim(),
         subtitle: s.subtitle.trim(),
@@ -190,14 +198,11 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         manualAiLabel:
           (cms.homeWhyChooseUs.manualAiLabel ?? "").trim() || fb.manualAiLabel,
         badges: badges.slice(0, 3),
-        easyCommunicationTitle:
-          cms.homeWhyChooseUs.easyCommunicationTitle.trim() ||
-          fb.easyCommunicationTitle,
-        easyCommunicationBody:
-          cms.homeWhyChooseUs.easyCommunicationBody.trim() ||
-          fb.easyCommunicationBody,
-        pillars: pillars.slice(0, 3),
+        easyCommunicationTitle: "",
+        easyCommunicationBody: "",
+        pillars,
         workflowTitle: cms.homeWhyChooseUs.workflowTitle.trim() || fb.workflowTitle,
+        workflowIntro: (cms.homeWhyChooseUs.workflowIntro ?? "").trim(),
         teamPhotoSrc: cms.homeWhyChooseUs.teamPhotoSrc.trim(),
         teamPhotoAlt: cms.homeWhyChooseUs.teamPhotoAlt.trim() || fb.teamPhotoAlt,
         workflowSteps: workflowSteps.slice(0, 5),
@@ -359,7 +364,7 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
             ...c,
             beforeAfter: [
               ...c.beforeAfter,
-              defaultBeforeAfterPair(c.beforeAfter.length),
+              defaultBeforeAfterPair(),
             ],
           }
         : c,
@@ -410,14 +415,17 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removePortfolioItem = useCallback((index: number) => {
-    setCms((c) =>
-      c
-        ? {
-            ...c,
-            portfolioGrid: c.portfolioGrid.filter((_, k) => k !== index),
-          }
-        : c,
-    );
+    setCms((c) => {
+      if (!c) return c;
+      return {
+        ...c,
+        portfolioGrid: c.portfolioGrid.filter((_, k) => k !== index),
+        homeFeaturedPortfolioOrder: remapFeaturedOrderAfterRemove(
+          c.homeFeaturedPortfolioOrder ?? [],
+          index,
+        ),
+      };
+    });
   }, []);
 
   const movePortfolioItem = useCallback((index: number, dir: -1 | 1) => {
@@ -426,8 +434,29 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       const j = index + dir;
       if (j < 0 || j >= c.portfolioGrid.length) return c;
       const next = [...c.portfolioGrid];
-      [next[index], next[j]] = [next[j], next[index]];
-      return { ...c, portfolioGrid: next };
+      [next[index], next[j]] = [next[j]!, next[index]!];
+      return {
+        ...c,
+        portfolioGrid: next,
+        homeFeaturedPortfolioOrder: remapFeaturedOrderAfterSwap(
+          c.homeFeaturedPortfolioOrder ?? [],
+          index,
+          j,
+        ),
+      };
+    });
+  }, []);
+
+  const setHomeFeaturedPortfolioOrder = useCallback((order: number[]) => {
+    setCms((c) => {
+      if (!c) return c;
+      return {
+        ...c,
+        homeFeaturedPortfolioOrder: dedupeFeaturedPortfolioOrder(
+          order,
+          c.portfolioGrid.length,
+        ),
+      };
     });
   }, []);
 
@@ -606,6 +635,67 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const setWhyChoosePillarItem = useCallback(
+    (index: number, patch: Partial<HomeWhyChoosePillar>) => {
+      setCms((c) => {
+        if (!c) return c;
+        const pillars = c.homeWhyChooseUs.pillars.map((row, k) =>
+          k === index ? { ...row, ...patch } : row,
+        );
+        return {
+          ...c,
+          homeWhyChooseUs: { ...c.homeWhyChooseUs, pillars },
+        };
+      });
+    },
+    [],
+  );
+
+  const addWhyChoosePillar = useCallback(() => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            homeWhyChooseUs: {
+              ...c.homeWhyChooseUs,
+              pillars: [
+                ...c.homeWhyChooseUs.pillars,
+                defaultHomeWhyChoosePillar(),
+              ],
+            },
+          }
+        : c,
+    );
+  }, []);
+
+  const removeWhyChoosePillar = useCallback((index: number) => {
+    setCms((c) =>
+      c
+        ? {
+            ...c,
+            homeWhyChooseUs: {
+              ...c.homeWhyChooseUs,
+              pillars: c.homeWhyChooseUs.pillars.filter((_, k) => k !== index),
+            },
+          }
+        : c,
+    );
+  }, []);
+
+  const moveWhyChoosePillar = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.homeWhyChooseUs.pillars.length) return c;
+      const pillars = [...c.homeWhyChooseUs.pillars];
+      [pillars[index], pillars[j]] = [pillars[j]!, pillars[index]!];
+      return {
+        ...c,
+        homeWhyChooseUs: { ...c.homeWhyChooseUs, pillars },
+      };
+    });
+  }, []);
+
   const moveServiceFeatureItem = useCallback((index: number, dir: -1 | 1) => {
     setCms((c) => {
       if (!c) return c;
@@ -664,6 +754,11 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       removeServiceFeatureItem,
       moveServiceFeatureItem,
       patchHomeWhyChooseUs,
+      setWhyChoosePillarItem,
+      addWhyChoosePillar,
+      removeWhyChoosePillar,
+      moveWhyChoosePillar,
+      setHomeFeaturedPortfolioOrder,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -699,6 +794,11 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       addHomeReview,
       removeHomeReview,
       moveHomeReview,
+      setWhyChoosePillarItem,
+      addWhyChoosePillar,
+      removeWhyChoosePillar,
+      moveWhyChoosePillar,
+      setHomeFeaturedPortfolioOrder,
     ],
   );
 

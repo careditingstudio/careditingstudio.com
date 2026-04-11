@@ -334,8 +334,8 @@ export function AboutUsContent() {
                 Quick responses, strong support.
               </h2>
               <p className="mt-5 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-                We have a dedicated team of IELTS-qualified marketing and client support
-                executives who provide <span className="font-semibold text-[var(--foreground)]">24/7</span>{" "}
+                Our marketing and client support team is fluent in English and available
+                around the clock—we provide <span className="font-semibold text-[var(--foreground)]">24/7</span>{" "}
                 assistance to ensure smooth and reliable service. We maintain clear and
                 friendly communication with every client to deliver quick responses, strong
                 support, and build trust.

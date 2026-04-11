@@ -7,8 +7,23 @@ import {
   useId,
   useRef,
   useState,
+  type KeyboardEvent,
 } from "react";
 import { isCloudinaryUrl, isUploadedAsset } from "@/lib/cms-types";
+
+export function BeforeAfterSliderHeader() {
+  return (
+    <header className="mx-auto mb-[clamp(2.5rem,6vw,3.75rem)] max-w-3xl text-center">
+      <h2 className="text-balance text-2xl font-bold leading-tight text-[var(--foreground)] sm:text-3xl">
+        Elevate Your Car Images with Expert Editing
+        <br className="hidden sm:inline" />
+        <span className="mt-2 block text-lg font-medium text-[var(--accent)] sm:text-xl">
+          for E-Commerce and Businesses
+        </span>
+      </h2>
+    </header>
+  );
+}
 
 type BeforeAfterSliderProps = {
   beforeSrc: string;
@@ -72,7 +87,7 @@ export function BeforeAfterSlider({
     };
   }, [dragging, setFromClientX]);
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
+  const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
       e.preventDefault();
       setPercent((p) => Math.max(0, p - 5));

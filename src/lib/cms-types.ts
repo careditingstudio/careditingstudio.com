@@ -22,72 +22,32 @@ export type BeforeAfterPair = {
   soloCtaHref: string;
 };
 
-/** Defaults when adding a new post (rotates A/B layout presets). */
-export const BEFORE_AFTER_BLUEPRINTS: Omit<BeforeAfterPair, "before" | "after">[] = [
-  {
-    title: "Studio-grade vehicle cleanup",
-    intro:
-      "Swap cluttered driveways for a clean studio look, tame reflections, and keep paint reading true—ideal for listings and ads.",
-    priceNote:
-      "Typical projects start around $1–$3 per image depending on complexity.",
-    listTitle: "Includes:",
-    includes: [
-      "Background replacement",
-      "Reflection & glare control",
-      "Wheel and trim cleanup",
-      "License plate handling",
-      "Shadows that ground the car",
-    ],
-    beforeAlt: "Car photo before editing",
-    afterAlt: "Car photo after professional editing",
+/** Empty copy/layout defaults for new before/after posts and JSON normalization fallbacks. */
+export function emptyBeforeAfterFields(): Omit<BeforeAfterPair, "before" | "after"> {
+  return {
+    title: "",
+    intro: "",
+    priceNote: "",
+    listTitle: "",
+    includes: [],
+    beforeAlt: "",
+    afterAlt: "",
     imageFirst: false,
-    showDualCtas: true,
-    primaryCtaLabel: "Get a free trial",
-    primaryCtaHref: "/contact",
-    secondaryCtaLabel: "View more",
-    secondaryCtaHref: "/services",
-    soloCtaLabel: "Talk to us about your set",
-    soloCtaHref: "/contact",
-  },
-  {
-    title: "Color & exposure you can trust",
-    intro:
-      "Correct white balance and exposure so every body line and interior detail matches what buyers see in person.",
-    priceNote: "Color-focused edits often land around $0.50–$2.50 per frame.",
-    listTitle: "Includes:",
-    includes: [
-      "White balance & exposure",
-      "Interior exposure matching",
-      "Paint color accuracy",
-      "Window sky cleanup",
-      "Batch consistency across sets",
-    ],
-    beforeAlt: "Vehicle image before color correction",
-    afterAlt: "Vehicle image after color correction",
-    imageFirst: true,
     showDualCtas: false,
-    primaryCtaLabel: "Get a free trial",
-    primaryCtaHref: "/contact",
-    secondaryCtaLabel: "View more",
-    secondaryCtaHref: "/services",
-    soloCtaLabel: "Talk to us about your set",
-    soloCtaHref: "/contact",
-  },
-];
-
-export function beforeAfterBlueprint(
-  index: number,
-): Omit<BeforeAfterPair, "before" | "after"> {
-  return BEFORE_AFTER_BLUEPRINTS[index % BEFORE_AFTER_BLUEPRINTS.length]!;
+    primaryCtaLabel: "",
+    primaryCtaHref: "",
+    secondaryCtaLabel: "",
+    secondaryCtaHref: "",
+    soloCtaLabel: "",
+    soloCtaHref: "",
+  };
 }
 
-export function defaultBeforeAfterPair(index: number): BeforeAfterPair {
-  const bp = beforeAfterBlueprint(index);
+export function defaultBeforeAfterPair(): BeforeAfterPair {
   return {
     before: "",
     after: "",
-    ...bp,
-    includes: [...bp.includes],
+    ...emptyBeforeAfterFields(),
   };
 }
 
@@ -129,8 +89,6 @@ export type PortfolioGridItem = {
   after: string;
   beforeAlt: string;
   afterAlt: string;
-  /** 1–5 = display slot on homepage portfolio strip; null = not featured there */
-  homeFeaturedOrder: number | null;
 };
 
 export function defaultPortfolioGridItem(): PortfolioGridItem {
@@ -141,8 +99,47 @@ export function defaultPortfolioGridItem(): PortfolioGridItem {
     after: "",
     beforeAlt: "Before editing",
     afterAlt: "After editing",
-    homeFeaturedOrder: null,
   };
+}
+
+/** Deduplicate and clamp indices to valid portfolio grid positions. */
+export function dedupeFeaturedPortfolioOrder(
+  indices: number[],
+  gridLength: number,
+): number[] {
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of indices) {
+    if (typeof raw !== "number" || !Number.isFinite(raw)) continue;
+    const i = Math.trunc(raw);
+    if (i < 0 || i >= gridLength || seen.has(i)) continue;
+    seen.add(i);
+    out.push(i);
+  }
+  return out;
+}
+
+/** After removing portfolio row at `removedIndex`, fix stored featured indices. */
+export function remapFeaturedOrderAfterRemove(
+  order: number[],
+  removedIndex: number,
+): number[] {
+  return order
+    .filter((i) => i !== removedIndex)
+    .map((i) => (i > removedIndex ? i - 1 : i));
+}
+
+/** After swapping two rows in the portfolio grid at `indexA` and `indexB`. */
+export function remapFeaturedOrderAfterSwap(
+  order: number[],
+  indexA: number,
+  indexB: number,
+): number[] {
+  return order.map((i) => {
+    if (i === indexA) return indexB;
+    if (i === indexB) return indexA;
+    return i;
+  });
 }
 
 /** One client testimonial on the home page (editable in admin). */
@@ -246,11 +243,15 @@ export function defaultHomeServiceFeaturesBlock(): HomeServiceFeaturesBlock {
   };
 }
 
-/** One pillar card in the home “Why choose us” column (icons fixed by order in UI). */
+/** One pillar card in the home “Why choose us” column (icons cycle by index on the public site). */
 export type HomeWhyChoosePillar = {
   title: string;
   body: string;
 };
+
+export function defaultHomeWhyChoosePillar(): HomeWhyChoosePillar {
+  return { title: "", body: "" };
+}
 
 /** One step in the “How it works” grid (icons fixed by order in UI). */
 export type HomeWhyChooseWorkflowStep = {
@@ -266,10 +267,14 @@ export type HomeWhyChooseUsBlock = {
   manualAiLabel: string;
   /** Three pill labels (badges row). */
   badges: string[];
+  /** Deprecated — kept for JSON compatibility; not shown on the public site. */
   easyCommunicationTitle: string;
   easyCommunicationBody: string;
+  /** Unlimited pillar cards (order = display order). */
   pillars: HomeWhyChoosePillar[];
   workflowTitle: string;
+  /** Paragraph under the workflow section title; empty = hidden. */
+  workflowIntro: string;
   /** Cloudinary or `/cms/...` URL; empty = placeholder */
   teamPhotoSrc: string;
   teamPhotoAlt: string;
@@ -286,10 +291,13 @@ export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
     intro:
       "With precision editing, fast delivery, and consistent quality, our dedicated team works all year with strong commitment. We keep support responsive via email and WhatsApp so your questions are answered quickly and clearly.",
     manualAiLabel: "Manual + AI",
-    badges: ["24h service", "IELTS-qualified team", "Fast turnaround"],
-    easyCommunicationTitle: "Easy Communication",
-    easyCommunicationBody:
-      "Our marketing and client support executives provide round-the-clock help to keep communication smooth, friendly, and reliable so you always feel confident with every order.",
+    badges: [
+      "24h service",
+      "Fluent English-speaking team",
+      "Fast turnaround",
+    ],
+    easyCommunicationTitle: "",
+    easyCommunicationBody: "",
     pillars: [
       {
         title: "Precision + Consistency",
@@ -306,13 +314,10 @@ export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
         body:
           "We guarantee high-quality work and set realistic expectations, never false promises.",
       },
-      {
-        title: "Easy Communication",
-        body:
-          "Our marketing and client support executives provide round-the-clock help to keep communication smooth, friendly, and reliable so you always feel confident with every order.",
-      }
     ],
     workflowTitle: "How Car Editing Studio Works",
+    workflowIntro:
+      "From background replacement to advanced retouching, we provide complete solutions to enhance your images and grow your business",
     teamPhotoSrc: "",
     teamPhotoAlt: "Our editing team",
     workflowSteps: [
@@ -334,6 +339,11 @@ export type CmsJson = {
   beforeAfter: BeforeAfterPair[];
   services: ServiceRow[];
   portfolioGrid: PortfolioGridItem[];
+  /**
+   * Ordered 0-based indices into `portfolioGrid` for the homepage portfolio strip.
+   * Empty = fall back to first N complete tiles.
+   */
+  homeFeaturedPortfolioOrder: number[];
   homeReviews: HomeReviewsBlock;
   homeServiceFeatures: HomeServiceFeaturesBlock;
   homeWhyChooseUs: HomeWhyChooseUsBlock;
@@ -373,6 +383,7 @@ export function defaultCmsJson(): CmsJson {
     beforeAfter: [],
     services: [],
     portfolioGrid: [],
+    homeFeaturedPortfolioOrder: [],
     homeReviews: defaultHomeReviewsBlock(),
     homeServiceFeatures: defaultHomeServiceFeaturesBlock(),
     homeWhyChooseUs: defaultHomeWhyChooseUsBlock(),
@@ -445,12 +456,6 @@ function normalizePortfolioGridItem(
     }
   }
 
-  let homeFeaturedOrder: number | null = null;
-  if (typeof p.homeFeaturedOrder === "number" && Number.isFinite(p.homeFeaturedOrder)) {
-    const o = Math.trunc(p.homeFeaturedOrder);
-    if (o >= 1 && o <= 5) homeFeaturedOrder = o;
-  }
-
   return {
     label: typeof p.label === "string" ? p.label : "",
     serviceId,
@@ -458,7 +463,6 @@ function normalizePortfolioGridItem(
     after: p.after,
     beforeAlt: strField(p, "beforeAlt", "Before editing"),
     afterAlt: strField(p, "afterAlt", "After editing"),
-    homeFeaturedOrder,
   };
 }
 
@@ -607,14 +611,12 @@ function normalizeHomeWhyChooseUsBlock(
 
   const pillars: HomeWhyChoosePillar[] = [];
   if (Array.isArray(o.pillars)) {
-    for (let i = 0; i < Math.min(o.pillars.length, 3); i++) {
-      pillars.push(
-        normalizeHomeWhyChoosePillar(o.pillars[i], fb.pillars[i]!),
-      );
+    const fbP = fb.pillars;
+    for (let i = 0; i < o.pillars.length; i++) {
+      const fbRow =
+        fbP[i] ?? fbP[fbP.length - 1] ?? defaultHomeWhyChoosePillar();
+      pillars.push(normalizeHomeWhyChoosePillar(o.pillars[i], fbRow));
     }
-  }
-  while (pillars.length < 3) {
-    pillars.push({ ...fb.pillars[pillars.length]! });
   }
 
   const workflowSteps: HomeWhyChooseWorkflowStep[] = [];
@@ -650,6 +652,7 @@ function normalizeHomeWhyChooseUsBlock(
     workflowTitle:
       strField(o, "workflowTitle", fallback.workflowTitle).trim() ||
       fb.workflowTitle,
+    workflowIntro: strField(o, "workflowIntro", fallback.workflowIntro).trim(),
     teamPhotoSrc: strField(o, "teamPhotoSrc", fallback.teamPhotoSrc).trim(),
     teamPhotoAlt:
       strField(o, "teamPhotoAlt", fallback.teamPhotoAlt).trim() ||
@@ -687,16 +690,13 @@ function normalizeHomeReviewsBlock(
   };
 }
 
-function normalizeBeforeAfterPair(
-  item: unknown,
-  index: number,
-): BeforeAfterPair | null {
+function normalizeBeforeAfterPair(item: unknown): BeforeAfterPair | null {
   if (!item || typeof item !== "object") return null;
   const p = item as Record<string, unknown>;
   if (typeof p.before !== "string" || typeof p.after !== "string") return null;
   const before = p.before;
   const after = p.after;
-  const bp = beforeAfterBlueprint(index);
+  const d = emptyBeforeAfterFields();
 
   let includes: string[] = [];
   if (Array.isArray(p.includes)) {
@@ -705,35 +705,32 @@ function normalizeBeforeAfterPair(
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
   }
-  if (includes.length === 0) {
-    includes = [...bp.includes];
-  }
 
   const showDual =
     typeof p.showDualCtas === "boolean"
       ? p.showDualCtas
       : typeof p.showCtas === "boolean"
         ? p.showCtas
-        : bp.showDualCtas;
+        : d.showDualCtas;
 
   return {
     before,
     after,
-    title: strField(p, "title", bp.title),
-    intro: strField(p, "intro", bp.intro),
-    priceNote: strField(p, "priceNote", bp.priceNote),
-    listTitle: strField(p, "listTitle", bp.listTitle),
+    title: strField(p, "title", d.title),
+    intro: strField(p, "intro", d.intro),
+    priceNote: strField(p, "priceNote", d.priceNote),
+    listTitle: strField(p, "listTitle", d.listTitle),
     includes,
-    beforeAlt: strField(p, "beforeAlt", bp.beforeAlt),
-    afterAlt: strField(p, "afterAlt", bp.afterAlt),
-    imageFirst: boolField(p, "imageFirst", bp.imageFirst),
+    beforeAlt: strField(p, "beforeAlt", d.beforeAlt),
+    afterAlt: strField(p, "afterAlt", d.afterAlt),
+    imageFirst: boolField(p, "imageFirst", d.imageFirst),
     showDualCtas: showDual,
-    primaryCtaLabel: strField(p, "primaryCtaLabel", bp.primaryCtaLabel),
-    primaryCtaHref: strField(p, "primaryCtaHref", bp.primaryCtaHref),
-    secondaryCtaLabel: strField(p, "secondaryCtaLabel", bp.secondaryCtaLabel),
-    secondaryCtaHref: strField(p, "secondaryCtaHref", bp.secondaryCtaHref),
-    soloCtaLabel: strField(p, "soloCtaLabel", bp.soloCtaLabel),
-    soloCtaHref: strField(p, "soloCtaHref", bp.soloCtaHref),
+    primaryCtaLabel: strField(p, "primaryCtaLabel", d.primaryCtaLabel),
+    primaryCtaHref: strField(p, "primaryCtaHref", d.primaryCtaHref),
+    secondaryCtaLabel: strField(p, "secondaryCtaLabel", d.secondaryCtaLabel),
+    secondaryCtaHref: strField(p, "secondaryCtaHref", d.secondaryCtaHref),
+    soloCtaLabel: strField(p, "soloCtaLabel", d.soloCtaLabel),
+    soloCtaHref: strField(p, "soloCtaHref", d.soloCtaHref),
   };
 }
 
@@ -828,7 +825,7 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
   if (Array.isArray(ba)) {
     const pairs: BeforeAfterPair[] = [];
     for (let idx = 0; idx < ba.length; idx++) {
-      const row = normalizeBeforeAfterPair(ba[idx], idx);
+      const row = normalizeBeforeAfterPair(ba[idx]);
       if (row) pairs.push(row);
     }
     base.beforeAfter = pairs;
@@ -865,6 +862,17 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       if (row) grid.push(row);
     }
     base.portfolioGrid = grid;
+  }
+
+  const fo = o.homeFeaturedPortfolioOrder;
+  if (Array.isArray(fo)) {
+    const raw = fo.filter(
+      (x): x is number => typeof x === "number" && Number.isFinite(x),
+    );
+    base.homeFeaturedPortfolioOrder = dedupeFeaturedPortfolioOrder(
+      raw.map((x) => Math.trunc(x)),
+      base.portfolioGrid.length,
+    );
   }
 
   base.homeReviews = normalizeHomeReviewsBlock(o.homeReviews, base.homeReviews);
