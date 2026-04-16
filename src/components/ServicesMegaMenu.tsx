@@ -1,5 +1,6 @@
 import { sans } from "@/app/fonts";
 import { servicesMegaMenuItems } from "@/config/services-mega-menu";
+import type { ServiceRow } from "@/lib/cms-types";
 import Link from "next/link";
 
 function ItemIcon() {
@@ -46,12 +47,22 @@ export function ServicesMegaMenuGrid({
   onNavigate,
   dense,
   tone = "default",
+  services = [],
 }: {
   onNavigate?: () => void;
   dense?: boolean;
   tone?: "default" | "overlay";
+  services?: ServiceRow[];
 }) {
   const isOverlay = tone === "overlay";
+  const menuItems =
+    services.length > 0
+      ? services.map((service) => ({
+          title: service.name.trim() || "Untitled service",
+          description: "Professional car photo editing service.",
+          href: "/services",
+        }))
+      : servicesMegaMenuItems;
 
   return (
     <ul
@@ -60,16 +71,17 @@ export function ServicesMegaMenuGrid({
         dense ? "lg:gap-x-5" : "lg:gap-x-8 lg:gap-y-5",
       ].join(" ")}
     >
-      {servicesMegaMenuItems.map((item) => (
-        <li key={item.href}>
+      {menuItems.map((item) => (
+        <li key={`${item.href}-${item.title}`}>
           <Link
             href={item.href}
+            prefetch
             onClick={onNavigate}
             className={[
-              "group flex gap-3 rounded-xl p-2 text-left transition-colors sm:gap-3.5 sm:p-2.5",
+              "group flex gap-3 rounded-xl border border-transparent p-2 text-left transition-all duration-250 ease-out sm:gap-3.5 sm:p-2.5",
               isOverlay
-                ? "hover:bg-white/10"
-                : "hover:bg-zinc-100/90 dark:hover:bg-zinc-800/60",
+                ? "hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10"
+                : "hover:-translate-y-0.5 hover:border-zinc-200 hover:bg-zinc-100/90 hover:shadow-[0_14px_26px_-18px_rgba(0,0,0,0.45)] dark:hover:border-white/10 dark:hover:bg-zinc-800/60",
             ].join(" ")}
           >
             {isOverlay ? <ItemIconOverlay /> : <ItemIcon />}

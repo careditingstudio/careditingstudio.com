@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin-api";
-import { adminListMailboxMessages } from "@/lib/db/mailbox-repository";
+import {
+  adminCountUnreadMailboxMessages,
+  adminListMailboxMessages,
+} from "@/lib/db/mailbox-repository";
 import { isMailboxKind, type MailboxKind } from "@/lib/mailbox-types";
 
 export const runtime = "nodejs";
@@ -30,7 +33,8 @@ export async function GET(request: Request) {
     limit: Number.isFinite(limit) ? limit : undefined,
     cursorId: Number.isFinite(cursorId) ? cursorId : undefined,
   });
+  const unreadCount = await adminCountUnreadMailboxMessages();
 
-  return NextResponse.json({ items: rows });
+  return NextResponse.json({ items: rows, unreadCount });
 }
 

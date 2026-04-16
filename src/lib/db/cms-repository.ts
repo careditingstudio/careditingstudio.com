@@ -4,11 +4,13 @@ import {
   type BeforeAfterPair,
   type CmsJson,
   type HomeReviewsBlock,
+  type PricingContent,
   type PortfolioGridItem,
   type ServiceRow,
   type SiteSettings,
   defaultCmsJson,
   defaultHomeReviewsBlock,
+  defaultPricingContent,
   defaultHomeServiceFeaturesBlock,
   defaultHomeWhyChooseUsBlock,
   defaultSiteSettings,
@@ -39,6 +41,7 @@ let seedAttempted = false;
  * local/prod recover without a failed deploy; still prefer `npm run db:migrate`.
  */
 let homeFeaturedPortfolioOrderColumnEnsureAttempted = false;
+let pricingColumnsEnsureAttempted = false;
 
 async function ensureHomeFeaturedPortfolioOrderColumnOnce(): Promise<void> {
   if (homeFeaturedPortfolioOrderColumnEnsureAttempted) return;
@@ -57,6 +60,27 @@ async function ensureHomeFeaturedPortfolioOrderColumnOnce(): Promise<void> {
   }
 }
 
+async function ensurePricingColumnsOnce(): Promise<void> {
+  if (pricingColumnsEnsureAttempted) return;
+  pricingColumnsEnsureAttempted = true;
+  try {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "site_settings" ADD COLUMN IF NOT EXISTS "pricing_json" TEXT NOT NULL DEFAULT '{}'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "site_settings" ADD COLUMN IF NOT EXISTS "payment_methods_json" TEXT NOT NULL DEFAULT '[]'`,
+    );
+  } catch (e) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[cms] Could not ensure pricing/payment columns exist. Run: npx prisma migrate deploy",
+        e,
+      );
+    }
+  }
+}
+
+
 async function seedDefaultServices(): Promise<void> {
   const n = await prisma.service.count();
   if (n > 0) return;
@@ -71,6 +95,7 @@ async function seedDefaultServices(): Promise<void> {
 /** Ensures row id=1 exists without failing on concurrent import or retry after a partial write. */
 async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
   const now = new Date().toISOString();
+  await ensurePricingColumnsOnce();
   await prisma.siteSettings.upsert({
     where: { id: 1 },
     create: {
@@ -97,6 +122,12 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
       updatedAt: now,
     },
   });
+  await prisma.$executeRaw`
+    UPDATE "site_settings"
+    SET "pricing_json" = ${JSON.stringify(defaultPricingContent())},
+        "payment_methods_json" = ${JSON.stringify(site.paymentMethods ?? [])}
+    WHERE "id" = 1
+  `;
 }
 
 function isMissingTablesError(e: unknown): boolean {
@@ -174,6 +205,7 @@ export type ReadCmsFromDbResult = {
 export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
   try {
     await ensureHomeFeaturedPortfolioOrderColumnOnce();
+    await ensurePricingColumnsOnce();
     await ensureCmsSeededIfEmpty();
 
     const siteRow = await prisma.siteSettings.findUnique({
@@ -183,6 +215,11 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
     if (!siteRow) {
       return { cms: defaultCmsJson(), devDbUnreachable: false };
     }
+
+    const extraRows = await prisma.$queryRaw<
+      { pricing_json: string | null; payment_methods_json: string | null }[]
+    >`SELECT "pricing_json", "payment_methods_json" FROM "site_settings" WHERE "id" = 1 LIMIT 1`;
+    const extra = extraRows[0] ?? { pricing_json: null, payment_methods_json: null };
 
     const site: SiteSettings = {
       businessName: siteRow.businessName,
@@ -194,18 +231,21 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         try {
           const parsed = JSON.parse(siteRow.officeLocationsJson || "[]") as unknown;
           if (!Array.isArray(parsed)) return [];
-          const out: { label: string; address: string; mapUrl: string }[] = [];
+          const out: {
+            label: string;
+            address: string;
+            mapUrl: string;
+            phone: string;
+          }[] = [];
           for (const row of parsed) {
             if (!row || typeof row !== "object") continue;
             const p = row as Record<string, unknown>;
-            if (
-              typeof p.label !== "string" ||
-              typeof p.address !== "string" ||
-              typeof p.mapUrl !== "string"
-            ) {
-              continue;
-            }
-            out.push({ label: p.label, address: p.address, mapUrl: p.mapUrl });
+            if (typeof p.label !== "string") continue;
+            const address =
+              typeof p.address === "string" ? p.address : "";
+            const mapUrl = typeof p.mapUrl === "string" ? p.mapUrl : "";
+            const phone = typeof p.phone === "string" ? p.phone : "";
+            out.push({ label: p.label, address, mapUrl, phone });
           }
           return out;
         } catch {
@@ -222,6 +262,22 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
             const p = row as Record<string, unknown>;
             if (typeof p.label !== "string" || typeof p.url !== "string") continue;
             out.push({ label: p.label, url: p.url });
+          }
+          return out;
+        } catch {
+          return [];
+        }
+      })(),
+      paymentMethods: (() => {
+        try {
+          const parsed = JSON.parse(extra.payment_methods_json || "[]") as unknown;
+          if (!Array.isArray(parsed)) return [];
+          const out: string[] = [];
+          for (const row of parsed) {
+            if (typeof row !== "string") continue;
+            const t = row.trim();
+            if (!t) continue;
+            out.push(t);
           }
           return out;
         } catch {
@@ -348,6 +404,21 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       siteRow.homeWhyChooseUsJson,
     );
 
+    const pricing: PricingContent = (() => {
+      const fallback = defaultPricingContent();
+      try {
+        const parsed = JSON.parse(extra.pricing_json || "{}") as unknown;
+        const merged = {
+          ...fallback,
+          ...(parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {}),
+        } as PricingContent;
+        if (!Array.isArray(merged.plans) || merged.plans.length === 0) return fallback;
+        return merged;
+      } catch {
+        return fallback;
+      }
+    })();
+
     return {
       cms: {
         site,
@@ -360,6 +431,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         homeReviews,
         homeServiceFeatures,
         homeWhyChooseUs,
+        pricing,
         updatedAt: siteRow.updatedAt ?? "",
       },
       devDbUnreachable: false,
@@ -383,6 +455,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
 
 async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
   await ensureHomeFeaturedPortfolioOrderColumnOnce();
+  await ensurePricingColumnsOnce();
   await ensureCmsSeededIfEmpty();
 
   const now = new Date().toISOString();
@@ -436,6 +509,13 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
         updatedAt: now,
       },
     });
+
+    await tx.$executeRaw`
+      UPDATE "site_settings"
+      SET "pricing_json" = ${JSON.stringify(cms.pricing)},
+          "payment_methods_json" = ${JSON.stringify(cms.site.paymentMethods ?? [])}
+      WHERE "id" = 1
+    `;
 
     await tx.heroBanner.deleteMany();
     if (cms.heroBanners.length > 0) {

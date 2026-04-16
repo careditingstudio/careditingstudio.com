@@ -6,6 +6,7 @@ import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
 import { OrderNowLink } from "@/components/OrderNowLink";
 import { ServicesMegaMenuGrid } from "@/components/ServicesMegaMenu";
 import { navItems } from "@/config/site";
+import type { ServiceRow } from "@/lib/cms-types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -29,12 +30,13 @@ function NavLink({
     return (
       <Link
         href={href}
+        prefetch
         onClick={onNavigate}
         className={[
-          "rounded-md px-4 py-3 text-[15px] font-medium leading-tight tracking-tight transition-colors sm:text-[16px]",
+          "rounded-xl border border-transparent px-4 py-3 text-[15px] font-medium leading-tight tracking-tight transition-all duration-300 ease-out sm:text-[16px]",
           active
-            ? "text-white underline decoration-[var(--accent)] decoration-2 underline-offset-[8px]"
-            : "text-white/75 hover:text-white",
+            ? "border-white/30 bg-white/15 text-white shadow-[0_10px_24px_-14px_rgba(255,255,255,0.9)]"
+            : "text-white/75 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10 hover:text-white hover:shadow-[0_14px_28px_-16px_rgba(255,255,255,0.85)]",
         ].join(" ")}
       >
         {label}
@@ -45,12 +47,13 @@ function NavLink({
   return (
     <Link
       href={href}
+      prefetch
       onClick={onNavigate}
         className={[
-          "rounded-md px-4 py-3 text-[15px] font-medium leading-tight tracking-tight transition-colors sm:text-[16px]",
+          "rounded-xl border border-transparent px-4 py-3 text-[15px] font-medium leading-tight tracking-tight transition-all duration-300 ease-out sm:text-[16px]",
           active
-            ? "bg-[var(--accent-subtle)] text-[var(--foreground)]"
-            : "text-[var(--muted)] hover:bg-black/[0.04] hover:text-[var(--foreground)] dark:hover:bg-white/[0.06]",
+            ? "border-[var(--accent)]/35 bg-[var(--accent-subtle)] text-[var(--foreground)] shadow-[0_10px_26px_-14px_var(--accent)]"
+            : "text-[var(--muted)] hover:-translate-y-0.5 hover:border-[var(--line)] hover:bg-white/70 hover:text-[var(--foreground)] hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.65)] dark:hover:bg-white/[0.08]",
         ].join(" ")}
     >
       {label}
@@ -107,9 +110,13 @@ function IconMenu({ open, className }: { open: boolean; className?: string }) {
 
 type SiteHeaderProps = {
   brandName?: string;
+  services?: ServiceRow[];
 };
 
-export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps) {
+export function SiteHeader({
+  brandName = "Car Editing Studio",
+  services = [],
+}: SiteHeaderProps) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
@@ -183,17 +190,17 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
 
   const servicesTriggerClasses = (hovering: boolean) =>
     [
-      "inline-flex items-center gap-1.5 rounded-md px-4 py-3 text-[15px] font-medium leading-tight tracking-tight transition-colors sm:text-[16px]",
+      "inline-flex items-center gap-1.5 rounded-xl border border-transparent px-4 py-3 text-[15px] font-medium leading-tight tracking-tight transition-all duration-300 ease-out sm:text-[16px]",
       navVariant === "overlay"
         ? [
             servicesActive || hovering
-              ? "text-white underline decoration-[var(--accent)] decoration-2 underline-offset-[8px]"
-              : "text-white/75 hover:text-white",
+              ? "border-white/30 bg-white/15 text-white shadow-[0_10px_24px_-14px_rgba(255,255,255,0.9)]"
+              : "text-white/75 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10 hover:text-white hover:shadow-[0_14px_28px_-16px_rgba(255,255,255,0.85)]",
           ].join(" ")
         : [
             servicesActive || hovering
-              ? "bg-[var(--accent-subtle)] text-[var(--foreground)]"
-              : "text-[var(--muted)] hover:bg-black/[0.04] hover:text-[var(--foreground)] dark:hover:bg-white/[0.06]",
+              ? "border-[var(--accent)]/35 bg-[var(--accent-subtle)] text-[var(--foreground)] shadow-[0_10px_26px_-14px_var(--accent)]"
+              : "text-[var(--muted)] hover:-translate-y-0.5 hover:border-[var(--line)] hover:bg-white/70 hover:text-[var(--foreground)] hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.65)] dark:hover:bg-white/[0.08]",
           ].join(" "),
     ].join(" ");
 
@@ -233,6 +240,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
                 >
                   <Link
                     href="/services"
+                    prefetch
                     className={servicesTriggerClasses(servicesHover)}
                     aria-expanded={servicesHover}
                     aria-haspopup="true"
@@ -245,42 +253,47 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
                       ].join(" ")}
                     />
                   </Link>
-                  {servicesHover ? (
+                  <div
+                    className={[
+                      "absolute left-1/2 top-full z-[80] w-[min(calc(100vw-2rem),56rem)] -translate-x-1/2 pt-3 transition-all duration-250 ease-out",
+                      servicesHover
+                        ? "pointer-events-auto translate-y-0 opacity-100"
+                        : "pointer-events-none -translate-y-2 opacity-0",
+                    ].join(" ")}
+                    onMouseEnter={openServicesHover}
+                    onMouseLeave={scheduleCloseServicesHover}
+                  >
                     <div
-                      className="absolute left-1/2 top-full z-[80] w-[min(calc(100vw-2rem),56rem)] -translate-x-1/2 pt-3"
-                      onMouseEnter={openServicesHover}
-                      onMouseLeave={scheduleCloseServicesHover}
+                      className="max-h-[min(70vh,640px)] overflow-y-auto rounded-2xl border border-white/50 bg-white/95 p-5 shadow-[0_26px_80px_-28px_rgba(0,0,0,0.55)] ring-1 ring-zinc-900/[0.06] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/95 dark:ring-white/10 sm:p-6"
                     >
-                      <div
-                        className="max-h-[min(70vh,640px)] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl ring-1 ring-zinc-900/[0.07] dark:bg-zinc-900 dark:ring-white/10 sm:p-6"
-                      >
-                        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                          <p
-                            className={`${display.className} text-base font-semibold text-zinc-900 dark:text-zinc-50`}
-                          >
-                            Services
-                          </p>
-                          <Link
-                            href="/services"
-                            className={`${sans.className} text-sm font-semibold text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]`}
-                            onClick={() => {
-                              setServicesHover(false);
-                              clearHoverTimer();
-                            }}
-                          >
-                            View all services
-                          </Link>
-                        </div>
-                        <ServicesMegaMenuGrid
-                          dense
-                          onNavigate={() => {
+                      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <p
+                          className={`${display.className} text-base font-semibold text-zinc-900 dark:text-zinc-50`}
+                        >
+                          Services
+                        </p>
+                        <Link
+                          href="/services"
+                          prefetch
+                          className={`${sans.className} rounded-md px-2 py-1 text-sm font-semibold text-[var(--accent)] transition-all duration-200 hover:bg-[var(--accent-subtle)] hover:text-[var(--accent-hover)]`}
+                          onClick={() => {
                             setServicesHover(false);
                             clearHoverTimer();
                           }}
-                        />
+                        >
+                          View all services
+                        </Link>
                       </div>
+                      <ServicesMegaMenuGrid
+                        dense
+                        services={services}
+                        onNavigate={() => {
+                          setServicesHover(false);
+                          clearHoverTimer();
+                        }}
+                      />
                     </div>
-                  ) : null}
+                  </div>
                 </div>
               );
             }
@@ -375,6 +388,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
                         <ServicesMegaMenuGrid
                           dense
                           tone={overlayNav ? "overlay" : "default"}
+                          services={services}
                           onNavigate={() => {
                             setMenuOpen(false);
                             setServicesMobileOpen(false);
@@ -382,6 +396,7 @@ export function SiteHeader({ brandName = "Car Editing Studio" }: SiteHeaderProps
                         />
                         <Link
                           href="/services"
+                          prefetch
                           onClick={() => {
                             setMenuOpen(false);
                             setServicesMobileOpen(false);

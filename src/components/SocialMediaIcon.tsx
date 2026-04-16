@@ -1,4 +1,18 @@
-import type { ReactNode } from "react";
+import type { CSSProperties } from "react";
+import {
+  siFacebook,
+  siInstagram,
+  siTiktok,
+  siWhatsapp,
+  siX,
+  siYoutube,
+} from "simple-icons";
+import type { SimpleIcon } from "simple-icons";
+
+const LINKEDIN_ICON = {
+  hex: "0A66C2",
+  path: "M20.447 20.452H16.89V14.87c0-1.331-.027-3.045-1.856-3.045c-1.858 0-2.142 1.45-2.142 2.948v5.679H9.336V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85c3.601 0 4.266 2.37 4.266 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.124a2.062 2.062 0 0 1 0 4.124zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+} as const;
 
 export function cleanSocialUrl(url: string): string {
   const u = url.trim();
@@ -7,97 +21,42 @@ export function cleanSocialUrl(url: string): string {
   return `https://${u}`;
 }
 
-function Icon({
-  children,
-  className,
-  size = 18,
-}: {
-  children: ReactNode;
-  className?: string;
-  size?: number;
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className={className}
-    >
-      {children}
-    </svg>
-  );
+function pickIcon(label: string): SimpleIcon | null {
+  const key = label.trim().toLowerCase();
+  if (key.includes("instagram")) return siInstagram;
+  if (key.includes("facebook")) return siFacebook;
+  if (key.includes("twitter") || key === "x" || key.includes("x (twitter)")) return siX;
+  if (key.includes("youtube")) return siYoutube;
+  if (key.includes("tiktok")) return siTiktok;
+  if (key.includes("whatsapp")) return siWhatsapp;
+  return null;
 }
 
-/** Picks an icon from the link label (e.g. “Instagram”, “Facebook”). */
+export function socialBrandColor(label: string): string {
+  if (label.trim().toLowerCase().includes("linkedin")) return `#${LINKEDIN_ICON.hex}`;
+  const icon = pickIcon(label);
+  return icon ? `#${icon.hex}` : "#9ca3af";
+}
+
+/** Official filled brand icon from Simple Icons. */
 export function SocialMediaIcon({
   label,
-  size = 18,
+  size = 24,
 }: {
   label: string;
   size?: number;
 }) {
-  const k = label.trim().toLowerCase();
-  if (k.includes("instagram")) {
-    return (
-      <Icon size={size}>
-        <rect x="4" y="4" width="16" height="16" rx="4" />
-        <circle cx="12" cy="12" r="3.5" />
-        <path d="M16.5 7.5h.01" />
-      </Icon>
-    );
-  }
-  if (k.includes("facebook")) {
-    return (
-      <Icon size={size}>
-        <path d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v3H7v3h3v7h3v-7h3l1-3h-4V9c0-.55.45-1 1-1Z" />
-      </Icon>
-    );
-  }
-  if (k.includes("linkedin")) {
-    return (
-      <Icon size={size}>
-        <path d="M6 9v12" />
-        <path d="M6 6.5a1.5 1.5 0 1 0 0-.01" />
-        <path d="M10 9v12" />
-        <path d="M10 14.5c0-3 4-3.25 4-0.5V21" />
-        <path d="M14 14v7" />
-        <path d="M10 9h4" />
-      </Icon>
-    );
-  }
-  if (k.includes("twitter") || k === "x" || k.includes("x (twitter)")) {
-    return (
-      <Icon size={size}>
-        <path d="M4 4l16 16" />
-        <path d="M20 4 4 20" />
-      </Icon>
-    );
-  }
-  if (k.includes("youtube")) {
-    return (
-      <Icon size={size}>
-        <path d="M21 8s0-2-2-2H5C3 6 3 8 3 8v8s0 2 2 2h14c2 0 2-2 2-2V8Z" />
-        <path d="M10 9.5 16 12l-6 2.5v-5Z" />
-      </Icon>
-    );
-  }
-  if (k.includes("tiktok")) {
-    return (
-      <Icon size={size}>
-        <path d="M14 3v11.5a4.5 4.5 0 1 1-4-4.47" />
-        <path d="M14 7c1.5 2 3 3 5 3" />
-      </Icon>
-    );
-  }
+  const linkedInIcon = label.trim().toLowerCase().includes("linkedin") ? LINKEDIN_ICON : null;
+  const icon = pickIcon(label);
+  const fallbackPath = "M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20Zm4.29 13.71a1 1 0 0 1-1.41 1.41L12 14.24l-2.88 2.88a1 1 0 0 1-1.41-1.41L10.59 12L7.71 9.12a1 1 0 0 1 1.41-1.41L12 10.59l2.88-2.88a1 1 0 1 1 1.41 1.41L13.41 12Z";
+  const path = linkedInIcon?.path ?? icon?.path ?? fallbackPath;
+  const style: CSSProperties = {
+    display: "block",
+  };
+
   return (
-    <Icon size={size}>
-      <path d="M12 21s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
-    </Icon>
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden style={style}>
+      <path d={path} />
+    </svg>
   );
 }

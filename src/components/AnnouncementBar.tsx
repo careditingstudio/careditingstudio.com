@@ -1,9 +1,9 @@
 "use client";
 
 import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
-import { cleanSocialUrl, SocialMediaIcon } from "@/components/SocialMediaIcon";
+import { cleanSocialUrl, socialBrandColor, SocialMediaIcon } from "@/components/SocialMediaIcon";
 import type { SiteSettings } from "@/lib/cms-types";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
@@ -209,7 +209,7 @@ export function AnnouncementBar({ contact }: Props) {
 
         {socials.length > 0 ? (
           <ul
-            className="flex shrink-0 items-center gap-3.5 sm:gap-4"
+            className="flex shrink-0 items-center gap-2.5 sm:gap-3 lg:gap-4"
             aria-label="Social media"
           >
             {socials.map((s) => (
@@ -220,14 +220,15 @@ export function AnnouncementBar({ contact }: Props) {
                   rel="noopener noreferrer"
                   aria-label={s.label}
                   title={s.label}
+                  style={{ "--social-brand": socialBrandColor(s.label) } as CSSProperties}
                   className={[
-                    "block text-current transition-opacity",
+                    "inline-flex items-center justify-center transition-all duration-200 ease-in-out hover:scale-110 hover:text-[var(--social-brand)]",
                     overlay
-                      ? "text-white/70 hover:opacity-100 hover:text-white"
-                      : "text-[var(--announcement-fg)] opacity-80 hover:opacity-100",
+                      ? "text-white/80"
+                      : "text-[#666]",
                   ].join(" ")}
                 >
-                  <SocialMediaIcon label={s.label} size={22} />
+                  <SocialMediaIcon label={s.label} size={18} />
                 </a>
               </li>
             ))}

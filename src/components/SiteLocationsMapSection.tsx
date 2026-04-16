@@ -1,4 +1,5 @@
 import type { SiteSettings } from "@/lib/cms-types";
+import { telHref } from "@/lib/tel-href";
 
 function cleanUrl(url: string): string {
   const u = url.trim();
@@ -19,12 +20,15 @@ function fallbackEmbedSrc(query: string): string {
 
 export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
   const offices = (site.officeLocations ?? []).filter(
-    (o) => o.label.trim().length > 0 || o.address.trim().length > 0,
+    (o) =>
+      o.label.trim().length > 0 ||
+      o.address.trim().length > 0 ||
+      o.mapUrl.trim().length > 0,
   );
   if (offices.length === 0) return null;
 
   return (
-    <section className="relative z-20 border-t border-[var(--line)] bg-[var(--background)]">
+    <section className="relative z-20 border-t border-[var(--line)] bg-[linear-gradient(to_bottom,#07090f_0%,#090d1a_45%,#0d1327_78%,#121826_100%)]">
       <div className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-6 flex flex-col gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
@@ -37,6 +41,7 @@ export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
 
         <div className="grid gap-6 md:grid-cols-2">
           {offices.slice(0, 2).map((o, i) => {
+            const phoneHref = telHref(o.phone);
             const map = cleanUrl(o.mapUrl);
             const embedSrc =
               map && isEmbeddable(map)
@@ -76,16 +81,22 @@ export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
                       {o.address.trim()}
                     </p>
                   ) : null}
-                  {map ? (
-                    <a
-                      className="inline-flex text-xs font-medium text-[var(--accent)] hover:text-[var(--accent-hover)]"
-                      href={map}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open in Google Maps →
-                    </a>
-                  ) : null}
+                  {o.phone.trim() ? (
+                    phoneHref ? (
+                      <a
+                        href={phoneHref}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-[var(--accent)] transition hover:text-[var(--accent-hover)]"
+                      >
+                        {o.phone.trim()}
+                      </a>
+                    ) : (
+                      <p className="text-sm text-[var(--muted)]">{o.phone.trim()}</p>
+                    )
+                  ) : (
+                    <p className="text-xs text-[var(--muted)]">
+                      Add a phone number in Settings → Office locations.
+                    </p>
+                  )}
                 </div>
               </div>
             );

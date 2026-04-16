@@ -35,6 +35,10 @@ export function HeroBanner({ cms }: Props) {
   const textLift = -26 * fadeProgress;
   const subOpacity = Math.max(0, 1 - fadeProgress * 1.08);
   const ctaOpacity = Math.max(0, 1 - fadeProgress * 1.15);
+  const visualProgress = Math.min(1, Math.max(0, scrollY / 520));
+  const backdropBlurPx = 5.8 * visualProgress;
+  const backdropScale = 1 + 0.02 * visualProgress;
+  const darkenOpacity = 0.36 * visualProgress;
 
   return (
     <>
@@ -43,7 +47,21 @@ export function HeroBanner({ cms }: Props) {
         aria-hidden
       >
         <div className="absolute inset-0 bg-[#0a0a0a]" />
-        {banners.length > 0 ? <HeroBackdropRotator images={banners} /> : null}
+        <div
+          className="absolute inset-0"
+          style={{
+            filter: `blur(${backdropBlurPx}px)`,
+            transform: `scale(${backdropScale})`,
+            transformOrigin: "center",
+            willChange: "filter, transform",
+          }}
+        >
+          {banners.length > 0 ? <HeroBackdropRotator images={banners} /> : null}
+        </div>
+        <div
+          className="absolute inset-0 bg-black"
+          style={{ opacity: darkenOpacity }}
+        />
         {/* Top: soft black → transparent under header; mid: darker for headline/CTA; bottom: lighter so the scene stays visible */}
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.26)_0%,rgba(0,0,0,0.05)_16%,rgba(0,0,0,0.44)_38%,rgba(0,0,0,0.54)_48%,rgba(0,0,0,0.40)_66%,rgba(0,0,0,0.22)_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_82%_62%_at_50%_34%,transparent_0%,rgba(0,0,0,0.30)_100%)]" />
@@ -96,12 +114,14 @@ export function HeroBanner({ cms }: Props) {
             >
               <Link
                 href="/contact"
+                prefetch
                 className={`${sans.className} inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--accent)] px-8 text-base font-semibold leading-tight text-white shadow-lg shadow-black/30 ring-1 ring-white/15 transition hover:bg-[var(--accent-hover)] hover:shadow-xl hover:shadow-black/35 sm:min-h-12 sm:px-9`}
               >
                 Contact Us
               </Link>
               <Link
                 href="/free-trial"
+                prefetch
                 className={`${sans.className} inline-flex min-h-12 items-center justify-center rounded-xl border border-white/35 bg-white/10 px-8 text-base font-semibold leading-tight text-white ring-1 ring-white/12 transition hover:border-white/50 hover:bg-white/14 sm:min-h-12 sm:px-9`}
               >
                 Free Trial

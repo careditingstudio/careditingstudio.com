@@ -60,11 +60,16 @@ export type SiteSettings = {
   whatsappDisplay: string;
   officeLocations: {
     label: string;
+    /** Used for map search / embed only; not shown on the public site when maps are set. */
     address: string;
     mapUrl: string;
+    /** Shown under each office map and in the footer contact column. */
+    phone: string;
   }[];
   /** Social links rendered in the public footer (label + URL). */
   socialLinks: { label: string; url: string }[];
+  /** Shared payment labels shown in footer and pricing page. */
+  paymentMethods: string[];
   /**
    * Multiline (or separator-delimited) tags used for SEO.
    * Store as text so the editor can control parsing rules.
@@ -72,6 +77,73 @@ export type SiteSettings = {
   siteTagsText: string;
   siteTagsSeparator: "newline" | "comma" | "semicolon" | "pipe";
 };
+
+export type PricingPlan = {
+  packageLabel: string;
+  title: string;
+  singlePrice: string;
+  bulkPrice: string;
+  features: string[];
+  featured: boolean;
+};
+
+export type PricingContent = {
+  headingTitle: string;
+  headingDescription: string;
+  plans: PricingPlan[];
+  guaranteeTitle: string;
+  guaranteeBody: string;
+  bulkTitle: string;
+  bulkBody: string;
+  paymentTitle: string;
+};
+
+export function defaultPricingContent(): PricingContent {
+  const baseFeatures = [
+    "1000 images daily",
+    "100% guaranteed",
+    "24/7 support",
+    "Unlimited revision",
+  ];
+  return {
+    headingTitle: "Simple & Transparent Pricing",
+    headingDescription:
+      "Our car photo editing services are affordable and designed to meet your needs with speed, reliability, and high-quality professional results.",
+    plans: [
+      {
+        packageLabel: "Starter",
+        title: "Background Remove",
+        singlePrice: "$0.39",
+        bulkPrice: "$0.29",
+        features: baseFeatures,
+        featured: false,
+      },
+      {
+        packageLabel: "Most Popular",
+        title: "Background Remove",
+        singlePrice: "$0.39",
+        bulkPrice: "$0.29",
+        features: baseFeatures,
+        featured: true,
+      },
+      {
+        packageLabel: "Scale",
+        title: "Background Remove",
+        singlePrice: "$0.39",
+        bulkPrice: "$0.29",
+        features: baseFeatures,
+        featured: false,
+      },
+    ],
+    guaranteeTitle: "Corrections-Free Guarantee",
+    guaranteeBody:
+      "If your final images need any adjustments, we provide free revisions until you are completely satisfied. Your satisfaction is our top priority, and we are committed to ensuring every image looks perfect and ready to use.",
+    bulkTitle: "Bulk Order Solutions for High-Volume Projects",
+    bulkBody:
+      "We handle high-volume image processing with precision and speed. Whether you have hundreds or thousands of images, our skilled and trained team is ready to complete your project efficiently and deliver on time.",
+    paymentTitle: "Payment Method",
+  };
+}
 
 /** Editable in admin (Services); portfolio tiles reference these by id. */
 export type ServiceRow = {
@@ -334,6 +406,7 @@ export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
 
 export type CmsJson = {
   site: SiteSettings;
+  pricing: PricingContent;
   heroBanners: string[];
   floatingCar: string;
   beforeAfter: BeforeAfterPair[];
@@ -358,8 +431,8 @@ export function defaultSiteSettings(): SiteSettings {
     whatsappDial: siteConfig.whatsappDial,
     whatsappDisplay: siteConfig.whatsappDisplay,
     officeLocations: [
-      { label: "Main office", address: "", mapUrl: "" },
-      { label: "UK office", address: "", mapUrl: "" },
+      { label: "Main office", address: "", mapUrl: "", phone: "" },
+      { label: "UK office", address: "", mapUrl: "", phone: "" },
     ],
     socialLinks: [
       { label: "Facebook", url: "" },
@@ -369,6 +442,7 @@ export function defaultSiteSettings(): SiteSettings {
       { label: "YouTube", url: "" },
       { label: "TikTok", url: "" },
     ],
+    paymentMethods: ["Mastercard", "Visa", "PayPal", "Bank", "Zelle"],
     siteTagsText: "",
     siteTagsSeparator: "newline",
   };
@@ -377,6 +451,7 @@ export function defaultSiteSettings(): SiteSettings {
 export function defaultCmsJson(): CmsJson {
   return {
     site: defaultSiteSettings(),
+    pricing: defaultPricingContent(),
     /** Add real files under public/ or upload via admin — no fake paths */
     heroBanners: [],
     floatingCar: "",
@@ -690,6 +765,55 @@ function normalizeHomeReviewsBlock(
   };
 }
 
+function normalizePricingPlan(item: unknown, fallback: PricingPlan): PricingPlan {
+  if (!item || typeof item !== "object") return fallback;
+  const p = item as Record<string, unknown>;
+  const features: string[] = [];
+  if (Array.isArray(p.features)) {
+    for (const row of p.features) {
+      if (typeof row === "string" && row.trim()) features.push(row.trim());
+    }
+  }
+  return {
+    packageLabel: strField(p, "packageLabel", fallback.packageLabel).trim() || fallback.packageLabel,
+    title: strField(p, "title", fallback.title).trim() || fallback.title,
+    singlePrice: strField(p, "singlePrice", fallback.singlePrice).trim() || fallback.singlePrice,
+    bulkPrice: strField(p, "bulkPrice", fallback.bulkPrice).trim() || fallback.bulkPrice,
+    features: features.length > 0 ? features : fallback.features,
+    featured: boolField(p, "featured", fallback.featured),
+  };
+}
+
+function normalizePricingContent(raw: unknown, fallback: PricingContent): PricingContent {
+  if (!raw || typeof raw !== "object") return fallback;
+  const o = raw as Record<string, unknown>;
+  const plansRaw = Array.isArray(o.plans) ? o.plans : [];
+  const plans: PricingPlan[] = [];
+  for (let i = 0; i < plansRaw.length; i++) {
+    const fb = fallback.plans[i] ?? fallback.plans[fallback.plans.length - 1]!;
+    plans.push(normalizePricingPlan(plansRaw[i], fb));
+  }
+  if (plans.length === 0) {
+    plans.push(...fallback.plans);
+  }
+  return {
+    headingTitle: strField(o, "headingTitle", fallback.headingTitle).trim() || fallback.headingTitle,
+    headingDescription:
+      strField(o, "headingDescription", fallback.headingDescription).trim() ||
+      fallback.headingDescription,
+    plans,
+    guaranteeTitle:
+      strField(o, "guaranteeTitle", fallback.guaranteeTitle).trim() ||
+      fallback.guaranteeTitle,
+    guaranteeBody:
+      strField(o, "guaranteeBody", fallback.guaranteeBody).trim() || fallback.guaranteeBody,
+    bulkTitle: strField(o, "bulkTitle", fallback.bulkTitle).trim() || fallback.bulkTitle,
+    bulkBody: strField(o, "bulkBody", fallback.bulkBody).trim() || fallback.bulkBody,
+    paymentTitle:
+      strField(o, "paymentTitle", fallback.paymentTitle).trim() || fallback.paymentTitle,
+  };
+}
+
 function normalizeBeforeAfterPair(item: unknown): BeforeAfterPair | null {
   if (!item || typeof item !== "object") return null;
   const p = item as Record<string, unknown>;
@@ -784,28 +908,43 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       }
       if (out.length > 0) d.socialLinks = out;
     }
+    if (Array.isArray(s.paymentMethods)) {
+      const out: string[] = [];
+      const seen = new Set<string>();
+      for (const row of s.paymentMethods) {
+        if (typeof row !== "string") continue;
+        const t = row.trim();
+        if (!t) continue;
+        const key = t.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(t);
+      }
+      d.paymentMethods = out;
+    }
 
     if (Array.isArray(s.officeLocations)) {
-      const out: { label: string; address: string; mapUrl: string }[] = [];
+      const out: {
+        label: string;
+        address: string;
+        mapUrl: string;
+        phone: string;
+      }[] = [];
       const seen = new Set<string>();
       for (const row of s.officeLocations) {
         if (!row || typeof row !== "object") continue;
         const p = row as Record<string, unknown>;
-        if (
-          typeof p.label !== "string" ||
-          typeof p.address !== "string" ||
-          typeof p.mapUrl !== "string"
-        ) {
-          continue;
-        }
+        if (typeof p.label !== "string") continue;
         const label = p.label.trim();
-        const address = p.address.trim();
-        const mapUrl = p.mapUrl.trim();
         if (label.length === 0) continue;
+        const address =
+          typeof p.address === "string" ? p.address.trim() : "";
+        const mapUrl = typeof p.mapUrl === "string" ? p.mapUrl.trim() : "";
+        const phone = typeof p.phone === "string" ? p.phone.trim() : "";
         const key = label.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push({ label, address, mapUrl });
+        out.push({ label, address, mapUrl, phone });
       }
       if (out.length > 0) d.officeLocations = out;
     }
@@ -886,6 +1025,8 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     o.homeWhyChooseUs,
     base.homeWhyChooseUs,
   );
+
+  base.pricing = normalizePricingContent(o.pricing, base.pricing);
 
   if (typeof o.updatedAt === "string") base.updatedAt = o.updatedAt;
 

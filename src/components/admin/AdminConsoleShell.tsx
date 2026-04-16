@@ -29,6 +29,7 @@ function AdminChrome({ children }: { children: ReactNode }) {
   const [publicSiteUrl, setPublicSiteUrl] = useState("");
   const { cms, loading, loadError, saving, flash, save, refresh } = useAdminCms();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [unreadMailboxCount, setUnreadMailboxCount] = useState(0);
 
   useEffect(() => {
     const { protocol, hostname, port } = window.location;
@@ -36,6 +37,35 @@ function AdminChrome({ children }: { children: ReactNode }) {
     const p = port ? `:${port}` : "";
     setPublicSiteUrl(`${protocol}//${h}${p}/`);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUnreadMailboxCount() {
+      try {
+        const r = await fetch("/api/admin/mailbox?limit=1", { credentials: "include" });
+        if (!r.ok) return;
+        const j = (await r.json()) as { unreadCount?: number };
+        if (!cancelled) {
+          setUnreadMailboxCount(
+            typeof j.unreadCount === "number" && Number.isFinite(j.unreadCount) ? j.unreadCount : 0,
+          );
+        }
+      } catch {
+        if (!cancelled) setUnreadMailboxCount(0);
+      }
+    }
+
+    void loadUnreadMailboxCount();
+    const timer = window.setInterval(() => {
+      void loadUnreadMailboxCount();
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [pathname]);
 
   if (loadError) {
     return (
@@ -117,18 +147,24 @@ function AdminChrome({ children }: { children: ReactNode }) {
           </p>
           {[SITE_LINK, LIBRARY, MAILBOX].map((item) => {
             const on = pathActive(pathname, item.href);
+            const isMailbox = item.href === MAILBOX.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={[
-                  "rounded-lg px-3 py-2.5 transition-colors",
+                  "flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 transition-colors",
                   on
                     ? "bg-[var(--accent)]/15 text-white ring-1 ring-[var(--accent)]/35"
                     : "text-zinc-400 hover:bg-zinc-800/80 hover:text-zinc-100",
                 ].join(" ")}
               >
                 <span className="block text-sm font-medium">{item.label}</span>
+                {isMailbox && unreadMailboxCount > 0 ? (
+                  <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-[var(--accent)] px-2 py-0.5 text-xs font-semibold leading-none text-white">
+                    {unreadMailboxCount}
+                  </span>
+                ) : null}
               </Link>
             );
           })}

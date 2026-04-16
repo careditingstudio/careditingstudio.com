@@ -14,6 +14,8 @@ import {
   type HomeWhyChoosePillar,
   type HomeWhyChooseUsBlock,
   type PortfolioGridItem,
+  type PricingContent,
+  type PricingPlan,
   type SiteSettings,
   dedupeFeaturedPortfolioOrder,
   defaultHomeWhyChoosePillar,
@@ -87,6 +89,11 @@ type AdminCmsContextValue = {
   removeServiceFeatureItem: (index: number) => void;
   moveServiceFeatureItem: (index: number, dir: -1 | 1) => void;
   patchHomeWhyChooseUs: (patch: Partial<HomeWhyChooseUsBlock>) => void;
+  patchPricing: (patch: Partial<PricingContent>) => void;
+  setPricingPlan: (index: number, patch: Partial<PricingPlan>) => void;
+  addPricingPlan: () => void;
+  removePricingPlan: (index: number) => void;
+  movePricingPlan: (index: number, dir: -1 | 1) => void;
   setWhyChoosePillarItem: (
     index: number,
     patch: Partial<HomeWhyChoosePillar>,
@@ -214,6 +221,24 @@ function sanitizePayload(cms: CmsJson): CmsJson {
           fb.portfolioStripCtaLabel,
       };
     })(),
+    pricing: {
+      ...cms.pricing,
+      headingTitle: cms.pricing.headingTitle.trim(),
+      headingDescription: cms.pricing.headingDescription.trim(),
+      guaranteeTitle: cms.pricing.guaranteeTitle.trim(),
+      guaranteeBody: cms.pricing.guaranteeBody.trim(),
+      bulkTitle: cms.pricing.bulkTitle.trim(),
+      bulkBody: cms.pricing.bulkBody.trim(),
+      paymentTitle: cms.pricing.paymentTitle.trim(),
+      plans: cms.pricing.plans.map((p) => ({
+        packageLabel: p.packageLabel.trim(),
+        title: p.title.trim(),
+        singlePrice: p.singlePrice.trim(),
+        bulkPrice: p.bulkPrice.trim(),
+        features: p.features.map((f) => f.trim()).filter((f) => f.length > 0),
+        featured: Boolean(p.featured),
+      })),
+    },
     site: {
       ...cms.site,
       businessName: cms.site.businessName.trim(),
@@ -227,6 +252,7 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         label: o.label.trim(),
         address: o.address.trim(),
         mapUrl: o.mapUrl.trim(),
+        phone: (o.phone ?? "").trim(),
       })),
       socialLinks: (() => {
         const seen = new Set<string>();
@@ -239,6 +265,19 @@ function sanitizePayload(cms: CmsJson): CmsJson {
           if (seen.has(key)) continue;
           seen.add(key);
           out.push({ label, url });
+        }
+        return out;
+      })(),
+      paymentMethods: (() => {
+        const out: string[] = [];
+        const seen = new Set<string>();
+        for (const row of cms.site.paymentMethods ?? []) {
+          const t = row.trim();
+          if (!t) continue;
+          const key = t.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(t);
         }
         return out;
       })(),
@@ -635,6 +674,55 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const patchPricing = useCallback((patch: Partial<PricingContent>) => {
+    setCms((c) => (c ? { ...c, pricing: { ...c.pricing, ...patch } } : c));
+  }, []);
+
+  const setPricingPlan = useCallback((index: number, patch: Partial<PricingPlan>) => {
+    setCms((c) => {
+      if (!c) return c;
+      const plans = c.pricing.plans.map((row, k) => (k === index ? { ...row, ...patch } : row));
+      return { ...c, pricing: { ...c.pricing, plans } };
+    });
+  }, []);
+
+  const addPricingPlan = useCallback(() => {
+    setCms((c) => {
+      if (!c) return c;
+      const base = c.pricing.plans[c.pricing.plans.length - 1] ?? {
+        packageLabel: "Package",
+        title: "Background Remove",
+        singlePrice: "$0.39",
+        bulkPrice: "$0.29",
+        features: ["1000 images daily", "100% guaranteed", "24/7 support", "Unlimited revision"],
+        featured: false,
+      };
+      return {
+        ...c,
+        pricing: { ...c.pricing, plans: [...c.pricing.plans, { ...base, featured: false }] },
+      };
+    });
+  }, []);
+
+  const removePricingPlan = useCallback((index: number) => {
+    setCms((c) =>
+      c
+        ? { ...c, pricing: { ...c.pricing, plans: c.pricing.plans.filter((_, k) => k !== index) } }
+        : c,
+    );
+  }, []);
+
+  const movePricingPlan = useCallback((index: number, dir: -1 | 1) => {
+    setCms((c) => {
+      if (!c) return c;
+      const j = index + dir;
+      if (j < 0 || j >= c.pricing.plans.length) return c;
+      const plans = [...c.pricing.plans];
+      [plans[index], plans[j]] = [plans[j]!, plans[index]!];
+      return { ...c, pricing: { ...c.pricing, plans } };
+    });
+  }, []);
+
   const setWhyChoosePillarItem = useCallback(
     (index: number, patch: Partial<HomeWhyChoosePillar>) => {
       setCms((c) => {
@@ -754,6 +842,11 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       removeServiceFeatureItem,
       moveServiceFeatureItem,
       patchHomeWhyChooseUs,
+      patchPricing,
+      setPricingPlan,
+      addPricingPlan,
+      removePricingPlan,
+      movePricingPlan,
       setWhyChoosePillarItem,
       addWhyChoosePillar,
       removeWhyChoosePillar,
@@ -794,6 +887,11 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       addHomeReview,
       removeHomeReview,
       moveHomeReview,
+      patchPricing,
+      setPricingPlan,
+      addPricingPlan,
+      removePricingPlan,
+      movePricingPlan,
       setWhyChoosePillarItem,
       addWhyChoosePillar,
       removeWhyChoosePillar,

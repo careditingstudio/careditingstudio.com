@@ -25,7 +25,12 @@ export async function PUT(request: Request) {
   const merged = normalizeCmsJson(body) as CmsJson;
   await writeCms(merged);
   revalidatePath("/");
+  revalidatePath("/services");
+  revalidatePath("/pricing");
   revalidatePath("/portfolio");
+  revalidatePath("/about");
+  revalidatePath("/contact");
+  revalidatePath("/free-trial");
 
   return NextResponse.json(await readCms());
 }

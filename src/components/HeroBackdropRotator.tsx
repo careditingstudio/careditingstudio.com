@@ -20,9 +20,14 @@ export function HeroBackdropRotator({ images }: { images: string[] }) {
 
   if (list.length === 1) {
     return (
-      <div
-        className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat motion-reduce:scale-100"
-        style={{ backgroundImage: `url('${list[0]}')` }}
+      <img
+        src={list[0]}
+        alt=""
+        draggable={false}
+        decoding="async"
+        loading="eager"
+        fetchPriority="high"
+        className="absolute inset-0 h-full w-full scale-105 select-none object-cover object-center motion-reduce:scale-100"
       />
     );
   }
@@ -30,13 +35,16 @@ export function HeroBackdropRotator({ images }: { images: string[] }) {
   return (
     <div className="absolute inset-0 overflow-hidden">
       {list.map((src, i) => (
-        <div
+        <img
           key={src}
-          className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat motion-reduce:scale-100 motion-safe:transition-opacity motion-safe:duration-[0.45s] motion-safe:ease-out motion-reduce:transition-none"
-          style={{
-            backgroundImage: `url('${src}')`,
-            opacity: i === index ? 1 : 0,
-          }}
+          src={src}
+          alt=""
+          draggable={false}
+          decoding="async"
+          loading={i < 2 ? "eager" : "lazy"}
+          fetchPriority={i === 0 ? "high" : i === 1 ? "auto" : "low"}
+          className="absolute inset-0 h-full w-full scale-105 select-none object-cover object-center motion-reduce:scale-100 motion-safe:transition-opacity motion-safe:duration-[0.45s] motion-safe:ease-out motion-reduce:transition-none"
+          style={{ opacity: i === index ? 1 : 0 }}
           aria-hidden={i !== index}
         />
       ))}

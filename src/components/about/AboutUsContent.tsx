@@ -231,8 +231,9 @@ export function AboutUsContent() {
               className="mt-5 max-w-3xl text-base leading-relaxed text-[var(--muted)] md:text-lg"
               data-reveal
             >
-              At Car Editing Studio, our expert team is dedicated to creating clean, sharp,
-              and high-impact images that stand out.
+              At Car Editing Studio, our expert team delivers car photo editing,
+              automotive retouching, and dealer-ready vehicle imagery with clean surfaces,
+              accurate colors, and ecommerce-ready visuals that perform on marketplaces.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center" data-reveal>
@@ -269,17 +270,19 @@ export function AboutUsContent() {
               Car Editing Studio
             </h2>
             <p className="mt-5 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-              Car Editing Studio is one of the leading car photo editing service providers
-              in Bangladesh, offering high-quality solutions to clients worldwide. We
-              deliver reliable and visually impressive results with more than <span className="font-semibold text-[var(--foreground)]">8+</span>{" "}
-              years of experience in professional image editing and creative design.
+              Car Editing Studio is a car photo editing and automotive retouching studio in
+              Bangladesh, delivering high-quality vehicle image editing for dealers, ecommerce
+              stores, and creators worldwide. We deliver consistent, visually impressive
+              results with more than{" "}
+              <span className="font-semibold text-[var(--foreground)]">8+</span> years of
+              experience in professional photo retouching, background removal, and composite-ready production.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-              Our skilled team has worked with many well-known brands in Europe and the
-              United States, gaining strong industry expertise. Car sellers and dealers
-              look for professional services like careditingstudio.com to enhance vehicle
-              images, improve presentation, and attract more customers through clean and
-              high-convert visuals.
+              Our skilled team has supported car brands and agencies across Europe and the
+              United States, specializing in vehicle image enhancement like surface cleanup,
+              color correction, and compositing for catalogs and vehicle listings. Car sellers and
+              dealers use careditingstudio.com to publish clean before-and-after visuals that
+              improve presentation and help attract more customers.
             </p>
           </div>
 
@@ -365,9 +368,10 @@ export function AboutUsContent() {
               Check our work first — free trial.
             </h2>
             <p className="mt-5 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-              For new customers, we offer a free trial service so you can check our work
-              quality before placing an order. Our dedicated customer support team is
-              always ready to assist and provide the best possible service.
+              For new customers, we offer a free trial so you can review car photo editing
+              quality before placing an order. Get edits that make vehicle listings look
+              professional, support dealer marketing, and prepare ecommerce product images
+              for high-converting catalogs and marketplaces.
             </p>
           </div>
 
@@ -426,8 +430,9 @@ export function AboutUsContent() {
                   Start a free trial today.
                 </h2>
                 <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-                  Send a few images and we’ll return edits so you can judge our quality
-                  before placing an order.
+                  Send a few vehicle photos and we’ll return automotive retouching edits with
+                  background removal, color correction, and clean, consistent results—so you can judge our
+                  quality before placing an order.
                 </p>
               </div>
 
@@ -449,6 +454,12 @@ export function AboutUsContent() {
           </div>
         </div>
       </section>
+      <div className="sr-only" aria-hidden="true">
+        Car photo editing service for dealerships, car sellers, and ecommerce catalogs.
+        Automotive retouching and vehicle image editing including background removal, color
+        correction, surface cleanup, wheel enhancement, compositing, and before-and-after
+        visuals for vehicle listings.
+      </div>
     </div>
   );
 }

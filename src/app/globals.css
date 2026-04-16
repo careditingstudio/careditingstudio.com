@@ -112,11 +112,59 @@ body {
   will-change: transform;
 }
 
+@keyframes route-loader-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes route-loader-car-slide {
+  100% {
+    transform: translate3d(-130%, 0, 0) scale(1);
+  }
+  0% {
+    transform: translate3d(130%, 0, 0) scale(1);
+  }
+}
+
+.route-loader-spin {
+  animation: route-loader-spin 1.2s linear infinite;
+  will-change: transform;
+}
+
+.route-loader-car-motion {
+  animation: route-loader-car-slide 1.9s linear infinite;
+  will-change: transform;
+}
+
+@keyframes route-loader-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.route-loader-dot {
+  animation: route-loader-dot-pulse 0.9s ease-in-out infinite;
+}
+
 @media (max-width: 1023px) {
   .home-intro-car-loop {
     animation-name: homeIntroCarLoopMobile;
     animation-duration: 5.5s;
     animation-timing-function: cubic-bezier(0.45, 0.05, 0.25, 1);
+  }
+
+  .route-loader-car-motion {
+    animation-duration: 1.75s;
   }
 }
 
@@ -299,5 +347,17 @@ body {
     animation: none;
     transform: none;
     will-change: auto;
+  }
+  .route-loader-spin {
+    animation: none;
+  }
+  .route-loader-car-motion {
+    animation: none;
+    transform: none;
+  }
+  .route-loader-dot {
+    animation: none;
+    opacity: 0.75;
+    transform: none;
   }
 }

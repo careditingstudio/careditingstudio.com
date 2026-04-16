@@ -2,6 +2,7 @@ import { InnerPageBody } from "@/components/InnerPageBody";
 import { PageHeading } from "@/components/PageHeading";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { readCms } from "@/lib/cms-store";
+import { telHref } from "@/lib/tel-href";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,7 +15,11 @@ export default async function ContactPage() {
   const site = cms.site;
   const wa = `https://wa.me/${site.whatsappDial}`;
   const offices = (site.officeLocations ?? []).filter(
-    (o) => o.label.trim().length > 0 || o.address.trim().length > 0,
+    (o) =>
+      o.label.trim().length > 0 ||
+      o.address.trim().length > 0 ||
+      o.mapUrl.trim().length > 0 ||
+      o.phone.trim().length > 0,
   );
 
   return (
@@ -65,28 +70,37 @@ export default async function ContactPage() {
                     Offices
                   </p>
                   <div className="mt-4 space-y-4">
-                    {offices.slice(0, 2).map((o, i) => (
-                      <div key={`${o.label}-${i}`} className="space-y-1">
-                        <p className="text-sm font-semibold text-[var(--foreground)]">
-                          {o.label.trim() || `Office ${i + 1}`}
-                        </p>
-                        {o.address.trim() ? (
-                          <p className="text-sm leading-relaxed text-[var(--muted)]">
-                            {o.address.trim()}
+                    {offices.slice(0, 2).map((o, i) => {
+                      const ph = telHref(o.phone);
+                      return (
+                        <div key={`${o.label}-${i}`} className="space-y-1">
+                          <p className="text-sm font-semibold text-[var(--foreground)]">
+                            {o.label.trim() || `Office ${i + 1}`}
                           </p>
-                        ) : null}
-                        {o.mapUrl.trim() ? (
-                          <a
-                            href={o.mapUrl.trim()}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)]"
-                          >
-                            View on map →
-                          </a>
-                        ) : null}
-                      </div>
-                    ))}
+                          {o.address.trim() ? (
+                            <p className="text-sm leading-relaxed text-[var(--muted)]">
+                              {o.address.trim()}
+                            </p>
+                          ) : null}
+                          {o.phone.trim() ? (
+                            ph ? (
+                              <a
+                                href={ph}
+                                className="inline-flex text-sm font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)]"
+                              >
+                                {o.phone.trim()}
+                              </a>
+                            ) : (
+                              <p className="text-sm text-[var(--muted)]">{o.phone.trim()}</p>
+                            )
+                          ) : (
+                            <p className="text-xs text-[var(--muted)]">
+                              Phone not set — add it in Settings.
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ) : null}

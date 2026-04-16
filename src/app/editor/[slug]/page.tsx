@@ -1,5 +1,6 @@
 import { AdminHomePageContent } from "@/components/admin/AdminHomePageContent";
 import { AdminPortfolioContent } from "@/components/admin/AdminPortfolioContent";
+import { AdminPricingContent } from "@/components/admin/AdminPricingContent";
 import { AdminServicesContent } from "@/components/admin/AdminServicesContent";
 import { AdminPagePlaceholder } from "@/components/admin/AdminPagePlaceholder";
 import { ADMIN_PAGE_NAV } from "@/config/admin-pages";
@@ -26,6 +27,10 @@ export default async function AdminEditorPage({ params }: Props) {
 
   if (slug === "services") {
     return <AdminServicesContent />;
+  }
+
+  if (slug === "pricing") {
+    return <AdminPricingContent />;
   }
 
   return <AdminPagePlaceholder title={item.label} />;

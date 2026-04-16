@@ -122,3 +122,9 @@ export async function adminMarkMailboxRead(id: number, read: boolean) {
   });
 }
 
+export async function adminCountUnreadMailboxMessages() {
+  return prisma.mailboxMessage.count({
+    where: { readAt: null },
+  });
+}
+
