@@ -10,10 +10,18 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
   return (
     <>
       <DevPostgresDisconnectedBanner show={devDbUnreachable} />
-      <SiteTopChrome site={cms.site} services={cms.services}>
+      <SiteTopChrome
+        site={cms.site}
+        services={cms.services}
+        servicePages={cms.servicePages}
+      >
         {children}
         <SiteLocationsMapSection site={cms.site} />
-        <SiteFooter site={cms.site} services={cms.services} />
+        <SiteFooter
+          site={cms.site}
+          services={cms.services}
+          servicePages={cms.servicePages}
+        />
       </SiteTopChrome>
     </>
   );

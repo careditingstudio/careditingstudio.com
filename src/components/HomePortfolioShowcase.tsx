@@ -110,10 +110,10 @@ export function HomePortfolioShowcase({ cms, embedded = false }: Props) {
   if (embedded) {
     return (
       <div
-        className="px-4 pb-2 pt-10 sm:px-6 sm:pt-12"
+        className="px-4 pb-2 pt-10 sm:px-6 sm:pt-12 lg:px-8"
         aria-labelledby="home-portfolio-heading"
       >
-        <div className="mx-auto max-w-7xl">{inner}</div>
+        <div className="mx-auto max-w-[82rem]">{inner}</div>
       </div>
     );
   }
@@ -124,7 +124,7 @@ export function HomePortfolioShowcase({ cms, embedded = false }: Props) {
       aria-labelledby="home-portfolio-heading"
     >
       <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle_at_50%_0%,#fff_0%,transparent_55%)]" />
-      <div className="relative mx-auto max-w-6xl px-5 py-9 sm:px-8 sm:py-10">
+      <div className="relative mx-auto max-w-[82rem] px-4 py-9 sm:px-6 sm:py-10 lg:px-8">
         {inner}
       </div>
     </section>

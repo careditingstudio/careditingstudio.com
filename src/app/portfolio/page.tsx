@@ -18,7 +18,7 @@ export default async function PortfolioPage() {
         title="Explore Our Creative Portfolio"
         description="Our showcase highlights the quality and creativity behind our work. It offers a glimpse into our success stories, demonstrating real results and professional excellence."
       />
-      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+      <div className="mx-auto max-w-[88rem] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <PortfolioGrid cms={cms} />
       </div>
     </>

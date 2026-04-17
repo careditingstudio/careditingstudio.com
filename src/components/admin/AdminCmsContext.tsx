@@ -16,12 +16,15 @@ import {
   type PortfolioGridItem,
   type PricingContent,
   type PricingPlan,
+  type ServicePageContent,
   type SiteSettings,
   dedupeFeaturedPortfolioOrder,
+  defaultServicePageContent,
   defaultHomeWhyChoosePillar,
   defaultHomeWhyChooseUsBlock,
   remapFeaturedOrderAfterRemove,
   remapFeaturedOrderAfterSwap,
+  toServiceSlug,
 } from "@/lib/cms-types";
 
 function nextTempServiceId(
@@ -75,6 +78,10 @@ type AdminCmsContextValue = {
   removeService: (index: number) => void;
   moveService: (index: number, dir: -1 | 1) => void;
   setService: (index: number, patch: { name?: string }) => void;
+  setServicePage: (
+    serviceId: number,
+    patch: Partial<Omit<ServicePageContent, "serviceId">>,
+  ) => void;
   patchHomeReviews: (patch: Partial<HomeReviewsBlock>) => void;
   setHomeReviewItem: (index: number, patch: Partial<HomeReviewItem>) => void;
   addHomeReview: () => void;
@@ -139,6 +146,33 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         if (seen.has(key)) continue;
         seen.add(key);
         out.push({ id: s.id, name });
+      }
+      return out;
+    })(),
+    servicePages: (() => {
+      const out: ServicePageContent[] = [];
+      const byId = new Map(cms.servicePages.map((row) => [row.serviceId, row]));
+      for (const service of cms.services) {
+        const fallback = defaultServicePageContent(service.id, service.name);
+        const current = byId.get(service.id);
+        const name = service.name.trim() || fallback.pageTitle;
+        out.push({
+          ...fallback,
+          ...current,
+          serviceId: service.id,
+          slug: toServiceSlug(current?.slug || name),
+          pageTitle: current?.pageTitle?.trim() || name,
+          pageDescription:
+            current?.pageDescription?.trim() || fallback.pageDescription,
+          introTitle: current?.introTitle?.trim() || fallback.introTitle,
+          introBody: current?.introBody?.trim() || fallback.introBody,
+          portfolioTitle:
+            current?.portfolioTitle?.trim() || fallback.portfolioTitle,
+          selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
+            current?.selectedPortfolioIndices ?? fallback.selectedPortfolioIndices,
+            cms.portfolioGrid.length,
+          ),
+        });
       }
       return out;
     })(),
@@ -269,15 +303,25 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         return out;
       })(),
       paymentMethods: (() => {
-        const out: string[] = [];
+        const out: { label: string; imageUrl: string }[] = [];
         const seen = new Set<string>();
         for (const row of cms.site.paymentMethods ?? []) {
-          const t = row.trim();
-          if (!t) continue;
-          const key = t.toLowerCase();
+          const label = row.label.trim();
+          if (!label) continue;
+          const key = label.toLowerCase();
           if (seen.has(key)) continue;
           seen.add(key);
-          out.push(t);
+          out.push({ label, imageUrl: row.imageUrl.trim() });
+        }
+        return out;
+      })(),
+      faqs: (() => {
+        const out: { question: string; answer: string }[] = [];
+        for (const row of cms.site.faqs ?? []) {
+          const question = row.question.trim();
+          const answer = row.answer.trim();
+          if (!question && !answer) continue;
+          out.push({ question, answer });
         }
         return out;
       })(),
@@ -463,6 +507,13 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
           c.homeFeaturedPortfolioOrder ?? [],
           index,
         ),
+        servicePages: c.servicePages.map((row) => ({
+          ...row,
+          selectedPortfolioIndices: remapFeaturedOrderAfterRemove(
+            row.selectedPortfolioIndices,
+            index,
+          ),
+        })),
       };
     });
   }, []);
@@ -482,6 +533,14 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
           index,
           j,
         ),
+        servicePages: c.servicePages.map((row) => ({
+          ...row,
+          selectedPortfolioIndices: remapFeaturedOrderAfterSwap(
+            row.selectedPortfolioIndices,
+            index,
+            j,
+          ),
+        })),
       };
     });
   }, []);
@@ -506,6 +565,10 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       return {
         ...c,
         services: [...c.services, { id, name: "New service" }],
+        servicePages: [
+          ...c.servicePages,
+          defaultServicePageContent(id, "New service"),
+        ],
       };
     });
   }, []);
@@ -519,7 +582,10 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       const portfolioGrid = c.portfolioGrid.map((p) =>
         p.serviceId === removed.id ? { ...p, serviceId: null } : p,
       );
-      return { ...c, services, portfolioGrid };
+      const servicePages = c.servicePages.filter(
+        (row) => row.serviceId !== removed.id,
+      );
+      return { ...c, services, portfolioGrid, servicePages };
     });
   }, []);
 
@@ -541,7 +607,54 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
         const services = c.services.map((s, k) =>
           k === index ? { ...s, ...patch } : s,
         );
-        return { ...c, services };
+        const target = services[index];
+        if (!target) return { ...c, services };
+        const servicePages = c.servicePages.map((row) =>
+          row.serviceId === target.id
+            ? {
+                ...row,
+                slug: toServiceSlug(
+                  row.slug.trim() || patch.name?.trim() || target.name,
+                ),
+                pageTitle: row.pageTitle.trim() || target.name.trim(),
+              }
+            : row,
+        );
+        return { ...c, services, servicePages };
+      });
+    },
+    [],
+  );
+
+  const setServicePage = useCallback(
+    (
+      serviceId: number,
+      patch: Partial<Omit<ServicePageContent, "serviceId">>,
+    ) => {
+      setCms((c) => {
+        if (!c) return c;
+        const svc = c.services.find((row) => row.id === serviceId);
+        if (!svc) return c;
+        const fallback = defaultServicePageContent(serviceId, svc.name);
+        const current =
+          c.servicePages.find((row) => row.serviceId === serviceId) ?? fallback;
+        const nextRow: ServicePageContent = {
+          ...current,
+          ...patch,
+          serviceId,
+          slug: toServiceSlug((patch.slug ?? current.slug).trim()),
+          selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
+            patch.selectedPortfolioIndices ?? current.selectedPortfolioIndices,
+            c.portfolioGrid.length,
+          ),
+        };
+        const found = c.servicePages.some((row) => row.serviceId === serviceId);
+        const servicePages = found
+          ? c.servicePages.map((row) =>
+              row.serviceId === serviceId ? nextRow : row,
+            )
+          : [...c.servicePages, nextRow];
+        return { ...c, servicePages };
       });
     },
     [],
@@ -831,6 +944,7 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       removeService,
       moveService,
       setService,
+      setServicePage,
       patchHomeReviews,
       setHomeReviewItem,
       addHomeReview,
@@ -882,6 +996,7 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       removeService,
       moveService,
       setService,
+      setServicePage,
       patchHomeReviews,
       setHomeReviewItem,
       addHomeReview,

@@ -16,10 +16,10 @@ export function HomeServiceFeatures({ block }: Props) {
 
   return (
     <section
-      className="relative z-20 bg-zinc-100 px-5 pb-16 pt-10 dark:bg-zinc-900 sm:px-8 sm:pb-20 sm:pt-12"
+      className="relative z-20 bg-zinc-100 px-4 pb-16 pt-10 dark:bg-zinc-900 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8"
       aria-labelledby="home-service-features-heading"
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-[82rem]">
         {block.intro.trim() ? (
           <p
             className={`${sans.className} mx-auto mb-6 max-w-3xl text-center text-sm leading-relaxed text-[var(--muted)] sm:text-[0.9375rem]`}
@@ -54,7 +54,7 @@ export function HomeServiceFeatures({ block }: Props) {
             —
           </p>
         ) : (
-          <ul className="mt-8 grid list-none gap-3 sm:grid-cols-2 sm:gap-4 lg:mt-10 lg:grid-cols-4">
+          <ul className="mt-8 grid list-none gap-3 sm:grid-cols-2 sm:gap-4 lg:mt-10 lg:grid-cols-4 xl:gap-5">
             {items.map((card, idx) => (
               <li key={`svc-${idx}-${card.iconKey}`} className="min-w-0">
                 <article className="group flex flex-col rounded-xl bg-[var(--background)] px-4 py-4 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition duration-300 ease-out sm:px-5 sm:py-5 dark:shadow-[0_1px_2px_rgba(0,0,0,0.2)]">

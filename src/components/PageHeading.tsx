@@ -9,8 +9,8 @@ export function PageHeading({
 }) {
   return (
     <header className="border-b border-[var(--line)] bg-[var(--background)]">
-      <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16 md:py-20">
-        <div className="max-w-3xl">
+      <div className="mx-auto max-w-[88rem] px-4 py-14 sm:px-6 sm:py-16 md:py-20 lg:px-8">
+        <div className="max-w-4xl">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-2)]">
             Car Editing Studio
           </p>

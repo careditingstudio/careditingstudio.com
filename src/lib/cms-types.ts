@@ -68,14 +68,16 @@ export type SiteSettings = {
   }[];
   /** Social links rendered in the public footer (label + URL). */
   socialLinks: { label: string; url: string }[];
-  /** Shared payment labels shown in footer and pricing page. */
-  paymentMethods: string[];
+  /** Shared payment methods shown in footer and pricing page. */
+  paymentMethods: { label: string; imageUrl: string }[];
   /**
    * Multiline (or separator-delimited) tags used for SEO.
    * Store as text so the editor can control parsing rules.
    */
   siteTagsText: string;
   siteTagsSeparator: "newline" | "comma" | "semicolon" | "pipe";
+  /** Editable FAQ entries used on the public FAQ section. */
+  faqs: { question: string; answer: string }[];
 };
 
 export type PricingPlan = {
@@ -150,6 +152,46 @@ export type ServiceRow = {
   id: number;
   name: string;
 };
+
+export type ServicePageContent = {
+  serviceId: number;
+  slug: string;
+  pageTitle: string;
+  pageDescription: string;
+  introTitle: string;
+  introBody: string;
+  portfolioTitle: string;
+  selectedPortfolioIndices: number[];
+};
+
+export function toServiceSlug(name: string): string {
+  const base = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return base || "service";
+}
+
+export function defaultServicePageContent(
+  serviceId: number,
+  serviceName: string,
+): ServicePageContent {
+  const title = serviceName.trim() || "Untitled service";
+  return {
+    serviceId,
+    slug: toServiceSlug(title),
+    pageTitle: title,
+    pageDescription: `${title} for automotive dealerships and studios with consistent, production-ready quality.`,
+    introTitle: `Professional ${title}`,
+    introBody:
+      "We deliver accurate, fast, and scalable editing tailored to your workflow and visual standards.",
+    portfolioTitle: `${title} Portfolio`,
+    selectedPortfolioIndices: [],
+  };
+}
 
 /** Square before/after tile on /portfolio (same slider UI as home, grid layout). */
 export type PortfolioGridItem = {
@@ -411,6 +453,7 @@ export type CmsJson = {
   floatingCar: string;
   beforeAfter: BeforeAfterPair[];
   services: ServiceRow[];
+  servicePages: ServicePageContent[];
   portfolioGrid: PortfolioGridItem[];
   /**
    * Ordered 0-based indices into `portfolioGrid` for the homepage portfolio strip.
@@ -442,9 +485,42 @@ export function defaultSiteSettings(): SiteSettings {
       { label: "YouTube", url: "" },
       { label: "TikTok", url: "" },
     ],
-    paymentMethods: ["Mastercard", "Visa", "PayPal", "Bank", "Zelle"],
+    paymentMethods: [
+      { label: "Mastercard", imageUrl: "" },
+      { label: "Visa", imageUrl: "" },
+      { label: "PayPal", imageUrl: "" },
+      { label: "Bank", imageUrl: "" },
+      { label: "Zelle", imageUrl: "" },
+    ],
     siteTagsText: "",
     siteTagsSeparator: "newline",
+    faqs: [
+      {
+        question: "How much does your photo editing service cost?",
+        answer:
+          "Our pricing starts from $0.20 per image and varies based on complexity, including background removal, masking, retouching, and compositing. We also provide custom quotes for bulk orders.",
+      },
+      {
+        question: "What is your turnaround time for image editing?",
+        answer:
+          "Standard delivery is usually within 12 to 24 hours, depending on order size and editing requirements. Urgent projects can be prioritized on request.",
+      },
+      {
+        question: "Do you manually edit images or use automated tools?",
+        answer:
+          "We follow a fully manual Photoshop-based workflow for precise, high-quality results and consistent output across your full catalog.",
+      },
+      {
+        question: "What types of products do you edit for e-commerce?",
+        answer:
+          "We edit automotive and product images for ecommerce, including cars, parts, accessories, apparel, and other marketplace-ready product photos.",
+      },
+      {
+        question: "How do I send images and place an order?",
+        answer:
+          "You can send your images through our contact page or free trial form. After reviewing your requirements, we confirm timeline, pricing, and delivery format.",
+      },
+    ],
   };
 }
 
@@ -457,6 +533,7 @@ export function defaultCmsJson(): CmsJson {
     floatingCar: "",
     beforeAfter: [],
     services: [],
+    servicePages: [],
     portfolioGrid: [],
     homeFeaturedPortfolioOrder: [],
     homeReviews: defaultHomeReviewsBlock(),
@@ -507,6 +584,33 @@ function normalizeServiceRow(item: unknown): ServiceRow | null {
   const id =
     typeof p.id === "number" && Number.isFinite(p.id) ? Math.trunc(p.id) : 0;
   return { id, name: p.name };
+}
+
+function normalizeServicePageContent(item: unknown): ServicePageContent | null {
+  if (!item || typeof item !== "object") return null;
+  const p = item as Record<string, unknown>;
+  if (typeof p.serviceId !== "number" || !Number.isFinite(p.serviceId)) return null;
+  const serviceId = Math.trunc(p.serviceId);
+  if (serviceId === 0) return null;
+
+  const selectedPortfolioIndices = Array.isArray(p.selectedPortfolioIndices)
+    ? p.selectedPortfolioIndices
+        .filter((x): x is number => typeof x === "number" && Number.isFinite(x))
+        .map((x) => Math.max(0, Math.trunc(x)))
+    : [];
+
+  return {
+    serviceId,
+    slug: typeof p.slug === "string" ? p.slug.trim() : "",
+    pageTitle: typeof p.pageTitle === "string" ? p.pageTitle.trim() : "",
+    pageDescription:
+      typeof p.pageDescription === "string" ? p.pageDescription.trim() : "",
+    introTitle: typeof p.introTitle === "string" ? p.introTitle.trim() : "",
+    introBody: typeof p.introBody === "string" ? p.introBody.trim() : "",
+    portfolioTitle:
+      typeof p.portfolioTitle === "string" ? p.portfolioTitle.trim() : "",
+    selectedPortfolioIndices,
+  };
 }
 
 function normalizePortfolioGridItem(
@@ -909,18 +1013,38 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       if (out.length > 0) d.socialLinks = out;
     }
     if (Array.isArray(s.paymentMethods)) {
-      const out: string[] = [];
+      const out: { label: string; imageUrl: string }[] = [];
       const seen = new Set<string>();
       for (const row of s.paymentMethods) {
-        if (typeof row !== "string") continue;
-        const t = row.trim();
-        if (!t) continue;
-        const key = t.toLowerCase();
+        let label = "";
+        let imageUrl = "";
+        if (typeof row === "string") {
+          label = row.trim();
+        } else if (row && typeof row === "object") {
+          const p = row as Record<string, unknown>;
+          label = typeof p.label === "string" ? p.label.trim() : "";
+          imageUrl = typeof p.imageUrl === "string" ? p.imageUrl.trim() : "";
+        }
+        if (!label) continue;
+        const key = label.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push(t);
+        out.push({ label, imageUrl });
       }
       d.paymentMethods = out;
+    }
+
+    if (Array.isArray(s.faqs)) {
+      const out: { question: string; answer: string }[] = [];
+      for (const row of s.faqs) {
+        if (!row || typeof row !== "object") continue;
+        const p = row as Record<string, unknown>;
+        const question = typeof p.question === "string" ? p.question.trim() : "";
+        const answer = typeof p.answer === "string" ? p.answer.trim() : "";
+        if (!question && !answer) continue;
+        out.push({ question, answer });
+      }
+      d.faqs = out;
     }
 
     if (Array.isArray(s.officeLocations)) {
@@ -987,6 +1111,35 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     services = legacyCats.map((name, i) => ({ id: i + 1, name }));
   }
   base.services = services;
+  const byService = new Map<number, ServicePageContent>();
+  if (Array.isArray(o.servicePages)) {
+    for (const x of o.servicePages) {
+      const row = normalizeServicePageContent(x);
+      if (!row) continue;
+      byService.set(row.serviceId, row);
+    }
+  }
+  base.servicePages = base.services.map((svc) => {
+    const row = byService.get(svc.id);
+    const fallback = defaultServicePageContent(svc.id, svc.name);
+    if (!row) return fallback;
+    const name = svc.name.trim() || fallback.pageTitle;
+    return {
+      ...fallback,
+      ...row,
+      serviceId: svc.id,
+      slug: toServiceSlug(row.slug || name),
+      pageTitle: row.pageTitle || name,
+      pageDescription: row.pageDescription || fallback.pageDescription,
+      introTitle: row.introTitle || fallback.introTitle,
+      introBody: row.introBody || fallback.introBody,
+      portfolioTitle: row.portfolioTitle || fallback.portfolioTitle,
+      selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
+        row.selectedPortfolioIndices,
+        base.portfolioGrid.length,
+      ),
+    };
+  });
 
   const categoryToServiceId = new Map<string, number>();
   for (const s of base.services) {
@@ -1002,6 +1155,13 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     }
     base.portfolioGrid = grid;
   }
+  base.servicePages = base.servicePages.map((row) => ({
+    ...row,
+    selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
+      row.selectedPortfolioIndices,
+      base.portfolioGrid.length,
+    ),
+  }));
 
   const fo = o.homeFeaturedPortfolioOrder;
   if (Array.isArray(fo)) {

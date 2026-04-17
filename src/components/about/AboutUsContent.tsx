@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FaqSection } from "@/components/FaqSection";
 
 type Stat = { label: string; value: string; hint?: string };
 type ValueCard = { title: string; body: string };
@@ -454,6 +455,7 @@ export function AboutUsContent() {
           </div>
         </div>
       </section>
+      <FaqSection />
       <div className="sr-only" aria-hidden="true">
         Car photo editing service for dealerships, car sellers, and ecommerce catalogs.
         Automotive retouching and vehicle image editing including background removal, color

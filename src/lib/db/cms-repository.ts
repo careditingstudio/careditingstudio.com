@@ -5,12 +5,14 @@ import {
   type CmsJson,
   type HomeReviewsBlock,
   type PricingContent,
+  type ServicePageContent,
   type PortfolioGridItem,
   type ServiceRow,
   type SiteSettings,
   defaultCmsJson,
   defaultHomeReviewsBlock,
   defaultPricingContent,
+  defaultServicePageContent,
   defaultHomeServiceFeaturesBlock,
   defaultHomeWhyChooseUsBlock,
   defaultSiteSettings,
@@ -42,6 +44,7 @@ let seedAttempted = false;
  */
 let homeFeaturedPortfolioOrderColumnEnsureAttempted = false;
 let pricingColumnsEnsureAttempted = false;
+let servicePagesColumnEnsureAttempted = false;
 
 async function ensureHomeFeaturedPortfolioOrderColumnOnce(): Promise<void> {
   if (homeFeaturedPortfolioOrderColumnEnsureAttempted) return;
@@ -80,6 +83,23 @@ async function ensurePricingColumnsOnce(): Promise<void> {
   }
 }
 
+async function ensureServicePagesColumnOnce(): Promise<void> {
+  if (servicePagesColumnEnsureAttempted) return;
+  servicePagesColumnEnsureAttempted = true;
+  try {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "site_settings" ADD COLUMN IF NOT EXISTS "service_pages_json" TEXT NOT NULL DEFAULT '[]'`,
+    );
+  } catch (e) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[cms] Could not ensure service_pages_json column exists. Run: npx prisma migrate deploy",
+        e,
+      );
+    }
+  }
+}
+
 
 async function seedDefaultServices(): Promise<void> {
   const n = await prisma.service.count();
@@ -96,6 +116,7 @@ async function seedDefaultServices(): Promise<void> {
 async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
   const now = new Date().toISOString();
   await ensurePricingColumnsOnce();
+  await ensureServicePagesColumnOnce();
   await prisma.siteSettings.upsert({
     where: { id: 1 },
     create: {
@@ -125,7 +146,8 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
   await prisma.$executeRaw`
     UPDATE "site_settings"
     SET "pricing_json" = ${JSON.stringify(defaultPricingContent())},
-        "payment_methods_json" = ${JSON.stringify(site.paymentMethods ?? [])}
+        "payment_methods_json" = ${JSON.stringify(site.paymentMethods ?? [])},
+        "service_pages_json" = ${JSON.stringify([])}
     WHERE "id" = 1
   `;
 }
@@ -206,6 +228,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
   try {
     await ensureHomeFeaturedPortfolioOrderColumnOnce();
     await ensurePricingColumnsOnce();
+    await ensureServicePagesColumnOnce();
     await ensureCmsSeededIfEmpty();
 
     const siteRow = await prisma.siteSettings.findUnique({
@@ -217,9 +240,17 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
     }
 
     const extraRows = await prisma.$queryRaw<
-      { pricing_json: string | null; payment_methods_json: string | null }[]
-    >`SELECT "pricing_json", "payment_methods_json" FROM "site_settings" WHERE "id" = 1 LIMIT 1`;
-    const extra = extraRows[0] ?? { pricing_json: null, payment_methods_json: null };
+      {
+        pricing_json: string | null;
+        payment_methods_json: string | null;
+        service_pages_json: string | null;
+      }[]
+    >`SELECT "pricing_json", "payment_methods_json", "service_pages_json" FROM "site_settings" WHERE "id" = 1 LIMIT 1`;
+    const extra = extraRows[0] ?? {
+      pricing_json: null,
+      payment_methods_json: null,
+      service_pages_json: null,
+    };
 
     const site: SiteSettings = {
       businessName: siteRow.businessName,
@@ -272,12 +303,20 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         try {
           const parsed = JSON.parse(extra.payment_methods_json || "[]") as unknown;
           if (!Array.isArray(parsed)) return [];
-          const out: string[] = [];
+          const out: { label: string; imageUrl: string }[] = [];
           for (const row of parsed) {
-            if (typeof row !== "string") continue;
-            const t = row.trim();
-            if (!t) continue;
-            out.push(t);
+            if (typeof row === "string") {
+              const t = row.trim();
+              if (!t) continue;
+              out.push({ label: t, imageUrl: "" });
+              continue;
+            }
+            if (!row || typeof row !== "object") continue;
+            const p = row as Record<string, unknown>;
+            const label = typeof p.label === "string" ? p.label.trim() : "";
+            if (!label) continue;
+            const imageUrl = typeof p.imageUrl === "string" ? p.imageUrl.trim() : "";
+            out.push({ label, imageUrl });
           }
           return out;
         } catch {
@@ -291,6 +330,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         siteRow.siteTagsSeparator === "pipe"
           ? siteRow.siteTagsSeparator
           : "newline",
+      faqs: [],
     };
 
     const heroRows = await prisma.heroBanner.findMany({
@@ -329,6 +369,44 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       id: r.id,
       name: r.name,
     }));
+    const servicePages: ServicePageContent[] = (() => {
+      const map = new Map<number, ServicePageContent>();
+      try {
+        const raw = JSON.parse(extra.service_pages_json || "[]") as unknown;
+        if (Array.isArray(raw)) {
+          for (const row of raw) {
+            if (!row || typeof row !== "object") continue;
+            const p = row as Record<string, unknown>;
+            if (typeof p.serviceId !== "number" || !Number.isFinite(p.serviceId)) {
+              continue;
+            }
+            const serviceId = Math.trunc(p.serviceId);
+            map.set(serviceId, {
+              serviceId,
+              slug: typeof p.slug === "string" ? p.slug : "",
+              pageTitle: typeof p.pageTitle === "string" ? p.pageTitle : "",
+              pageDescription:
+                typeof p.pageDescription === "string" ? p.pageDescription : "",
+              introTitle: typeof p.introTitle === "string" ? p.introTitle : "",
+              introBody: typeof p.introBody === "string" ? p.introBody : "",
+              portfolioTitle:
+                typeof p.portfolioTitle === "string" ? p.portfolioTitle : "",
+              selectedPortfolioIndices: Array.isArray(p.selectedPortfolioIndices)
+                ? p.selectedPortfolioIndices
+                    .filter(
+                      (x): x is number =>
+                        typeof x === "number" && Number.isFinite(x),
+                    )
+                    .map((x) => Math.max(0, Math.trunc(x)))
+                : [],
+            });
+          }
+        }
+      } catch {
+        // fall through to defaults
+      }
+      return services.map((svc) => map.get(svc.id) ?? defaultServicePageContent(svc.id, svc.name));
+    })();
 
     const pfRows = await prisma.portfolioItem.findMany({
       orderBy: { sortOrder: "asc" },
@@ -426,6 +504,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
         floatingCar: siteRow.floatingCar ?? "",
         beforeAfter,
         services,
+        servicePages,
         portfolioGrid,
         homeFeaturedPortfolioOrder,
         homeReviews,
@@ -456,6 +535,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
 async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
   await ensureHomeFeaturedPortfolioOrderColumnOnce();
   await ensurePricingColumnsOnce();
+  await ensureServicePagesColumnOnce();
   await ensureCmsSeededIfEmpty();
 
   const now = new Date().toISOString();
@@ -601,6 +681,18 @@ async function writeCmsInternal(cms: CmsJson): Promise<CmsJson> {
       const mapped = idMap.has(sid) ? idMap.get(sid)! : sid;
       return finalIds.has(mapped) ? mapped : null;
     }
+
+    const normalizedServicePages = (cms.servicePages ?? [])
+      .map((row) => ({
+        ...row,
+        serviceId: resolveServiceId(row.serviceId) ?? 0,
+      }))
+      .filter((row) => row.serviceId > 0);
+    await tx.$executeRaw`
+      UPDATE "site_settings"
+      SET "service_pages_json" = ${JSON.stringify(normalizedServicePages)}
+      WHERE "id" = 1
+    `;
 
     await tx.portfolioItem.deleteMany();
     if (cms.portfolioGrid.length > 0) {

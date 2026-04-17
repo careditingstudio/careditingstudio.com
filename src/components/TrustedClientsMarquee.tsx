@@ -55,7 +55,7 @@ export function TrustedClientsMarquee({
 
   return (
     <section
-      className="relative z-20 overflow-hidden px-5 py-14 text-[var(--foreground)] sm:px-8 sm:py-16"
+      className="relative z-20 overflow-hidden px-4 py-14 text-[var(--foreground)] sm:px-6 sm:py-16 lg:px-8"
       aria-label="Trusted clients"
       style={{ ["--home-trust-marquee-secs" as never]: "68s" }}
     >
@@ -67,7 +67,7 @@ export function TrustedClientsMarquee({
         className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 bg-gradient-to-t from-[var(--background)]/75 via-[var(--background)]/25 to-transparent sm:h-20"
         aria-hidden
       />
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto max-w-[82rem]">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2
             className={`${display.className} text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-[2.6rem] md:leading-tight`}

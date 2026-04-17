@@ -238,7 +238,7 @@ export function HomeReviews({ block, embedded = false }: Props) {
       }
       aria-labelledby="home-reviews-heading"
     >
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="relative mx-auto max-w-[82rem] px-4 sm:px-6 lg:px-8">
         <h2
           id="home-reviews-heading"
           className={`${display.className} text-balance text-center text-2xl font-semibold tracking-tight text-white sm:text-3xl`}
@@ -247,7 +247,7 @@ export function HomeReviews({ block, embedded = false }: Props) {
         </h2>
       </div>
 
-      <div className="relative mx-auto mt-8 max-w-7xl px-4 sm:mt-10 sm:px-6">
+      <div className="relative mx-auto mt-8 max-w-[82rem] px-4 sm:mt-10 sm:px-6 lg:px-8">
         <div className="relative">
           <button
             type="button"

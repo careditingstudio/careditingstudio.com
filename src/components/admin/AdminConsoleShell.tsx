@@ -26,6 +26,7 @@ function pathActive(pathname: string, href: string) {
 
 function AdminChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const isMailboxRoute = pathActive(pathname, MAILBOX.href);
   const [publicSiteUrl, setPublicSiteUrl] = useState("");
   const { cms, loading, loadError, saving, flash, save, refresh } = useAdminCms();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -207,25 +208,32 @@ function AdminChrome({ children }: { children: ReactNode }) {
           </div>
         ) : null}
 
-        <main className="flex-1 px-4 pb-28 pt-6 sm:px-10 sm:pb-24 sm:pt-9">
+        <main
+          className={[
+            "flex-1 px-4 pt-6 sm:px-10 sm:pt-9",
+            isMailboxRoute ? "pb-6 sm:pb-6" : "pb-28 sm:pb-24",
+          ].join(" ")}
+        >
           {children}
         </main>
 
-        <footer className="fixed bottom-0 right-0 z-30 flex items-center justify-end gap-3 border-t border-zinc-800/80 bg-zinc-950/95 px-4 py-3 backdrop-blur-md sm:left-64 sm:px-10">
-          {cms.updatedAt ? (
-            <p className="mr-auto hidden text-xs text-zinc-500 sm:block">
-              {new Date(cms.updatedAt).toLocaleString()}
-            </p>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={saving}
-            className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
-          >
-            {saving ? "Publishing…" : "Publish"}
-          </button>
-        </footer>
+        {!isMailboxRoute ? (
+          <footer className="fixed bottom-0 right-0 z-30 flex items-center justify-end gap-3 border-t border-zinc-800/80 bg-zinc-950/95 px-4 py-3 backdrop-blur-md sm:left-64 sm:px-10">
+            {cms.updatedAt ? (
+              <p className="mr-auto hidden text-xs text-zinc-500 sm:block">
+                {new Date(cms.updatedAt).toLocaleString()}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => void save()}
+              disabled={saving}
+              className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            >
+              {saving ? "Publishing…" : "Publish"}
+            </button>
+          </footer>
+        ) : null}
       </div>
     </div>
   );

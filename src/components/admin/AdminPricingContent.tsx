@@ -2,7 +2,7 @@
 
 import { AdminFormModal } from "@/components/admin/AdminFormModal";
 import { useAdminCms } from "@/components/admin/AdminCmsContext";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 export function AdminPricingContent() {
   const {
@@ -19,14 +19,10 @@ export function AdminPricingContent() {
   const [paymentTitleOpen, setPaymentTitleOpen] = useState(false);
   const [editPlanIndex, setEditPlanIndex] = useState<number | null>(null);
 
-  const featuredCount = useMemo(() => {
-    if (!cms) return 0;
-    return cms.pricing.plans.filter((p) => p.featured).length;
-  }, [cms]);
-
   if (!cms) return null;
   const pricing = cms.pricing;
   const editPlan = editPlanIndex === null ? null : pricing.plans[editPlanIndex] ?? null;
+  const featuredCount = pricing.plans.filter((p) => p.featured).length;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">

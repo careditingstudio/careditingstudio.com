@@ -1,9 +1,12 @@
-import type { ServiceRow, SiteSettings } from "@/lib/cms-types";
+import type { ServicePageContent, ServiceRow, SiteSettings } from "@/lib/cms-types";
+import { getServiceHrefMap } from "@/lib/service-pages";
 import { telHref } from "@/lib/tel-href";
 import { cleanSocialUrl, socialBrandColor, SocialMediaIcon } from "@/components/SocialMediaIcon";
 import { FooterScrollToTop } from "@/components/FooterScrollToTop";
 import Link from "next/link";
+import Image from "next/image";
 import type { CSSProperties } from "react";
+import { isUploadedAsset } from "@/lib/cms-types";
 
 function IconMail({ className }: { className?: string }) {
   return (
@@ -62,9 +65,11 @@ function IconWhatsApp({ className }: { className?: string }) {
 export function SiteFooter({
   site,
   services = [],
+  servicePages = [],
 }: {
   site: SiteSettings;
   services?: ServiceRow[];
+  servicePages?: ServicePageContent[];
 }) {
   const brand = site.businessName.trim() || "Car Editing Studio";
   const socials = (site.socialLinks ?? [])
@@ -76,11 +81,20 @@ export function SiteFooter({
   const officesWithPhone = (site.officeLocations ?? []).filter(
     (o) => o.label.trim() && o.phone.trim(),
   );
-  const paymentMethods = (site.paymentMethods ?? []).filter((m) => m.trim().length > 0);
-  const paymentLabels =
+  const paymentMethods = (site.paymentMethods ?? []).filter(
+    (m) => m.label.trim().length > 0,
+  );
+  const paymentDisplayMethods =
     paymentMethods.length > 0
       ? paymentMethods
-      : ["Mastercard", "Visa", "PayPal", "Bank", "Zelle"];
+      : [
+          { label: "Mastercard", imageUrl: "" },
+          { label: "Visa", imageUrl: "" },
+          { label: "PayPal", imageUrl: "" },
+          { label: "Bank", imageUrl: "" },
+          { label: "Zelle", imageUrl: "" },
+        ];
+  const serviceHrefs = getServiceHrefMap(services, servicePages);
 
   return (
     <footer className="relative z-20 mt-auto overflow-hidden border-t border-white/10 bg-[radial-gradient(120%_140%_at_10%_0%,#121826_0%,#0b1020_40%,#080b16_100%)] text-white">
@@ -88,7 +102,7 @@ export function SiteFooter({
       <div className="pointer-events-none absolute -right-20 top-12 h-72 w-72 rounded-full bg-[var(--accent)]/10 blur-3xl" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent" />
       <FooterScrollToTop />
-      <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 sm:py-14">
+      <div className="mx-auto w-full max-w-[88rem] px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {/* Brand + hours + social */}
           <div className="sm:col-span-2 lg:col-span-1">
@@ -249,7 +263,7 @@ export function SiteFooter({
                   <li key={svc.id}>
                     <Link
                       prefetch
-                      href="/services"
+                      href={serviceHrefs.get(svc.id) ?? "/services"}
                       className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white"
                     >
                       <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
@@ -263,12 +277,25 @@ export function SiteFooter({
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          {paymentLabels.map((label) => (
+          {paymentDisplayMethods.map((method) => (
             <span
-              key={label}
-              className="rounded-lg border border-white/18 bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#0f1538] shadow-[0_8px_24px_-18px_rgba(255,255,255,0.9)] transition-transform duration-300 hover:-translate-y-0.5"
+              key={method.label}
+              className="inline-flex h-9 min-w-[4.25rem] items-center justify-center rounded-lg border border-white/18 bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#0f1538] shadow-[0_8px_24px_-18px_rgba(255,255,255,0.9)] transition-transform duration-300 hover:-translate-y-0.5"
             >
-              {label}
+              {method.imageUrl ? (
+                <span className="relative block h-5 w-16">
+                  <Image
+                    src={method.imageUrl}
+                    alt={method.label}
+                    fill
+                    className="object-contain"
+                    sizes="64px"
+                    unoptimized={isUploadedAsset(method.imageUrl)}
+                  />
+                </span>
+              ) : (
+                method.label
+              )}
             </span>
           ))}
         </div>

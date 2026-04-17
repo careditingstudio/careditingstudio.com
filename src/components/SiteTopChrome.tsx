@@ -3,7 +3,7 @@
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { useChromeScrollLock } from "@/components/ChromeScrollLockContext";
 import { SiteHeader } from "@/components/SiteHeader";
-import type { ServiceRow, SiteSettings } from "@/lib/cms-types";
+import type { ServicePageContent, ServiceRow, SiteSettings } from "@/lib/cms-types";
 import { siteConfig } from "@/config/site";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -11,9 +11,10 @@ type Props = {
   children: ReactNode;
   site: SiteSettings;
   services: ServiceRow[];
+  servicePages: ServicePageContent[];
 };
 
-export function SiteTopChrome({ children, site, services }: Props) {
+export function SiteTopChrome({ children, site, services, servicePages }: Props) {
   const { isChromeHideLocked } = useChromeScrollLock();
   const [announcementHidden, setAnnouncementHidden] = useState(false);
   const lastY = useRef(0);
@@ -81,7 +82,11 @@ export function SiteTopChrome({ children, site, services }: Props) {
             : "top-[var(--announcement-h)]",
         ].join(" ")}
       >
-        <SiteHeader brandName={siteConfig.name} services={services} />
+        <SiteHeader
+          brandName={siteConfig.name}
+          services={services}
+          servicePages={servicePages}
+        />
       </div>
 
       <div

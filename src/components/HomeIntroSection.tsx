@@ -43,7 +43,7 @@ export function HomeIntroSection({ floatingCar }: Props) {
   return (
     <section
       id="home-scroll-sentinel"
-      className="relative z-20 -mt-[clamp(1.25rem,3vw,2.5rem)] overflow-visible bg-[#1a1a1c] px-5 pb-12 pt-[clamp(3.5rem,8vw,5.75rem)] sm:px-8 sm:pb-14 sm:pt-[clamp(4rem,9vw,6.25rem)]"
+      className="relative z-20 -mt-[clamp(1.25rem,3vw,2.5rem)] overflow-visible bg-[#1a1a1c] px-4 pb-12 pt-[clamp(3.5rem,8vw,5.75rem)] sm:px-6 sm:pb-14 sm:pt-[clamp(4rem,9vw,6.25rem)] lg:px-8"
       aria-labelledby="home-intro-heading"
     >
       <div
@@ -54,7 +54,7 @@ export function HomeIntroSection({ floatingCar }: Props) {
       <div
         className={
           hasCar
-            ? "relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(260px,0.98fr)] lg:gap-8 xl:gap-14"
+            ? "relative mx-auto grid max-w-[82rem] grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(260px,0.98fr)] lg:gap-8 xl:gap-14"
             : "mx-auto max-w-3xl text-center"
         }
       >

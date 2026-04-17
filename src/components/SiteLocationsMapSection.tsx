@@ -29,7 +29,7 @@ export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
 
   return (
     <section className="relative z-20 border-t border-[var(--line)] bg-[linear-gradient(to_bottom,#07090f_0%,#090d1a_45%,#0d1327_78%,#121826_100%)]">
-      <div className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+      <div className="mx-auto w-full max-w-[88rem] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="mb-6 flex flex-col gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
             Locate us

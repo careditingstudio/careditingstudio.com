@@ -182,10 +182,10 @@ export function HomeBeforeAfterShowcase({ cms }: Props) {
 
   return (
     <section
-      className="relative z-20 border-t border-[var(--line)] bg-[var(--background)] px-5 py-[clamp(3.5rem,8vw,5.5rem)] sm:px-8 sm:py-[clamp(4rem,9vw,6rem)]"
+      className="relative z-20 border-t border-[var(--line)] bg-[var(--background)] px-4 py-[clamp(3.5rem,8vw,5.5rem)] sm:px-6 sm:py-[clamp(4rem,9vw,6rem)] lg:px-8"
       aria-label="Before and after photo examples"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[82rem]">
         {showSectionHead ? (
           <div className="mx-auto mb-[clamp(2.5rem,6vw,3.75rem)] max-w-3xl text-center">
             {eyebrow ? (

@@ -122,8 +122,8 @@ export function WhyChooseUsSection({ block }: Props) {
   if (!active) return null;
 
   return (
-    <div className="relative px-4 py-8 text-zinc-100 sm:px-6 sm:py-9" aria-labelledby="why-choose-heading">
-      <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[1.3fr,1fr] lg:gap-6">
+    <div className="relative px-4 py-8 text-zinc-100 sm:px-6 sm:py-9 lg:px-8" aria-labelledby="why-choose-heading">
+      <div className="mx-auto grid max-w-[82rem] gap-4 lg:grid-cols-[1.3fr,1fr] lg:gap-6">
         <div className="relative">
           <div className="mx-auto max-w-3xl text-center">
             <h2
@@ -245,7 +245,7 @@ export function WhyChooseUsSection({ block }: Props) {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 max-w-7xl">
+      <div className="mx-auto mt-10 max-w-[82rem]">
         <div className="mx-auto max-w-3xl text-center">
           <h3
             id="how-it-works-heading"

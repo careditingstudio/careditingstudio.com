@@ -1,7 +1,9 @@
 import { OrderNowLink } from "@/components/OrderNowLink";
 import { PageHeading } from "@/components/PageHeading";
+import { isUploadedAsset } from "@/lib/cms-types";
 import { readCms } from "@/lib/cms-store";
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -12,14 +14,16 @@ export default async function PricingPage() {
   const cms = await readCms();
   const pricing = cms.pricing;
   const plans = pricing.plans;
-  const paymentMethods = cms.site.paymentMethods ?? [];
+  const paymentMethods = (cms.site.paymentMethods ?? []).filter(
+    (m) => m.label.trim().length > 0,
+  );
   return (
     <>
       <PageHeading
         title={pricing.headingTitle}
         description={pricing.headingDescription}
       />
-      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+      <div className="mx-auto max-w-[88rem] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => (
             <article
@@ -101,10 +105,23 @@ export default async function PricingPage() {
           <div className="mt-4 flex flex-wrap gap-3">
             {paymentMethods.map((method) => (
               <div
-                key={method}
-                className="rounded-full border border-[var(--line)] px-4 py-2 text-sm font-medium text-[var(--foreground)]"
+                key={method.label}
+                className="inline-flex h-10 min-w-[5.5rem] items-center justify-center rounded-full border border-[var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-[var(--foreground)]"
               >
-                {method}
+                {method.imageUrl ? (
+                  <span className="relative block h-5 w-20">
+                    <Image
+                      src={method.imageUrl}
+                      alt={method.label}
+                      fill
+                      className="object-contain"
+                      sizes="80px"
+                      unoptimized={isUploadedAsset(method.imageUrl)}
+                    />
+                  </span>
+                ) : (
+                  method.label
+                )}
               </div>
             ))}
           </div>

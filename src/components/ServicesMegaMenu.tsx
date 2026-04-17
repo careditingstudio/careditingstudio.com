@@ -1,6 +1,7 @@
 import { sans } from "@/app/fonts";
 import { servicesMegaMenuItems } from "@/config/services-mega-menu";
-import type { ServiceRow } from "@/lib/cms-types";
+import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
+import { getServiceHrefMap } from "@/lib/service-pages";
 import Link from "next/link";
 
 function ItemIcon() {
@@ -48,19 +49,22 @@ export function ServicesMegaMenuGrid({
   dense,
   tone = "default",
   services = [],
+  servicePages = [],
 }: {
   onNavigate?: () => void;
   dense?: boolean;
   tone?: "default" | "overlay";
   services?: ServiceRow[];
+  servicePages?: ServicePageContent[];
 }) {
   const isOverlay = tone === "overlay";
+  const hrefs = getServiceHrefMap(services, servicePages);
   const menuItems =
     services.length > 0
       ? services.map((service) => ({
           title: service.name.trim() || "Untitled service",
           description: "Professional car photo editing service.",
-          href: "/services",
+          href: hrefs.get(service.id) ?? "/services",
         }))
       : servicesMegaMenuItems;
 

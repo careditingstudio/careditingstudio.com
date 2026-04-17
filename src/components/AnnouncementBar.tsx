@@ -173,7 +173,7 @@ export function AnnouncementBar({ contact }: Props) {
       role="region"
       aria-label="Contact shortcuts"
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[88rem] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4">
           <a
             href={`mailto:${contact.email}`}

@@ -26,6 +26,7 @@ export async function PUT(request: Request) {
   await writeCms(merged);
   revalidatePath("/");
   revalidatePath("/services");
+  revalidatePath("/services/[slug]", "page");
   revalidatePath("/pricing");
   revalidatePath("/portfolio");
   revalidatePath("/about");

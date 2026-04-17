@@ -55,7 +55,7 @@ export function Input({
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  type?: "text" | "email" | "tel";
+  type?: "text" | "email" | "tel" | "url";
   autoComplete?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {

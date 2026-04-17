@@ -6,7 +6,7 @@ import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
 import { OrderNowLink } from "@/components/OrderNowLink";
 import { ServicesMegaMenuGrid } from "@/components/ServicesMegaMenu";
 import { navItems } from "@/config/site";
-import type { ServiceRow } from "@/lib/cms-types";
+import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -111,11 +111,13 @@ function IconMenu({ open, className }: { open: boolean; className?: string }) {
 type SiteHeaderProps = {
   brandName?: string;
   services?: ServiceRow[];
+  servicePages?: ServicePageContent[];
 };
 
 export function SiteHeader({
   brandName = "Car Editing Studio",
   services = [],
+  servicePages = [],
 }: SiteHeaderProps) {
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -214,7 +216,7 @@ export function SiteHeader({
       ].join(" ")}
       role="banner"
     >
-      <div className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6">
+      <div className="mx-auto flex h-[var(--header-h)] max-w-[88rem] items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6 lg:px-8">
         <Link
           href="/"
           className={[
@@ -287,6 +289,7 @@ export function SiteHeader({
                       <ServicesMegaMenuGrid
                         dense
                         services={services}
+                        servicePages={servicePages}
                         onNavigate={() => {
                           setServicesHover(false);
                           clearHoverTimer();
@@ -389,6 +392,7 @@ export function SiteHeader({
                           dense
                           tone={overlayNav ? "overlay" : "default"}
                           services={services}
+                          servicePages={servicePages}
                           onNavigate={() => {
                             setMenuOpen(false);
                             setServicesMobileOpen(false);
