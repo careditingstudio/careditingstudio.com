@@ -280,16 +280,16 @@ export function SiteFooter({
           {paymentDisplayMethods.map((method) => (
             <span
               key={method.label}
-              className="inline-flex h-9 min-w-[4.25rem] items-center justify-center rounded-lg border border-white/18 bg-white/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#0f1538] shadow-[0_8px_24px_-18px_rgba(255,255,255,0.9)] transition-transform duration-300 hover:-translate-y-0.5"
+              className="inline-flex h-12 min-w-[6.25rem] items-center justify-center rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#0f1538] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.7)] backdrop-blur-[1px] transition-transform duration-300 hover:-translate-y-0.5"
             >
               {method.imageUrl ? (
-                <span className="relative block h-5 w-16">
+                <span className="relative block h-7 w-24">
                   <Image
                     src={method.imageUrl}
                     alt={method.label}
                     fill
                     className="object-contain"
-                    sizes="64px"
+                    sizes="96px"
                     unoptimized={isUploadedAsset(method.imageUrl)}
                   />
                 </span>

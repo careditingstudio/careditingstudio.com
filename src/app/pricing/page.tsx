@@ -106,16 +106,16 @@ export default async function PricingPage() {
             {paymentMethods.map((method) => (
               <div
                 key={method.label}
-                className="inline-flex h-10 min-w-[5.5rem] items-center justify-center rounded-full border border-[var(--line)] bg-white/90 px-4 py-2 text-sm font-medium text-[var(--foreground)]"
+                className="inline-flex h-12 min-w-[6.5rem] items-center justify-center rounded-xl border border-[var(--line)] bg-white/75 px-4 py-2 text-sm font-medium text-[var(--foreground)] shadow-[0_8px_20px_-16px_rgba(255,255,255,0.55)]"
               >
                 {method.imageUrl ? (
-                  <span className="relative block h-5 w-20">
+                  <span className="relative block h-7 w-24">
                     <Image
                       src={method.imageUrl}
                       alt={method.label}
                       fill
                       className="object-contain"
-                      sizes="80px"
+                      sizes="96px"
                       unoptimized={isUploadedAsset(method.imageUrl)}
                     />
                   </span>
