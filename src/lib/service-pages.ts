@@ -3,6 +3,7 @@ import {
   type PortfolioGridItem,
   type ServicePageContent,
   type ServiceRow,
+  defaultServicePageContent,
   toServiceSlug,
 } from "@/lib/cms-types";
 
@@ -36,16 +37,7 @@ export function getResolvedServicePages(cms: CmsJson): ServicePageResolved[] {
   const used = new Set<string>();
   return cms.services.map((svc) => {
     const base =
-      pagesByService.get(svc.id) ?? {
-        serviceId: svc.id,
-        slug: "",
-        pageTitle: svc.name,
-        pageDescription: "",
-        introTitle: svc.name,
-        introBody: "",
-        portfolioTitle: `${svc.name} Portfolio`,
-        selectedPortfolioIndices: [],
-      };
+      pagesByService.get(svc.id) ?? defaultServicePageContent(svc.id, svc.name);
     const slug = uniqueSlug(base.slug || svc.name, used);
     const selected = base.selectedPortfolioIndices
       .map((idx) => cms.portfolioGrid[idx])

@@ -13,6 +13,7 @@ import {
   defaultHomeReviewsBlock,
   defaultPricingContent,
   defaultServicePageContent,
+  normalizeServicePageContent,
   defaultHomeServiceFeaturesBlock,
   defaultHomeWhyChooseUsBlock,
   defaultSiteSettings,
@@ -370,7 +371,7 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       name: r.name,
     }));
     const servicePages: ServicePageContent[] = (() => {
-      const map = new Map<number, ServicePageContent>();
+      const map = new Map<number, Record<string, unknown>>();
       try {
         const raw = JSON.parse(extra.service_pages_json || "[]") as unknown;
         if (Array.isArray(raw)) {
@@ -381,31 +382,23 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
               continue;
             }
             const serviceId = Math.trunc(p.serviceId);
-            map.set(serviceId, {
-              serviceId,
-              slug: typeof p.slug === "string" ? p.slug : "",
-              pageTitle: typeof p.pageTitle === "string" ? p.pageTitle : "",
-              pageDescription:
-                typeof p.pageDescription === "string" ? p.pageDescription : "",
-              introTitle: typeof p.introTitle === "string" ? p.introTitle : "",
-              introBody: typeof p.introBody === "string" ? p.introBody : "",
-              portfolioTitle:
-                typeof p.portfolioTitle === "string" ? p.portfolioTitle : "",
-              selectedPortfolioIndices: Array.isArray(p.selectedPortfolioIndices)
-                ? p.selectedPortfolioIndices
-                    .filter(
-                      (x): x is number =>
-                        typeof x === "number" && Number.isFinite(x),
-                    )
-                    .map((x) => Math.max(0, Math.trunc(x)))
-                : [],
-            });
+            map.set(serviceId, p);
           }
         }
       } catch {
         // fall through to defaults
       }
-      return services.map((svc) => map.get(svc.id) ?? defaultServicePageContent(svc.id, svc.name));
+      return services.map((svc) => {
+        const base = defaultServicePageContent(svc.id, svc.name);
+        const stored = map.get(svc.id);
+        if (!stored) return base;
+        const merged = normalizeServicePageContent({
+          ...base,
+          ...stored,
+          serviceId: svc.id,
+        });
+        return merged ?? base;
+      });
     })();
 
     const pfRows = await prisma.portfolioItem.findMany({

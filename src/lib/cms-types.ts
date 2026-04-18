@@ -153,6 +153,34 @@ export type ServiceRow = {
   name: string;
 };
 
+/** One FAQ row on a service detail page (per-service, independent of site FAQs). */
+export type ServiceFaqItem = {
+  question: string;
+  answer: string;
+};
+
+/** Section header + accordion items; all fields optional — hide blocks that are fully empty. */
+export type ServicePageFaqSection = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  /** Two columns matches common service landing layouts (e.g. clipping path FAQ grids). */
+  columns: 1 | 2;
+  items: ServiceFaqItem[];
+};
+
+/**
+ * Ordered page sections (builder). Empty array = use legacy intro + end portfolio + end FAQ.
+ * When non-empty, blocks render in order; include `portfolio` / `faq` markers to position those sections.
+ */
+export type ServicePageBlock =
+  | { id: string; type: "heading"; text: string; subtext?: string }
+  | { id: string; type: "paragraph"; text: string }
+  | { id: string; type: "image"; src: string; alt: string; caption?: string }
+  | { id: string; type: "portfolio"; title?: string }
+  | { id: string; type: "faq" }
+  | { id: string; type: "spacer"; size?: "sm" | "md" | "lg" };
+
 export type ServicePageContent = {
   serviceId: number;
   slug: string;
@@ -162,6 +190,8 @@ export type ServicePageContent = {
   introBody: string;
   portfolioTitle: string;
   selectedPortfolioIndices: number[];
+  faqSection: ServicePageFaqSection;
+  blocks: ServicePageBlock[];
 };
 
 export function toServiceSlug(name: string): string {
@@ -173,6 +203,38 @@ export function toServiceSlug(name: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
   return base || "service";
+}
+
+export function defaultServiceFaqSection(): ServicePageFaqSection {
+  return {
+    eyebrow: "",
+    title: "",
+    subtitle: "",
+    columns: 2,
+    items: [],
+  };
+}
+
+export function newServicePageBlock(
+  type: ServicePageBlock["type"],
+): ServicePageBlock {
+  const id = `b_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  switch (type) {
+    case "heading":
+      return { id, type: "heading", text: "", subtext: "" };
+    case "paragraph":
+      return { id, type: "paragraph", text: "" };
+    case "image":
+      return { id, type: "image", src: "", alt: "", caption: "" };
+    case "portfolio":
+      return { id, type: "portfolio", title: "" };
+    case "faq":
+      return { id, type: "faq" };
+    case "spacer":
+      return { id, type: "spacer", size: "md" };
+    default:
+      return { id, type: "paragraph", text: "" };
+  }
 }
 
 export function defaultServicePageContent(
@@ -190,6 +252,8 @@ export function defaultServicePageContent(
       "We deliver accurate, fast, and scalable editing tailored to your workflow and visual standards.",
     portfolioTitle: `${title} Portfolio`,
     selectedPortfolioIndices: [],
+    faqSection: defaultServiceFaqSection(),
+    blocks: [],
   };
 }
 
@@ -359,12 +423,13 @@ export function defaultHomeServiceFeaturesBlock(): HomeServiceFeaturesBlock {
 
 /** One pillar card in the home “Why choose us” column (icons cycle by index on the public site). */
 export type HomeWhyChoosePillar = {
+  iconKey: string;
   title: string;
   body: string;
 };
 
 export function defaultHomeWhyChoosePillar(): HomeWhyChoosePillar {
-  return { title: "", body: "" };
+  return { iconKey: "shield", title: "", body: "" };
 }
 
 /** One step in the “How it works” grid (icons fixed by order in UI). */
@@ -414,16 +479,19 @@ export function defaultHomeWhyChooseUsBlock(): HomeWhyChooseUsBlock {
     easyCommunicationBody: "",
     pillars: [
       {
+        iconKey: "shield",
         title: "Precision + Consistency",
         body:
           "Precision editing, fast delivery, and consistent quality from a dedicated year-round team.",
       },
       {
+        iconKey: "chat",
         title: "Friendly Support",
         body:
           "Our support team is ready anytime via email and WhatsApp with clear, quick responses.",
       },
       {
+        iconKey: "sparkles",
         title: "Honest Service",
         body:
           "We guarantee high-quality work and set realistic expectations, never false promises.",
@@ -586,7 +654,94 @@ function normalizeServiceRow(item: unknown): ServiceRow | null {
   return { id, name: p.name };
 }
 
-function normalizeServicePageContent(item: unknown): ServicePageContent | null {
+function normalizeServiceFaqItem(item: unknown): ServiceFaqItem | null {
+  if (!item || typeof item !== "object") return null;
+  const p = item as Record<string, unknown>;
+  return {
+    question: typeof p.question === "string" ? p.question : "",
+    answer: typeof p.answer === "string" ? p.answer : "",
+  };
+}
+
+function normalizeServiceFaqSection(
+  raw: unknown,
+  fallback: ServicePageFaqSection,
+): ServicePageFaqSection {
+  if (!raw || typeof raw !== "object") return { ...fallback };
+  const o = raw as Record<string, unknown>;
+  const items: ServiceFaqItem[] = [];
+  if (Array.isArray(o.items)) {
+    for (const x of o.items) {
+      const row = normalizeServiceFaqItem(x);
+      if (row) items.push(row);
+    }
+  }
+  const columns = o.columns === 1 ? 1 : 2;
+  return {
+    eyebrow: typeof o.eyebrow === "string" ? o.eyebrow : fallback.eyebrow,
+    title: typeof o.title === "string" ? o.title : fallback.title,
+    subtitle: typeof o.subtitle === "string" ? o.subtitle : fallback.subtitle,
+    columns,
+    items,
+  };
+}
+
+function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
+  if (!raw || typeof raw !== "object") return null;
+  const p = raw as Record<string, unknown>;
+  const id =
+    typeof p.id === "string" && p.id.trim().length > 0
+      ? p.id
+      : `b_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  const type = p.type;
+  if (type === "heading") {
+    return {
+      id,
+      type: "heading",
+      text: typeof p.text === "string" ? p.text : "",
+      subtext:
+        typeof p.subtext === "string" && p.subtext.trim().length > 0
+          ? p.subtext
+          : undefined,
+    };
+  }
+  if (type === "paragraph") {
+    return { id, type: "paragraph", text: typeof p.text === "string" ? p.text : "" };
+  }
+  if (type === "image") {
+    return {
+      id,
+      type: "image",
+      src: typeof p.src === "string" ? p.src : "",
+      alt: typeof p.alt === "string" ? p.alt : "",
+      caption:
+        typeof p.caption === "string" && p.caption.trim().length > 0
+          ? p.caption
+          : undefined,
+    };
+  }
+  if (type === "portfolio") {
+    return {
+      id,
+      type: "portfolio",
+      title:
+        typeof p.title === "string" && p.title.trim().length > 0
+          ? p.title
+          : undefined,
+    };
+  }
+  if (type === "faq") {
+    return { id, type: "faq" };
+  }
+  if (type === "spacer") {
+    const size =
+      p.size === "sm" || p.size === "md" || p.size === "lg" ? p.size : "md";
+    return { id, type: "spacer", size };
+  }
+  return null;
+}
+
+export function normalizeServicePageContent(item: unknown): ServicePageContent | null {
   if (!item || typeof item !== "object") return null;
   const p = item as Record<string, unknown>;
   if (typeof p.serviceId !== "number" || !Number.isFinite(p.serviceId)) return null;
@@ -599,6 +754,14 @@ function normalizeServicePageContent(item: unknown): ServicePageContent | null {
         .map((x) => Math.max(0, Math.trunc(x)))
     : [];
 
+  const fbFaq = defaultServiceFaqSection();
+  const blocksRaw = Array.isArray(p.blocks) ? p.blocks : [];
+  const blocks: ServicePageBlock[] = [];
+  for (const x of blocksRaw) {
+    const b = normalizeServicePageBlock(x);
+    if (b) blocks.push(b);
+  }
+
   return {
     serviceId,
     slug: typeof p.slug === "string" ? p.slug.trim() : "",
@@ -610,6 +773,11 @@ function normalizeServicePageContent(item: unknown): ServicePageContent | null {
     portfolioTitle:
       typeof p.portfolioTitle === "string" ? p.portfolioTitle.trim() : "",
     selectedPortfolioIndices,
+    faqSection: normalizeServiceFaqSection(
+      p.faqSection ?? p.faq,
+      fbFaq,
+    ),
+    blocks,
   };
 }
 
@@ -749,7 +917,12 @@ function normalizeHomeWhyChoosePillar(
 ): HomeWhyChoosePillar {
   if (!item || typeof item !== "object") return { ...fallback };
   const p = item as Record<string, unknown>;
+  const iconKey =
+    typeof p.iconKey === "string" && p.iconKey.trim().length > 0
+      ? p.iconKey.trim()
+      : fallback.iconKey;
   return {
+    iconKey,
     title:
       typeof p.title === "string" ? p.title.trim() : fallback.title,
     body: typeof p.body === "string" ? p.body.trim() : fallback.body,
@@ -1129,15 +1302,21 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       ...row,
       serviceId: svc.id,
       slug: toServiceSlug(row.slug || name),
-      pageTitle: row.pageTitle || name,
-      pageDescription: row.pageDescription || fallback.pageDescription,
-      introTitle: row.introTitle || fallback.introTitle,
-      introBody: row.introBody || fallback.introBody,
-      portfolioTitle: row.portfolioTitle || fallback.portfolioTitle,
+      pageTitle: row.pageTitle.trim() ? row.pageTitle : name,
+      pageDescription: row.pageDescription ?? fallback.pageDescription,
+      introTitle: row.introTitle ?? fallback.introTitle,
+      introBody: row.introBody ?? fallback.introBody,
+      portfolioTitle: row.portfolioTitle ?? fallback.portfolioTitle,
       selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
         row.selectedPortfolioIndices,
         base.portfolioGrid.length,
       ),
+      faqSection: normalizeServiceFaqSection(row.faqSection, fallback.faqSection),
+      blocks: Array.isArray(row.blocks)
+        ? row.blocks
+            .map((x) => normalizeServicePageBlock(x))
+            .filter((x): x is ServicePageBlock => x !== null)
+        : fallback.blocks,
     };
   });
 

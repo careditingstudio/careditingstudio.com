@@ -3,6 +3,15 @@
 import { AdminFormModal } from "@/components/admin/AdminFormModal";
 import { useAdminCms } from "@/components/admin/AdminCmsContext";
 
+const PILLAR_ICON_OPTIONS = [
+  { key: "shield", label: "Shield" },
+  { key: "chat", label: "Chat" },
+  { key: "sparkles", label: "Sparkles" },
+  { key: "clock", label: "Clock" },
+  { key: "check", label: "Check" },
+  { key: "bolt", label: "Bolt" },
+] as const;
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -39,6 +48,22 @@ export function WhyChoosePillarEditModal({
             }
             className="mt-1.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
           />
+        </label>
+        <label className="block text-sm text-zinc-400">
+          Icon
+          <select
+            value={p.iconKey || "shield"}
+            onChange={(e) =>
+              setWhyChoosePillarItem(pillarIndex, { iconKey: e.target.value })
+            }
+            className="mt-1.5 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
+          >
+            {PILLAR_ICON_OPTIONS.map((opt) => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="block text-sm text-zinc-400">
           Text

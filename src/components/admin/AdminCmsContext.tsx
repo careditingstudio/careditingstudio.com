@@ -20,6 +20,7 @@ import {
   type SiteSettings,
   dedupeFeaturedPortfolioOrder,
   defaultServicePageContent,
+  normalizeServicePageContent,
   defaultHomeWhyChoosePillar,
   defaultHomeWhyChooseUsBlock,
   remapFeaturedOrderAfterRemove,
@@ -156,20 +157,20 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         const fallback = defaultServicePageContent(service.id, service.name);
         const current = byId.get(service.id);
         const name = service.name.trim() || fallback.pageTitle;
-        out.push({
+        const merged = normalizeServicePageContent({
           ...fallback,
           ...current,
           serviceId: service.id,
-          slug: toServiceSlug(current?.slug || name),
-          pageTitle: current?.pageTitle?.trim() || name,
-          pageDescription:
-            current?.pageDescription?.trim() || fallback.pageDescription,
-          introTitle: current?.introTitle?.trim() || fallback.introTitle,
-          introBody: current?.introBody?.trim() || fallback.introBody,
-          portfolioTitle:
-            current?.portfolioTitle?.trim() || fallback.portfolioTitle,
+          slug: (current?.slug ?? fallback.slug) || name,
+          pageTitle: current?.pageTitle ?? name,
+        });
+        if (!merged) continue;
+        out.push({
+          ...merged,
+          slug: toServiceSlug(merged.slug || name),
+          pageTitle: merged.pageTitle.trim() || name,
           selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
-            current?.selectedPortfolioIndices ?? fallback.selectedPortfolioIndices,
+            merged.selectedPortfolioIndices,
             cms.portfolioGrid.length,
           ),
         });
@@ -223,6 +224,7 @@ function sanitizePayload(cms: CmsJson): CmsJson {
       const badges = cms.homeWhyChooseUs.badges.map((b) => b.trim());
       while (badges.length < 3) badges.push(fb.badges[badges.length] ?? "");
       const pillars = cms.homeWhyChooseUs.pillars.map((p) => ({
+        iconKey: (p.iconKey ?? "").trim() || "shield",
         title: p.title.trim(),
         body: p.body.trim(),
       }));
@@ -340,18 +342,37 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     setLoadError("");
-    const r = await fetch("/api/admin/cms", { credentials: "include" });
-    if (!r.ok) {
-      if (r.status === 401) {
-        window.location.href = "/admin-panel/login";
+    setLoading(true);
+    try {
+      const request = () =>
+        fetch("/api/admin/cms", {
+          credentials: "include",
+          cache: "no-store",
+        });
+      let r: Response;
+      try {
+        r = await request();
+      } catch {
+        // Dev HMR/domain handoff can briefly fail fetches; retry once.
+        await new Promise((resolve) => setTimeout(resolve, 450));
+        r = await request();
+      }
+      if (!r.ok) {
+        if (r.status === 401) {
+          window.location.href = "/admin-panel/login";
+          return;
+        }
+        setLoadError("Could not load CMS data.");
         return;
       }
-      setLoadError("Could not load CMS data.");
+      setCms((await r.json()) as CmsJson);
+    } catch {
+      setLoadError(
+        "Could not load CMS data (network error). If you are in dev mode, restart `npm run dev` and reload.",
+      );
+    } finally {
       setLoading(false);
-      return;
     }
-    setCms((await r.json()) as CmsJson);
-    setLoading(false);
   }, []);
 
   useEffect(() => {

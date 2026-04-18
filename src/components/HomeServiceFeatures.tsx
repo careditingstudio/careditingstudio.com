@@ -16,7 +16,7 @@ export function HomeServiceFeatures({ block }: Props) {
 
   return (
     <section
-      className="relative z-20 bg-zinc-100 px-4 pb-16 pt-10 dark:bg-zinc-900 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8"
+      className="relative z-20 bg-[#020204] px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8"
       aria-labelledby="home-service-features-heading"
     >
       <div className="mx-auto max-w-[82rem]">
@@ -31,13 +31,13 @@ export function HomeServiceFeatures({ block }: Props) {
         <div className="mx-auto max-w-3xl text-center">
           <h2
             id="home-service-features-heading"
-            className={`${display.className} text-balance text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl md:text-[1.65rem] md:leading-tight`}
+            className={`${display.className} text-balance text-xl font-semibold tracking-tight text-zinc-100 sm:text-2xl md:text-[1.65rem] md:leading-tight`}
           >
             {headingText}
           </h2>
           {showDefaultBlurb ? (
             <p
-              className={`${sans.className} mt-3 text-sm font-normal leading-relaxed text-zinc-600 dark:text-zinc-400 sm:mt-4 sm:text-[0.9375rem]`}
+              className={`${sans.className} mt-3 text-sm font-normal leading-relaxed text-zinc-400 sm:mt-4 sm:text-[0.9375rem]`}
             >
               We have been delivering professional car image editing services for the
               past 10+ years.
@@ -54,10 +54,10 @@ export function HomeServiceFeatures({ block }: Props) {
             —
           </p>
         ) : (
-          <ul className="mt-8 grid list-none gap-3 sm:grid-cols-2 sm:gap-4 lg:mt-10 lg:grid-cols-4 xl:gap-5">
+          <ul className="mt-8 grid auto-rows-fr list-none gap-3 sm:grid-cols-2 sm:gap-4 lg:mt-10 lg:grid-cols-4 xl:gap-5">
             {items.map((card, idx) => (
-              <li key={`svc-${idx}-${card.iconKey}`} className="min-w-0">
-                <article className="group flex flex-col rounded-xl bg-[var(--background)] px-4 py-4 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition duration-300 ease-out sm:px-5 sm:py-5 dark:shadow-[0_1px_2px_rgba(0,0,0,0.2)]">
+              <li key={`svc-${idx}-${card.iconKey}`} className="min-w-0 h-full">
+                <article className="group flex h-full min-h-[10.75rem] flex-col rounded-xl bg-zinc-900/95 px-4 py-4 text-center shadow-[0_1px_2px_rgba(0,0,0,0.3)] transition duration-300 ease-out sm:px-5 sm:py-5">
                   <div className="mx-auto mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-subtle)] text-[var(--accent)] transition duration-300 group-hover:scale-[1.03]">
                     <ServiceFeatureIcon
                       iconKey={card.iconKey}
@@ -66,14 +66,14 @@ export function HomeServiceFeatures({ block }: Props) {
                   </div>
                   {card.title.trim() ? (
                     <h3
-                      className={`${display.className} text-base font-semibold leading-snug text-[var(--foreground)] sm:text-[1.05rem]`}
+                      className={`${display.className} text-base font-semibold leading-snug text-zinc-100 sm:text-[1.05rem]`}
                     >
                       {card.title.trim()}
                     </h3>
                   ) : null}
                   {card.body.trim() ? (
                     <p
-                      className={`${sans.className} mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 ${card.title.trim() ? "" : "mt-1"}`}
+                      className={`${sans.className} mt-2 text-sm leading-relaxed text-zinc-400 ${card.title.trim() ? "" : "mt-1"}`}
                     >
                       {card.body.trim()}
                     </p>

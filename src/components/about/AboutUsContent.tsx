@@ -213,12 +213,6 @@ export function AboutUsContent() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16 md:py-20">
-            <p
-              className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-2)]"
-              data-reveal
-            >
-              About Us Page
-            </p>
             <h1
               className={cx(
                 "mt-3 text-balance text-3xl font-semibold tracking-tight text-[var(--foreground)]",

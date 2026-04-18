@@ -276,25 +276,27 @@ export function SiteFooter({
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
           {paymentDisplayMethods.map((method) => (
             <span
               key={method.label}
-              className="inline-flex h-12 min-w-[6.25rem] items-center justify-center rounded-xl border border-white/15 bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#0f1538] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.7)] backdrop-blur-[1px] transition-transform duration-300 hover:-translate-y-0.5"
+              className="flex h-10 w-24 shrink-0 flex-col justify-stretch rounded-lg border border-neutral-200/90 bg-white p-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#0f1538] shadow-[0_8px_20px_-14px_rgba(0,0,0,0.35)] transition-transform duration-300 hover:-translate-y-0.5"
             >
               {method.imageUrl ? (
-                <span className="relative block h-7 w-24">
+                <span className="relative min-h-0 flex-1 w-full">
                   <Image
                     src={method.imageUrl}
                     alt={method.label}
                     fill
-                    className="object-contain"
+                    className="object-contain p-px"
                     sizes="96px"
                     unoptimized={isUploadedAsset(method.imageUrl)}
                   />
                 </span>
               ) : (
-                method.label
+                <span className="flex flex-1 items-center justify-center px-1 text-center leading-tight">
+                  {method.label}
+                </span>
               )}
             </span>
           ))}

@@ -6,29 +6,48 @@ import { display, sans } from "@/app/fonts";
 import type { HomeWhyChooseUsBlock } from "@/lib/cms-types";
 import { isUploadedAsset } from "@/lib/cms-types";
 
-const PILLAR_ICONS: ReactNode[] = [
-  (
+const PILLAR_ICON_MAP: Record<string, ReactNode> = {
+  shield: (
     <svg key="pillar-0" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M12 3 4 7v6c0 5 3.4 7.7 8 8 4.6-.3 8-3 8-8V7l-8-4Z" />
       <path d="m9.4 12 1.8 1.8 3.7-3.8" />
     </svg>
   ),
-  (
+  chat: (
     <svg key="pillar-1" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M8 10h8M8 14h5" />
       <path d="M4 19V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 3Z" />
     </svg>
   ),
-  (
+  sparkles: (
     <svg key="pillar-2" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M12 2v20" />
       <path d="M17 5H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H7" />
     </svg>
   ),
+  clock: (
+    <svg key="pillar-3" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.8v4.5l2.6 1.7" />
+    </svg>
+  ),
+  check: (
+    <svg key="pillar-4" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.4 12.3 2.2 2.2 5-5.1" />
+    </svg>
+  ),
+  bolt: (
+    <svg key="pillar-5" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M13.5 2 5 13h5l-1.5 9L17 11h-5L13.5 2Z" />
+    </svg>
+  ),
+};
+const PILLAR_ICON_FALLBACKS = [
+  PILLAR_ICON_MAP.shield,
+  PILLAR_ICON_MAP.chat,
+  PILLAR_ICON_MAP.sparkles,
 ];
-
-const PILLAR_IDS = ["quality", "support", "trust"] as const;
-type PillarId = (typeof PILLAR_IDS)[number];
 
 const MANUAL_AI_ICON = (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -101,29 +120,42 @@ type Props = {
 
 export function WhyChooseUsSection({ block }: Props) {
   const teamSrc = block.teamPhotoSrc.trim();
-  const [activeId, setActiveId] = useState<PillarId>(PILLAR_IDS[0]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const pillarsUi = useMemo(
     () =>
-      PILLAR_IDS.map((id, i) => ({
-        id,
-        title: block.pillars[i]?.title ?? "",
-        body: block.pillars[i]?.body ?? "",
-        icon: PILLAR_ICONS[i] ?? PILLAR_ICONS[0],
+      block.pillars.map((pillar, i) => ({
+        id: `pillar-${i}`,
+        title: pillar.title ?? "",
+        body: pillar.body ?? "",
+        icon:
+          PILLAR_ICON_MAP[pillar.iconKey ?? ""] ??
+          PILLAR_ICON_FALLBACKS[i % PILLAR_ICON_FALLBACKS.length] ??
+          PILLAR_ICON_MAP.shield,
       })),
     [block.pillars],
   );
 
+  const safeActiveIndex =
+    activeIndex < pillarsUi.length ? activeIndex : 0;
+
   const active = useMemo(
-    () => pillarsUi.find((p) => p.id === activeId) ?? pillarsUi[0],
-    [activeId, pillarsUi],
+    () => pillarsUi[safeActiveIndex] ?? pillarsUi[0],
+    [pillarsUi, safeActiveIndex],
+  );
+  const pillarGridItems = useMemo(
+    () =>
+      pillarsUi.length % 2 === 0
+        ? pillarsUi
+        : [...pillarsUi, null],
+    [pillarsUi],
   );
 
   if (!active) return null;
 
   return (
     <div className="relative px-4 py-8 text-zinc-100 sm:px-6 sm:py-9 lg:px-8" aria-labelledby="why-choose-heading">
-      <div className="mx-auto grid max-w-[82rem] gap-4 lg:grid-cols-[1.3fr,1fr] lg:gap-6">
+      <div className="mx-auto grid max-w-[82rem] gap-4 lg:grid-cols-[1.42fr,0.88fr] lg:gap-6">
         <div className="relative">
           <div className="mx-auto max-w-3xl text-center">
             <h2
@@ -205,17 +237,26 @@ export function WhyChooseUsSection({ block }: Props) {
           </p>
         </div>
 
-        <div className="relative grid gap-2 sm:grid-cols-2 lg:self-start">
-          {pillarsUi.map((item) => {
+        <div className="relative grid grid-cols-2 gap-2 lg:self-start">
+          {pillarGridItems.map((item, idx) => {
+            if (!item) {
+              return (
+                <div
+                  key="pillar-empty-slot"
+                  aria-hidden
+                  className="rounded-xl border border-dashed border-white/10 bg-white/[0.02]"
+                />
+              );
+            }
             const isActive = item.id === active.id;
             return (
               <button
                 key={item.id}
                 type="button"
-                onMouseEnter={() => setActiveId(item.id)}
-                onFocus={() => setActiveId(item.id)}
-                onClick={() => setActiveId(item.id)}
-                className={`group relative overflow-hidden rounded-xl px-3 py-2.5 text-left backdrop-blur-sm transition duration-300 sm:last:col-span-2 ${
+                onMouseEnter={() => setActiveIndex(idx)}
+                onFocus={() => setActiveIndex(idx)}
+                onClick={() => setActiveIndex(idx)}
+                className={`group relative overflow-hidden rounded-xl px-3 py-2.5 text-left backdrop-blur-sm transition duration-300 ${
                   isActive
                     ? "bg-white/[0.1] shadow-[0_10px_35px_rgba(0,0,0,0.24)]"
                     : "bg-white/[0.05] hover:bg-white/[0.08]"

@@ -12,9 +12,9 @@ export const siteConfig = {
 export const navItems = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
-  { href: "/pricing", label: "Pricing" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/about", label: "About Us" },
-  { href: "/contact", label: "Contact Us" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/contact", label: "Contact" },
   { href: "/free-trial", label: "Free Trial" },
 ] as const;

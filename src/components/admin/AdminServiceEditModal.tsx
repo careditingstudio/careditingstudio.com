@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminServiceBlocksModal } from "@/components/admin/AdminServiceBlocksModal";
+import { AdminServiceFaqModal } from "@/components/admin/AdminServiceFaqModal";
 import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
 import { useEffect, useId, useMemo, useState } from "react";
 
@@ -22,6 +24,7 @@ type Props = {
   onSetServiceName: (name: string) => void;
   onSetPage: (patch: Partial<Omit<ServicePageContent, "serviceId">>) => void;
   onDelete: () => void;
+  setFlash: (v: { type: "ok" | "err"; text: string } | null) => void;
 };
 
 function FieldRow({
@@ -116,9 +119,12 @@ export function AdminServiceEditModal({
   onSetServiceName,
   onSetPage,
   onDelete,
+  setFlash,
 }: Props) {
   const titleId = useId();
   const [editingKey, setEditingKey] = useState<EditableKey | null>(null);
+  const [blocksOpen, setBlocksOpen] = useState(false);
+  const [faqOpen, setFaqOpen] = useState(false);
 
   const selectedSet = useMemo(
     () => new Set(page?.selectedPortfolioIndices ?? []),
@@ -137,6 +143,8 @@ export function AdminServiceEditModal({
   useEffect(() => {
     if (!open) return;
     setEditingKey(null);
+    setBlocksOpen(false);
+    setFaqOpen(false);
   }, [open, service.id]);
 
   useEffect(() => {
@@ -151,6 +159,20 @@ export function AdminServiceEditModal({
   if (!open || !page) return null;
 
   return (
+    <>
+      <AdminServiceBlocksModal
+        open={blocksOpen}
+        onClose={() => setBlocksOpen(false)}
+        blocks={page.blocks ?? []}
+        onChangeBlocks={(blocks) => onSetPage({ blocks })}
+        setFlash={setFlash}
+      />
+      <AdminServiceFaqModal
+        open={faqOpen}
+        onClose={() => setFaqOpen(false)}
+        section={page.faqSection}
+        onChange={(faqSection) => onSetPage({ faqSection })}
+      />
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
       role="dialog"
@@ -310,6 +332,37 @@ export function AdminServiceEditModal({
               )}
             </div>
           </section>
+
+          <section className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+              Page builder &amp; FAQ
+            </h3>
+            <p className="text-xs text-zinc-500">
+              Add flexible sections (text, images, portfolio, FAQ placement) or
+              keep blocks empty for the classic layout. FAQs are unique to this
+              service.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setBlocksOpen(true)}
+                className="rounded-lg border border-zinc-600 bg-zinc-900/80 px-3 py-2 text-xs font-medium text-zinc-200 hover:border-[var(--accent)]/40 hover:text-white"
+              >
+                Page blocks…
+              </button>
+              <button
+                type="button"
+                onClick={() => setFaqOpen(true)}
+                className="rounded-lg border border-zinc-600 bg-zinc-900/80 px-3 py-2 text-xs font-medium text-zinc-200 hover:border-[var(--accent)]/40 hover:text-white"
+              >
+                FAQ section…
+              </button>
+            </div>
+            <p className="text-[11px] text-zinc-600">
+              Blocks: {page.blocks?.length ?? 0} · FAQ items:{" "}
+              {page.faqSection?.items?.length ?? 0}
+            </p>
+          </section>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-zinc-800 px-5 py-3">
@@ -330,5 +383,6 @@ export function AdminServiceEditModal({
         </div>
       </div>
     </div>
+    </>
   );
 }

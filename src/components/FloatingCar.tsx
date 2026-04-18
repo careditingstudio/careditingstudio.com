@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { isCloudinaryUrl, isUploadedAsset } from "@/lib/cms-types";
 
 const REVEAL_DISTANCE = 70;
 const FADE_DISTANCE = 220;
@@ -15,17 +17,33 @@ type Props = {
 
 export function FloatingCar({ bandBottom, src, width = 960, height = 540, sizes }: Props) {
   const [scrollY, setScrollY] = useState(0);
+  const scrollRaf = useRef<number | null>(null);
+  const latestScroll = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrollY(window.scrollY);
+    const flush = () => {
+      scrollRaf.current = null;
+      setScrollY(latestScroll.current);
     };
-    onScroll();
+    const onScroll = () => {
+      latestScroll.current = window.scrollY;
+      if (scrollRaf.current == null) {
+        scrollRaf.current = requestAnimationFrame(flush);
+      }
+    };
+    latestScroll.current = window.scrollY;
+    setScrollY(latestScroll.current);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollRaf.current != null) cancelAnimationFrame(scrollRaf.current);
+    };
   }, []);
 
   if (!src.trim()) return null;
+
+  const trimmed = src.trim();
+  const useOptimizer = isCloudinaryUrl(trimmed) && !isUploadedAsset(trimmed);
 
   const reveal = Math.min(1, Math.max(0, scrollY / REVEAL_DISTANCE));
   const fadeProgress = Math.min(
@@ -58,17 +76,32 @@ export function FloatingCar({ bandBottom, src, width = 960, height = 540, sizes 
           transformOrigin: "center center",
         }}
       >
-        <img
-          src={src}
-          alt=""
-          width={width}
-          height={height}
-          draggable={false}
-          loading="eager"
-          decoding="async"
-          className="h-auto w-full select-none object-contain outline-none ring-0 [filter:drop-shadow(0_32px_48px_rgba(0,0,0,0.34))] sm:[filter:drop-shadow(0_38px_56px_rgba(0,0,0,0.28))]"
-          sizes={sizes}
-        />
+        {useOptimizer ? (
+          <Image
+            src={trimmed}
+            alt=""
+            width={width}
+            height={height}
+            sizes={sizes}
+            quality={78}
+            draggable={false}
+            fetchPriority="low"
+            className="h-auto w-full select-none object-contain outline-none ring-0 [filter:drop-shadow(0_32px_48px_rgba(0,0,0,0.34))] sm:[filter:drop-shadow(0_38px_56px_rgba(0,0,0,0.28))]"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- arbitrary CMS URLs
+          <img
+            src={trimmed}
+            alt=""
+            width={width}
+            height={height}
+            draggable={false}
+            loading="eager"
+            decoding="async"
+            className="h-auto w-full select-none object-contain outline-none ring-0 [filter:drop-shadow(0_32px_48px_rgba(0,0,0,0.34))] sm:[filter:drop-shadow(0_38px_56px_rgba(0,0,0,0.28))]"
+            sizes={sizes}
+          />
+        )}
       </div>
     </div>
   );

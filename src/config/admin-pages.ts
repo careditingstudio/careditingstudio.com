@@ -5,9 +5,7 @@
 export const ADMIN_PAGE_NAV = [
   { href: "/editor/home", label: "Home" },
   { href: "/editor/services", label: "Services" },
-  { href: "/editor/pricing", label: "Pricing" },
   { href: "/editor/portfolio", label: "Portfolio" },
   { href: "/editor/about", label: "About Us" },
-  { href: "/editor/contact", label: "Contact Us" },
-  { href: "/editor/free-trial", label: "Free Trial" },
+  { href: "/editor/pricing", label: "Pricing" },
 ] as const;

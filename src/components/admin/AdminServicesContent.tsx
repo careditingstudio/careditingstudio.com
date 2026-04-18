@@ -12,6 +12,7 @@ export function AdminServicesContent() {
     moveService,
     setService,
     setServicePage,
+    setFlash,
   } = useAdminCms();
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
@@ -54,6 +55,7 @@ export function AdminServicesContent() {
             removeService(editIndex);
             setEditIndex(null);
           }}
+          setFlash={setFlash}
         />
       ) : null}
 
@@ -109,6 +111,12 @@ export function AdminServicesContent() {
                       </span>
                       <span className="rounded border border-zinc-700 px-1.5 py-0.5">
                         Page title: {page?.pageTitle.trim() ? "Set" : "Empty"}
+                      </span>
+                      <span className="rounded border border-zinc-700 px-1.5 py-0.5">
+                        Blocks: {page?.blocks?.length ?? 0}
+                      </span>
+                      <span className="rounded border border-zinc-700 px-1.5 py-0.5">
+                        FAQ: {page?.faqSection?.items?.length ?? 0}
                       </span>
                     </div>
                   </div>

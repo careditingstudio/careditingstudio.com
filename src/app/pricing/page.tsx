@@ -102,25 +102,27 @@ export default async function PricingPage() {
 
         <section className="mt-8 rounded-2xl border border-[var(--line)] bg-[var(--background)] p-6 sm:p-7">
           <h3 className="text-2xl font-semibold text-[var(--foreground)]">{pricing.paymentTitle}</h3>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-wrap gap-2.5">
             {paymentMethods.map((method) => (
               <div
                 key={method.label}
-                className="inline-flex h-12 min-w-[6.5rem] items-center justify-center rounded-xl border border-[var(--line)] bg-white/75 px-4 py-2 text-sm font-medium text-[var(--foreground)] shadow-[0_8px_20px_-16px_rgba(255,255,255,0.55)]"
+                className="flex h-10 w-24 shrink-0 flex-col justify-stretch rounded-lg border border-[var(--line)] bg-white p-0.5 text-sm font-medium text-[var(--foreground)] shadow-[0_8px_18px_-12px_rgba(0,0,0,0.2)]"
               >
                 {method.imageUrl ? (
-                  <span className="relative block h-7 w-24">
+                  <span className="relative min-h-0 flex-1 w-full">
                     <Image
                       src={method.imageUrl}
                       alt={method.label}
                       fill
-                      className="object-contain"
+                      className="object-contain p-px"
                       sizes="96px"
                       unoptimized={isUploadedAsset(method.imageUrl)}
                     />
                   </span>
                 ) : (
-                  method.label
+                  <span className="flex flex-1 items-center justify-center px-1 text-center text-xs leading-tight">
+                    {method.label}
+                  </span>
                 )}
               </div>
             ))}

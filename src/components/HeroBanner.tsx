@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { display, sans } from "@/app/fonts";
 import type { CmsJson } from "@/lib/cms-types";
@@ -22,21 +22,36 @@ type Props = {
 export function HeroBanner({ cms }: Props) {
   const banners = cms.heroBanners.filter((u) => u.trim().length > 0);
   const [scrollY, setScrollY] = useState(0);
+  const scrollRaf = useRef<number | null>(null);
+  const latestScroll = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => setScrollY(window.scrollY);
-    onScroll();
+    const flush = () => {
+      scrollRaf.current = null;
+      setScrollY(latestScroll.current);
+    };
+    const onScroll = () => {
+      latestScroll.current = window.scrollY;
+      if (scrollRaf.current == null) {
+        scrollRaf.current = requestAnimationFrame(flush);
+      }
+    };
+    latestScroll.current = window.scrollY;
+    setScrollY(latestScroll.current);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollRaf.current != null) cancelAnimationFrame(scrollRaf.current);
+    };
   }, []);
 
-  const fadeProgress = Math.min(1, Math.max(0, scrollY / 320));
+  const fadeProgress = Math.min(1, Math.max(0, scrollY / 260));
   const textOpacity = 1 - fadeProgress;
   const textLift = -26 * fadeProgress;
   const subOpacity = Math.max(0, 1 - fadeProgress * 1.08);
   const ctaOpacity = Math.max(0, 1 - fadeProgress * 1.15);
-  const visualProgress = Math.min(1, Math.max(0, scrollY / 520));
-  const backdropBlurPx = 5.8 * visualProgress;
+  const visualProgress = Math.min(1, Math.max(0, scrollY / 420));
+  /** Avoid animated `filter: blur()` on full-viewport imagery — very expensive on the main thread. */
   const backdropScale = 1 + 0.02 * visualProgress;
   const darkenOpacity = 0.36 * visualProgress;
 
@@ -50,10 +65,9 @@ export function HeroBanner({ cms }: Props) {
         <div
           className="absolute inset-0"
           style={{
-            filter: `blur(${backdropBlurPx}px)`,
             transform: `scale(${backdropScale})`,
             transformOrigin: "center",
-            willChange: "filter, transform",
+            willChange: "transform",
           }}
         >
           {banners.length > 0 ? <HeroBackdropRotator images={banners} /> : null}
@@ -77,7 +91,7 @@ export function HeroBanner({ cms }: Props) {
             className={`relative z-10 mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col justify-center overflow-x-clip px-5 pb-6 pt-6 text-center sm:px-8 sm:pb-8 sm:pt-8 md:pb-10 md:pt-10`}
           >
             <p
-              className={`${sans.className} mb-3 shrink-0 text-xs font-semibold uppercase tracking-[0.22em] text-[color:color-mix(in_srgb,var(--accent)_65%,white_35%)] drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)] motion-safe:transition-[opacity,transform] motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none sm:text-[13px]`}
+              className={`${sans.className} mb-3 shrink-0 text-xs font-semibold uppercase tracking-[0.22em] text-[color:color-mix(in_srgb,var(--accent)_65%,white_35%)] drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)] motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none sm:text-[13px]`}
               style={{
                 opacity: textOpacity,
                 transform: `translate3d(0, ${textLift * 0.55}px, 0)`,
@@ -87,7 +101,7 @@ export function HeroBanner({ cms }: Props) {
             </p>
 
             <h1
-              className={`${display.className} shrink-0 text-balance bg-gradient-to-b from-white to-white/88 bg-clip-text text-2xl font-semibold leading-snug tracking-tight text-transparent drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)] sm:text-3xl md:text-[2.25rem] md:leading-tight lg:text-[2.45rem] lg:leading-[1.2] xl:text-[2.7rem] motion-safe:transition-[opacity,transform] motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none`}
+              className={`${display.className} shrink-0 text-balance bg-gradient-to-b from-white to-white/88 bg-clip-text text-2xl font-semibold leading-snug tracking-tight text-transparent drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)] sm:text-3xl md:text-[2.25rem] md:leading-tight lg:text-[2.45rem] lg:leading-[1.2] xl:text-[2.7rem] motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none`}
               style={{
                 opacity: textOpacity,
                 transform: `translate3d(0, ${textLift}px, 0) scale(${1 - fadeProgress * 0.04})`,
@@ -106,7 +120,7 @@ export function HeroBanner({ cms }: Props) {
             </h1>
 
             <div
-              className="mt-7 flex shrink-0 flex-col items-stretch justify-center gap-3 bg-transparent motion-safe:transition-[opacity,transform] motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none sm:mt-8 sm:flex-row sm:items-center sm:justify-center sm:gap-4"
+              className="mt-7 flex shrink-0 flex-col items-stretch justify-center gap-3 bg-transparent motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none sm:mt-8 sm:flex-row sm:items-center sm:justify-center sm:gap-4"
               style={{
                 opacity: ctaOpacity,
                 transform: `translate3d(0, ${textLift * 0.8}px, 0)`,
@@ -117,7 +131,7 @@ export function HeroBanner({ cms }: Props) {
                 prefetch
                 className={`${sans.className} inline-flex min-h-12 items-center justify-center rounded-xl bg-[var(--accent)] px-8 text-base font-semibold leading-tight text-white shadow-lg shadow-black/30 ring-1 ring-white/15 transition hover:bg-[var(--accent-hover)] hover:shadow-xl hover:shadow-black/35 sm:min-h-12 sm:px-9`}
               >
-                Contact Us
+                Contact
               </Link>
               <Link
                 href="/free-trial"
