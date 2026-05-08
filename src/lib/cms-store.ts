@@ -7,20 +7,15 @@ import {
   writeCmsToDb,
   type ReadCmsFromDbResult,
 } from "@/lib/db/cms-repository";
-import { cache } from "react";
-
-const readCmsResultCached = cache(async (): Promise<ReadCmsFromDbResult> => {
-  return readCmsFromDb();
-});
 
 export async function readCms(): Promise<CmsJson> {
-  const r = await readCmsResultCached();
+  const r = await readCmsFromDb();
   return r.cms;
 }
 
 /** Same as `readCms` plus `devDbUnreachable` when Postgres is down in development. */
 export async function readCmsWithDbStatus(): Promise<ReadCmsFromDbResult> {
-  return readCmsResultCached();
+  return readCmsFromDb();
 }
 
 export async function writeCms(data: CmsJson): Promise<CmsJson> {

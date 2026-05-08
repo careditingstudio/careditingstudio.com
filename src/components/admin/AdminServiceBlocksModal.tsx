@@ -3,6 +3,7 @@
 import { AdminServiceBlockEditorModal } from "@/components/admin/AdminServiceBlockEditorModal";
 import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
 import {
+  makeServiceMockBlocksPreset,
   type ServicePageBlock,
   newServicePageBlock,
 } from "@/lib/cms-types";
@@ -22,6 +23,26 @@ function blockLabel(b: ServicePageBlock): string {
       return "FAQ section";
     case "spacer":
       return `Spacer (${b.size ?? "md"})`;
+    case "featureCards":
+      return b.sectionTitle.trim() || "3 feature cards";
+    case "splitShowcase":
+      return b.title?.trim() || "Split image + text";
+    case "pillChecklist":
+      return b.title.trim() || "Pills + checklist";
+    case "tickChecklist":
+      return b.title.trim() || "Tick checklist";
+    case "valueColumns":
+      return b.title.trim() || "Value + 3 columns";
+    case "supportCards":
+      return b.title.trim() || "Support + 3 cards";
+    case "iconGrid":
+      return b.title.trim() || "Icon grid (2×2)";
+    case "compactFeatureCards":
+      return b.title.trim() || "Compact cards (2×2)";
+    case "splitPillColumns":
+      return "Split pill columns";
+    case "contentWide":
+      return b.title?.trim() || "Wide content";
     default:
       return "Block";
   }
@@ -30,6 +51,7 @@ function blockLabel(b: ServicePageBlock): string {
 type Props = {
   open: boolean;
   onClose: () => void;
+  serviceName: string;
   blocks: ServicePageBlock[];
   onChangeBlocks: (blocks: ServicePageBlock[]) => void;
   setFlash: (v: { type: "ok" | "err"; text: string } | null) => void;
@@ -38,6 +60,7 @@ type Props = {
 export function AdminServiceBlocksModal({
   open,
   onClose,
+  serviceName,
   blocks,
   onChangeBlocks,
   setFlash,
@@ -85,6 +108,20 @@ export function AdminServiceBlocksModal({
     setTimeout(() => setFlash(null), 2500);
   }
 
+  function loadMockPreset() {
+    if (
+      blocks.length > 0 &&
+      !window.confirm(
+        "Replace current blocks with the full mock layout preset?",
+      )
+    ) {
+      return;
+    }
+    onChangeBlocks(makeServiceMockBlocksPreset(serviceName));
+    setFlash({ type: "ok", text: "Mock layout preset loaded." });
+    setTimeout(() => setFlash(null), 2500);
+  }
+
   if (!open) return null;
 
   return (
@@ -127,7 +164,7 @@ export function AdminServiceBlocksModal({
           className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
+        <div className="relative flex max-h-[96vh] w-[96vw] max-w-6xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
             <h2 id={titleId} className="text-base font-semibold text-white">
               Page blocks
@@ -148,6 +185,18 @@ export function AdminServiceBlocksModal({
           </p>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+            <div className="mb-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
+              <p className="mb-2 text-[11px] text-zinc-400">
+                Need the long mock layout quickly?
+              </p>
+              <button
+                type="button"
+                onClick={loadMockPreset}
+                className="rounded border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-2.5 py-1.5 text-[11px] font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
+              >
+                Load full mock layout preset
+              </button>
+            </div>
             <div className="flex flex-wrap gap-2">
               <span className="text-[10px] uppercase tracking-wide text-zinc-600">
                 Add:
@@ -157,6 +206,16 @@ export function AdminServiceBlocksModal({
                   "heading",
                   "paragraph",
                   "image",
+                  "featureCards",
+                  "splitShowcase",
+                  "pillChecklist",
+                  "tickChecklist",
+                  "valueColumns",
+                  "supportCards",
+                  "iconGrid",
+                  "compactFeatureCards",
+                  "splitPillColumns",
+                  "contentWide",
                   "portfolio",
                   "faq",
                   "spacer",

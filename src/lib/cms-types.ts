@@ -173,19 +173,98 @@ export type ServicePageFaqSection = {
  * Ordered page sections (builder). Empty array = use legacy intro + end portfolio + end FAQ.
  * When non-empty, blocks render in order; include `portfolio` / `faq` markers to position those sections.
  */
+export type ServiceFeatureCard = { iconKey: string; title: string; body: string };
+
+export type ServiceValueColumn = { title: string; body: string };
+
+export type ServiceIconGridItem = { title: string; body: string };
+
 export type ServicePageBlock =
   | { id: string; type: "heading"; text: string; subtext?: string }
   | { id: string; type: "paragraph"; text: string }
   | { id: string; type: "image"; src: string; alt: string; caption?: string }
-  | { id: string; type: "portfolio"; title?: string }
+  | { id: string; type: "portfolio"; title?: string; sideTitle?: string; sideText?: string }
   | { id: string; type: "faq" }
-  | { id: string; type: "spacer"; size?: "sm" | "md" | "lg" };
+  | { id: string; type: "spacer"; size?: "sm" | "md" | "lg" }
+  | {
+      id: string;
+      type: "featureCards";
+      sectionTitle: string;
+      sectionSubtext?: string;
+      cards: ServiceFeatureCard[];
+    }
+  | {
+      id: string;
+      type: "splitShowcase";
+      title?: string;
+      body: string;
+      imageSrc: string;
+      imageAlt: string;
+      imageRight: boolean;
+    }
+  | {
+      id: string;
+      type: "pillChecklist";
+      title: string;
+      subtext?: string;
+      pills: string[];
+      checks: string[];
+    }
+  | {
+      id: string;
+      type: "tickChecklist";
+      title: string;
+      subtext?: string;
+      items: string[];
+      columns?: 1 | 2;
+    }
+  | {
+      id: string;
+      type: "valueColumns";
+      eyebrow?: string;
+      title: string;
+      body: string;
+      columns: ServiceValueColumn[];
+    }
+  | {
+      id: string;
+      type: "supportCards";
+      eyebrow?: string;
+      title: string;
+      body: string;
+      cards: ServiceValueColumn[];
+    }
+  | {
+      id: string;
+      type: "iconGrid";
+      title: string;
+      subtext?: string;
+      items: ServiceIconGridItem[];
+    }
+  | {
+      id: string;
+      type: "compactFeatureCards";
+      title: string;
+      subtext?: string;
+      items: ServiceIconGridItem[];
+    }
+  | {
+      id: string;
+      type: "splitPillColumns";
+      titleLeft: string;
+      titleRight: string;
+      pillsLeft: string[];
+      pillsRight: string[];
+    }
+  | { id: string; type: "contentWide"; title?: string; body: string };
 
 export type ServicePageContent = {
   serviceId: number;
   slug: string;
   pageTitle: string;
   pageDescription: string;
+  /** Optional hero image URL for the split banner on /services/[slug] */
+  heroBannerSrc: string;
   introTitle: string;
   introBody: string;
   portfolioTitle: string;
@@ -227,14 +306,233 @@ export function newServicePageBlock(
     case "image":
       return { id, type: "image", src: "", alt: "", caption: "" };
     case "portfolio":
-      return { id, type: "portfolio", title: "" };
+      return { id, type: "portfolio", title: "", sideTitle: "", sideText: "" };
     case "faq":
       return { id, type: "faq" };
     case "spacer":
       return { id, type: "spacer", size: "md" };
+    case "featureCards":
+      return {
+        id,
+        type: "featureCards",
+        sectionTitle: "",
+        sectionSubtext: "",
+        cards: [
+          { iconKey: "sparkles", title: "", body: "" },
+          { iconKey: "sparkles", title: "", body: "" },
+          { iconKey: "sparkles", title: "", body: "" },
+        ],
+      };
+    case "splitShowcase":
+      return {
+        id,
+        type: "splitShowcase",
+        title: "",
+        body: "",
+        imageSrc: "",
+        imageAlt: "",
+        imageRight: true,
+      };
+    case "pillChecklist":
+      return {
+        id,
+        type: "pillChecklist",
+        title: "",
+        subtext: "",
+        pills: [],
+        checks: [],
+      };
+    case "tickChecklist":
+      return {
+        id,
+        type: "tickChecklist",
+        title: "",
+        subtext: "",
+        items: [],
+        columns: 2,
+      };
+    case "valueColumns":
+      return {
+        id,
+        type: "valueColumns",
+        eyebrow: "",
+        title: "",
+        body: "",
+        columns: [
+          { title: "", body: "" },
+          { title: "", body: "" },
+          { title: "", body: "" },
+        ],
+      };
+    case "supportCards":
+      return {
+        id,
+        type: "supportCards",
+        eyebrow: "",
+        title: "",
+        body: "",
+        cards: [
+          { title: "", body: "" },
+          { title: "", body: "" },
+          { title: "", body: "" },
+        ],
+      };
+    case "iconGrid":
+      return {
+        id,
+        type: "iconGrid",
+        title: "",
+        subtext: "",
+        items: [
+          { title: "", body: "" },
+          { title: "", body: "" },
+          { title: "", body: "" },
+          { title: "", body: "" },
+        ],
+      };
+    case "compactFeatureCards":
+      return {
+        id,
+        type: "compactFeatureCards",
+        title: "",
+        subtext: "",
+        items: [
+          { title: "", body: "" },
+          { title: "", body: "" },
+          { title: "", body: "" },
+          { title: "", body: "" },
+        ],
+      };
+    case "splitPillColumns":
+      return {
+        id,
+        type: "splitPillColumns",
+        titleLeft: "",
+        titleRight: "",
+        pillsLeft: [],
+        pillsRight: [],
+      };
+    case "contentWide":
+      return { id, type: "contentWide", title: "", body: "" };
     default:
       return { id, type: "paragraph", text: "" };
   }
+}
+
+function makeServiceBlockId(seed: string): string {
+  return `b_${seed}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function makeServiceMockBlocksPreset(serviceName: string): ServicePageBlock[] {
+  const name = serviceName.trim() || "Service";
+  return [
+    {
+      id: makeServiceBlockId("fcard"),
+      type: "featureCards",
+      sectionTitle: "another title 1",
+      sectionSubtext: "Quick overview of what this service includes.",
+      cards: [
+        {
+          iconKey: "sparkles",
+          title: "Icon + Title",
+          body: "Add short service highlight text here.",
+        },
+        {
+          iconKey: "shield",
+          title: "Icon + Title",
+          body: "Add short service highlight text here.",
+        },
+        {
+          iconKey: "clock",
+          title: "Icon + Title",
+          body: "Add short service highlight text here.",
+        },
+      ],
+    },
+    {
+      id: makeServiceBlockId("splitA"),
+      type: "splitShowcase",
+      title: "",
+      body: `${name} sample showcase text.\nExplain your quality and process here.`,
+      imageSrc: "",
+      imageAlt: `${name} example image`,
+      imageRight: false,
+    },
+    {
+      id: makeServiceBlockId("pill"),
+      type: "pillChecklist",
+      title: "another title 2",
+      subtext: "This is a subtitle",
+      pills: ["Pill one", "Pill two", "Pill three", "Pill four"],
+      checks: [
+        "High quality editing",
+        "Fast turnaround",
+        "Affordable pricing",
+        "Easy communication",
+      ],
+    },
+    {
+      id: makeServiceBlockId("vals"),
+      type: "valueColumns",
+      eyebrow: "Support",
+      title: "Quick responses, strong support",
+      body: "Your marketing and client support team stay in sync with our editors.",
+      columns: [
+        { title: "Ecommerce-ready workflow", body: "Consistent, scalable output." },
+        { title: "Precision + consistency", body: "Quality checked by experts." },
+        { title: "Quick response + support", body: "Clear communication every day." },
+      ],
+    },
+    {
+      id: makeServiceBlockId("igrid"),
+      type: "iconGrid",
+      title: "another title 6",
+      subtext: "This is a subtitle",
+      items: [
+        { title: "Precision + Consistency", body: "Reliable visual standard." },
+        { title: "Friendly Support", body: "Fast help when you need it." },
+        { title: "Honest Service", body: "Realistic expectations and delivery." },
+        { title: "Fluent English Support", body: "Clear communication." },
+      ],
+    },
+    {
+      id: makeServiceBlockId("wideA"),
+      type: "contentWide",
+      title: "another title 6",
+      body: "Long paragraph section for details. You can add another contentWide block under this one if needed.",
+    },
+    {
+      id: makeServiceBlockId("wideB"),
+      type: "contentWide",
+      title: "h2 title 6",
+      body: "Second long paragraph section under the first one.",
+    },
+    {
+      id: makeServiceBlockId("splitPills"),
+      type: "splitPillColumns",
+      titleLeft: "another title 3",
+      titleRight: "another title 4",
+      pillsLeft: ["Left pill 1", "Left pill 2", "Left pill 3", "Left pill 4"],
+      pillsRight: ["Right pill 1", "Right pill 2", "Right pill 3", "Right pill 4"],
+    },
+    {
+      id: makeServiceBlockId("splitB"),
+      type: "splitShowcase",
+      title: "h2 title 6",
+      body: "Text under image section.",
+      imageSrc: "",
+      imageAlt: `${name} supporting image`,
+      imageRight: false,
+    },
+    {
+      id: makeServiceBlockId("wideC"),
+      type: "contentWide",
+      title: "another title 5",
+      body: "Final descriptive section at the bottom of the page.",
+    },
+    { id: makeServiceBlockId("portfolio"), type: "portfolio", title: "Portfolio" },
+    { id: makeServiceBlockId("faq"), type: "faq" },
+  ];
 }
 
 export function defaultServicePageContent(
@@ -247,6 +545,7 @@ export function defaultServicePageContent(
     slug: toServiceSlug(title),
     pageTitle: title,
     pageDescription: `${title} for automotive dealerships and studios with consistent, production-ready quality.`,
+    heroBannerSrc: "",
     introTitle: `Professional ${title}`,
     introBody:
       "We deliver accurate, fast, and scalable editing tailored to your workflow and visual standards.",
@@ -686,6 +985,41 @@ function normalizeServiceFaqSection(
   };
 }
 
+function normalizeServiceFeatureCard(item: unknown): ServiceFeatureCard {
+  if (!item || typeof item !== "object") {
+    return { iconKey: "sparkles", title: "", body: "" };
+  }
+  const o = item as Record<string, unknown>;
+  return {
+    iconKey:
+      typeof o.iconKey === "string" && o.iconKey.trim().length > 0
+        ? o.iconKey
+        : "sparkles",
+    title: typeof o.title === "string" ? o.title : "",
+    body: typeof o.body === "string" ? o.body : "",
+  };
+}
+
+function normalizeServiceValueColumn(item: unknown): ServiceValueColumn {
+  if (!item || typeof item !== "object") return { title: "", body: "" };
+  const o = item as Record<string, unknown>;
+  return {
+    title: typeof o.title === "string" ? o.title : "",
+    body: typeof o.body === "string" ? o.body : "",
+  };
+}
+
+function normalizeServiceIconGridItem(item: unknown): ServiceIconGridItem {
+  return normalizeServiceValueColumn(item);
+}
+
+function normalizeStringList(raw: unknown, max: number): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((x): x is string => typeof x === "string")
+    .slice(0, max);
+}
+
 function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
   if (!raw || typeof raw !== "object") return null;
   const p = raw as Record<string, unknown>;
@@ -728,6 +1062,14 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
         typeof p.title === "string" && p.title.trim().length > 0
           ? p.title
           : undefined,
+      sideTitle:
+        typeof p.sideTitle === "string" && p.sideTitle.trim().length > 0
+          ? p.sideTitle
+          : undefined,
+      sideText:
+        typeof p.sideText === "string" && p.sideText.trim().length > 0
+          ? p.sideText
+          : undefined,
     };
   }
   if (type === "faq") {
@@ -737,6 +1079,148 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
     const size =
       p.size === "sm" || p.size === "md" || p.size === "lg" ? p.size : "md";
     return { id, type: "spacer", size };
+  }
+  if (type === "featureCards") {
+    const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
+    const cards = cardsRaw
+      .map(normalizeServiceFeatureCard)
+      .slice(0, 3);
+    while (cards.length < 3) {
+      cards.push({ iconKey: "sparkles", title: "", body: "" });
+    }
+    return {
+      id,
+      type: "featureCards",
+      sectionTitle: typeof p.sectionTitle === "string" ? p.sectionTitle : "",
+      sectionSubtext:
+        typeof p.sectionSubtext === "string" && p.sectionSubtext.trim().length > 0
+          ? p.sectionSubtext
+          : undefined,
+      cards,
+    };
+  }
+  if (type === "splitShowcase") {
+    return {
+      id,
+      type: "splitShowcase",
+      title:
+        typeof p.title === "string" && p.title.trim().length > 0
+          ? p.title
+          : undefined,
+      body: typeof p.body === "string" ? p.body : "",
+      imageSrc: typeof p.imageSrc === "string" ? p.imageSrc : "",
+      imageAlt: typeof p.imageAlt === "string" ? p.imageAlt : "",
+      imageRight: p.imageRight === false ? false : true,
+    };
+  }
+  if (type === "pillChecklist") {
+    return {
+      id,
+      type: "pillChecklist",
+      title: typeof p.title === "string" ? p.title : "",
+      subtext:
+        typeof p.subtext === "string" && p.subtext.trim().length > 0
+          ? p.subtext
+          : undefined,
+      pills: normalizeStringList(p.pills, 24),
+      checks: normalizeStringList(p.checks, 24),
+    };
+  }
+  if (type === "tickChecklist") {
+    return {
+      id,
+      type: "tickChecklist",
+      title: typeof p.title === "string" ? p.title : "",
+      subtext:
+        typeof p.subtext === "string" && p.subtext.trim().length > 0
+          ? p.subtext
+          : undefined,
+      items: normalizeStringList(p.items, 40),
+      columns: p.columns === 1 ? 1 : 2,
+    };
+  }
+  if (type === "valueColumns") {
+    const colsRaw = Array.isArray(p.columns) ? p.columns : [];
+    const columns = colsRaw.map(normalizeServiceValueColumn).slice(0, 3);
+    while (columns.length < 3) columns.push({ title: "", body: "" });
+    return {
+      id,
+      type: "valueColumns",
+      eyebrow:
+        typeof p.eyebrow === "string" && p.eyebrow.trim().length > 0
+          ? p.eyebrow
+          : undefined,
+      title: typeof p.title === "string" ? p.title : "",
+      body: typeof p.body === "string" ? p.body : "",
+      columns,
+    };
+  }
+  if (type === "supportCards") {
+    const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
+    const cards = cardsRaw.map(normalizeServiceValueColumn).slice(0, 3);
+    while (cards.length < 3) cards.push({ title: "", body: "" });
+    return {
+      id,
+      type: "supportCards",
+      eyebrow:
+        typeof p.eyebrow === "string" && p.eyebrow.trim().length > 0
+          ? p.eyebrow
+          : undefined,
+      title: typeof p.title === "string" ? p.title : "",
+      body: typeof p.body === "string" ? p.body : "",
+      cards,
+    };
+  }
+  if (type === "iconGrid") {
+    const itemsRaw = Array.isArray(p.items) ? p.items : [];
+    const items = itemsRaw.map(normalizeServiceIconGridItem).slice(0, 4);
+    while (items.length < 4) items.push({ title: "", body: "" });
+    return {
+      id,
+      type: "iconGrid",
+      title: typeof p.title === "string" ? p.title : "",
+      subtext:
+        typeof p.subtext === "string" && p.subtext.trim().length > 0
+          ? p.subtext
+          : undefined,
+      items,
+    };
+  }
+  if (type === "compactFeatureCards") {
+    const itemsRaw = Array.isArray(p.items) ? p.items : [];
+    const items = itemsRaw.map(normalizeServiceIconGridItem).slice(0, 4);
+    while (items.length < 4) items.push({ title: "", body: "" });
+    return {
+      id,
+      type: "compactFeatureCards",
+      title: typeof p.title === "string" ? p.title : "",
+      subtext:
+        typeof p.subtext === "string" && p.subtext.trim().length > 0
+          ? p.subtext
+          : undefined,
+      items,
+    };
+  }
+  if (type === "splitPillColumns") {
+    return {
+      id,
+      type: "splitPillColumns",
+      titleLeft: typeof p.titleLeft === "string" ? p.titleLeft : "",
+      titleRight: typeof p.titleRight === "string" ? p.titleRight : "",
+      pillsLeft: normalizeStringList(p.pillsLeft, 24),
+      pillsRight: normalizeStringList(p.pillsRight, 24),
+    };
+  }
+  if (type === "contentWide") {
+    return {
+      id,
+      type: "contentWide",
+      title:
+        typeof p.title === "string" && p.title.trim().length > 0
+          ? p.title
+          : undefined,
+      body: typeof p.body === "string" ? p.body : "",
+    };
   }
   return null;
 }
@@ -768,6 +1252,8 @@ export function normalizeServicePageContent(item: unknown): ServicePageContent |
     pageTitle: typeof p.pageTitle === "string" ? p.pageTitle.trim() : "",
     pageDescription:
       typeof p.pageDescription === "string" ? p.pageDescription.trim() : "",
+    heroBannerSrc:
+      typeof p.heroBannerSrc === "string" ? p.heroBannerSrc.trim() : "",
     introTitle: typeof p.introTitle === "string" ? p.introTitle.trim() : "",
     introBody: typeof p.introBody === "string" ? p.introBody.trim() : "",
     portfolioTitle:
@@ -1304,6 +1790,7 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       slug: toServiceSlug(row.slug || name),
       pageTitle: row.pageTitle.trim() ? row.pageTitle : name,
       pageDescription: row.pageDescription ?? fallback.pageDescription,
+      heroBannerSrc: row.heroBannerSrc ?? fallback.heroBannerSrc,
       introTitle: row.introTitle ?? fallback.introTitle,
       introBody: row.introBody ?? fallback.introBody,
       portfolioTitle: row.portfolioTitle ?? fallback.portfolioTitle,

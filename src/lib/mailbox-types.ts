@@ -1,6 +1,6 @@
-export type MailboxKind = "CONTACT" | "FREE_TRIAL";
+export type MailboxKind = "CONTACT" | "FREE_TRIAL" | "ORDER";
 
 export function isMailboxKind(v: unknown): v is MailboxKind {
-  return v === "CONTACT" || v === "FREE_TRIAL";
+  return v === "CONTACT" || v === "FREE_TRIAL" || v === "ORDER";
 }
 

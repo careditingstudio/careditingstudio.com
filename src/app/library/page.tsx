@@ -1,8 +1,12 @@
 import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * Short URL for the admin upload library. Middleware rewrites to /admin-panel/*

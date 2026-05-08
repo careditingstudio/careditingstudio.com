@@ -164,10 +164,17 @@ function isDatabaseUnreachable(e: unknown): boolean {
   if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P1001") {
     return true;
   }
+  if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P1017") {
+    return true;
+  }
   return (
     e instanceof Error &&
     e.constructor.name === "PrismaClientInitializationError"
   );
+}
+
+function isClosedConnectionMessage(e: unknown): boolean {
+  return e instanceof Error && /server has closed the connection/i.test(e.message);
 }
 
 /** Some layers wrap Prisma errors as `Error` with `cause` set. */
@@ -178,6 +185,22 @@ function isDatabaseUnreachableDeep(e: unknown): boolean {
     if (seen.has(cur)) break;
     seen.add(cur);
     if (isDatabaseUnreachable(cur)) return true;
+    if (cur instanceof Error && cur.cause !== undefined) {
+      cur = cur.cause;
+      continue;
+    }
+    break;
+  }
+  return false;
+}
+
+function isTransientDbConnectionIssueDeep(e: unknown): boolean {
+  let cur: unknown = e;
+  const seen = new Set<unknown>();
+  for (let i = 0; i < 6 && cur != null; i++) {
+    if (seen.has(cur)) break;
+    seen.add(cur);
+    if (isDatabaseUnreachable(cur) || isClosedConnectionMessage(cur)) return true;
     if (cur instanceof Error && cur.cause !== undefined) {
       cur = cur.cause;
       continue;
@@ -225,7 +248,7 @@ export type ReadCmsFromDbResult = {
   devDbUnreachable: boolean;
 };
 
-export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
+async function readCmsFromDbOnce(): Promise<ReadCmsFromDbResult> {
   try {
     await ensureHomeFeaturedPortfolioOrderColumnOnce();
     await ensurePricingColumnsOnce();
@@ -522,6 +545,26 @@ export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
       throw new Error(`CMS: ${CMS_DB_CONNECT_HELP}`, { cause: e });
     }
     throw e;
+  }
+}
+
+export async function readCmsFromDb(): Promise<ReadCmsFromDbResult> {
+  try {
+    return await readCmsFromDbOnce();
+  } catch (e) {
+    // Recover from transient pool/session drops by reconnecting once.
+    if (!isTransientDbConnectionIssueDeep(e)) throw e;
+    try {
+      await prisma.$disconnect();
+    } catch {
+      // ignore and continue reconnect attempt
+    }
+    try {
+      await prisma.$connect();
+    } catch {
+      // if reconnect fails, retry will surface normal error handling
+    }
+    return readCmsFromDbOnce();
   }
 }
 

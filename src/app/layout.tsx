@@ -7,6 +7,7 @@ import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
 import { HomeChromeProvider } from "@/components/HomeChromeProvider";
 import { SiteTopChromeWrapper } from "@/components/SiteTopChromeWrapper";
 import { readCms } from "@/lib/cms-store";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { parseSiteTags } from "@/lib/site-tags";
 import { sans } from "./fonts";
 import "./globals.css";
@@ -49,6 +50,9 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s | Car Editing Studio",
     },
     description: baseDescription,
+    alternates: {
+      canonical: "/",
+    },
     keywords: tags.length > 0 ? tags : undefined,
     icons: {
       icon: [
@@ -64,11 +68,27 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "Car Editing Studio",
       locale: "en_US",
       type: "website",
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE,
+          width: 512,
+          height: 512,
+          alt: "Car Editing Studio",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: "Car Editing Studio",
       description: baseDescription,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined,
     },
   };
 }
@@ -84,6 +104,7 @@ export default async function RootLayout({
 }>) {
   const h = await headers();
   const isAdminHost = isAdminHostFromIncomingHeaders((name) => h.get(name));
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 
   if (isAdminHost) {
     return (
@@ -141,6 +162,20 @@ s1.setAttribute('crossorigin','*');
 s0.parentNode.insertBefore(s1,s0);
 })();`}
         </Script>
+        {gaMeasurementId ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${gaMeasurementId}');`}
+            </Script>
+          </>
+        ) : null}
         <Analytics />
       </body>
     </html>

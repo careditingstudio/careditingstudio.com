@@ -2,6 +2,7 @@
 
 import { AdminServiceBlocksModal } from "@/components/admin/AdminServiceBlocksModal";
 import { AdminServiceFaqModal } from "@/components/admin/AdminServiceFaqModal";
+import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
 import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
 import { useEffect, useId, useMemo, useState } from "react";
 
@@ -10,6 +11,7 @@ type EditableKey =
   | "slug"
   | "pageTitle"
   | "pageDescription"
+  | "heroBannerSrc"
   | "introTitle"
   | "introBody"
   | "portfolioTitle";
@@ -125,6 +127,7 @@ export function AdminServiceEditModal({
   const [editingKey, setEditingKey] = useState<EditableKey | null>(null);
   const [blocksOpen, setBlocksOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
+  const [mediaOpen, setMediaOpen] = useState(false);
 
   const selectedSet = useMemo(
     () => new Set(page?.selectedPortfolioIndices ?? []),
@@ -145,6 +148,7 @@ export function AdminServiceEditModal({
     setEditingKey(null);
     setBlocksOpen(false);
     setFaqOpen(false);
+    setMediaOpen(false);
   }, [open, service.id]);
 
   useEffect(() => {
@@ -163,6 +167,7 @@ export function AdminServiceEditModal({
       <AdminServiceBlocksModal
         open={blocksOpen}
         onClose={() => setBlocksOpen(false)}
+        serviceName={service.name}
         blocks={page.blocks ?? []}
         onChangeBlocks={(blocks) => onSetPage({ blocks })}
         setFlash={setFlash}
@@ -172,6 +177,16 @@ export function AdminServiceEditModal({
         onClose={() => setFaqOpen(false)}
         section={page.faqSection}
         onChange={(faqSection) => onSetPage({ faqSection })}
+      />
+      <MediaLibraryModal
+        open={mediaOpen}
+        onClose={() => setMediaOpen(false)}
+        onPick={(url) => {
+          onSetPage({ heroBannerSrc: url });
+          setEditingKey(null);
+          setMediaOpen(false);
+        }}
+        title="Choose hero banner image"
       />
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
@@ -185,7 +200,7 @@ export function AdminServiceEditModal({
         className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
+      <div className="relative flex max-h-[96vh] w-[96vw] max-w-7xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
           <h2 id={titleId} className="text-base font-semibold text-white">
             Service {serviceIndex + 1}: {service.name.trim() || "Untitled service"}
@@ -255,6 +270,41 @@ export function AdminServiceEditModal({
               }}
               multiline
             />
+            <FieldRow
+              label="Hero banner image URL (optional)"
+              value={page.heroBannerSrc}
+              editing={editingKey === "heroBannerSrc"}
+              onStartEdit={() => setEditingKey("heroBannerSrc")}
+              onCancel={() => setEditingKey(null)}
+              onSave={(next) => {
+                onSetPage({ heroBannerSrc: next });
+                setEditingKey(null);
+              }}
+            />
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+                Hero banner quick actions
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMediaOpen(true)}
+                  className="rounded border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-2.5 py-1 text-[11px] font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
+                >
+                  Choose from library
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSetPage({ heroBannerSrc: "" });
+                    setEditingKey(null);
+                  }}
+                  className="rounded border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-300 hover:bg-zinc-800"
+                >
+                  Clear image
+                </button>
+              </div>
+            </div>
             <FieldRow
               label="Intro title"
               value={page.introTitle}

@@ -8,7 +8,7 @@ import { HeroBackdropRotator } from "@/components/HeroBackdropRotator";
 import { siteConfig } from "@/config/site";
 
 const HERO_LEAD =
-  "Professional Automotive Photo Editing & Retouching Services";
+  "Professional Car Editing & Automotive Photo Retouching Services";
 const HERO_SUPPORT =
   "for Car Selling Companies, Automotive Dealers, and Online Car Sellers";
 

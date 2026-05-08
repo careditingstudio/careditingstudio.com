@@ -18,13 +18,15 @@ type MailItem = {
 };
 
 function badge(kind: MailboxKind) {
-  return kind === "FREE_TRIAL"
-    ? "bg-violet-500/15 text-violet-200 ring-violet-500/25"
-    : "bg-sky-500/15 text-sky-200 ring-sky-500/25";
+  if (kind === "FREE_TRIAL") return "bg-violet-500/15 text-violet-200 ring-violet-500/25";
+  if (kind === "ORDER") return "bg-emerald-500/15 text-emerald-200 ring-emerald-500/25";
+  return "bg-sky-500/15 text-sky-200 ring-sky-500/25";
 }
 
 function kindLabel(kind: MailboxKind) {
-  return kind === "FREE_TRIAL" ? "Free Trial" : "Contact";
+  if (kind === "FREE_TRIAL") return "Free Trial";
+  if (kind === "ORDER") return "Order";
+  return "Contact";
 }
 
 /** Older submissions may have mis-filed contact info in one field. */
@@ -157,6 +159,7 @@ export default function AdminMailboxPage() {
               <option value="ALL">All</option>
               <option value="CONTACT">Contact</option>
               <option value="FREE_TRIAL">Free Trial</option>
+              <option value="ORDER">Order</option>
             </select>
             <label className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200">
               <span className="text-xs text-zinc-300">Exclude read</span>

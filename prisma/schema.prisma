@@ -12,6 +12,7 @@ datasource db {
 enum MailboxKind {
   CONTACT
   FREE_TRIAL
+  ORDER
 }
 
 model SiteSettings {

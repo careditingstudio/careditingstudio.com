@@ -2,12 +2,29 @@ import { OrderNowLink } from "@/components/OrderNowLink";
 import { PageHeading } from "@/components/PageHeading";
 import { isUploadedAsset } from "@/lib/cms-types";
 import { readCms } from "@/lib/cms-store";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import type { Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description: "Simple and transparent pricing for automotive photo editing.",
+  alternates: {
+    canonical: "/pricing",
+  },
+  openGraph: {
+    title: "Automotive Photo Editing Pricing",
+    description: "Simple and transparent pricing for automotive photo editing.",
+    url: "/pricing",
+    type: "website",
+    images: [{ url: DEFAULT_OG_IMAGE, alt: "Car Editing Studio pricing" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Automotive Photo Editing Pricing",
+    description: "Simple and transparent pricing for automotive photo editing.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export default async function PricingPage() {

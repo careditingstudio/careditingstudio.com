@@ -2,9 +2,13 @@ import { AdminConsoleShell } from "@/components/admin/AdminConsoleShell";
 import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * CMS page editors live at /editor/* on the admin host only.

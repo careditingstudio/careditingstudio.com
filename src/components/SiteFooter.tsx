@@ -247,6 +247,12 @@ export function SiteFooter({
                   Pricing
                 </Link>
               </li>
+              <li>
+                <Link prefetch href="/schedule-meeting" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
+                  <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
+                  Schedule a meeting
+                </Link>
+              </li>
             </ul>
           </div>
 

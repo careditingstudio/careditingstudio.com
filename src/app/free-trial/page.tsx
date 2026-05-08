@@ -1,11 +1,28 @@
 import { FreeTrialForm } from "@/components/forms/FreeTrialForm";
 import { ENV_APP } from "@/config/deployment-env";
 import { readCms } from "@/lib/cms-store";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Free Trial",
   description: "Try Car Editing Studio on a sample of your images.",
+  alternates: {
+    canonical: "/free-trial",
+  },
+  openGraph: {
+    title: "Free Trial | Car Editing Studio",
+    description: "Try Car Editing Studio on a sample of your images.",
+    url: "/free-trial",
+    type: "website",
+    images: [{ url: DEFAULT_OG_IMAGE, alt: "Car Editing Studio free trial" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Trial | Car Editing Studio",
+    description: "Try Car Editing Studio on a sample of your images.",
+    images: [DEFAULT_OG_IMAGE],
+  },
 };
 
 export default async function FreeTrialPage() {
