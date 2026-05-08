@@ -111,7 +111,11 @@ export function OrderForm({
     );
   }
 
-  function validateStep(targetStep: StepId): boolean {
+  /**
+   * Validates fields required to *reach* `targetStep` after clicking Next.
+   * Message + captcha are only checked when `submit: true` (final step submit).
+   */
+  function validateStep(targetStep: StepId, opts?: { submit?: boolean }): boolean {
     const nextErr: { [k: string]: string } = {};
 
     if (targetStep >= 1) {
@@ -135,8 +139,10 @@ export function OrderForm({
 
     if (targetStep >= 3) {
       if (!neededBefore) nextErr.neededBefore = "Please select a date.";
-      if (message.trim().length < 2) nextErr.message = "Please write a message.";
-      if (captchaRequired && !turnstileToken) nextErr.captcha = "Please complete the captcha.";
+      if (opts?.submit) {
+        if (message.trim().length < 2) nextErr.message = "Please write a message.";
+        if (captchaRequired && !turnstileToken) nextErr.captcha = "Please complete the captcha.";
+      }
     }
 
     setErrors(nextErr);
@@ -163,7 +169,7 @@ export function OrderForm({
     e.preventDefault();
     setServerError("");
     setSuccessId(null);
-    if (!validateStep(3)) return;
+    if (!validateStep(3, { submit: true })) return;
 
     setSubmitting(true);
     try {
