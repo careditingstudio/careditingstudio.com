@@ -19,6 +19,6 @@ export async function readCmsWithDbStatus(): Promise<ReadCmsFromDbResult> {
 }
 
 export async function writeCms(data: CmsJson): Promise<CmsJson> {
-  const next = normalizeCmsJson(data);
+  const next = normalizeCmsJson(data, data);
   return writeCmsToDb(next);
 }

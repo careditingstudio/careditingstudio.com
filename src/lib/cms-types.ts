@@ -544,12 +544,11 @@ export function defaultServicePageContent(
     serviceId,
     slug: toServiceSlug(title),
     pageTitle: title,
-    pageDescription: `${title} for automotive dealerships and studios with consistent, production-ready quality.`,
+    pageDescription: "",
     heroBannerSrc: "",
-    introTitle: `Professional ${title}`,
-    introBody:
-      "We deliver accurate, fast, and scalable editing tailored to your workflow and visual standards.",
-    portfolioTitle: `${title} Portfolio`,
+    introTitle: "",
+    introBody: "",
+    portfolioTitle: "",
     selectedPortfolioIndices: [],
     faqSection: defaultServiceFaqSection(),
     blocks: [],
@@ -1577,6 +1576,10 @@ function normalizePricingContent(raw: unknown, fallback: PricingContent): Pricin
   };
 }
 
+function cloneCmsJsonForNormalize(cms: CmsJson): CmsJson {
+  return structuredClone(cms);
+}
+
 function normalizeBeforeAfterPair(item: unknown): BeforeAfterPair | null {
   if (!item || typeof item !== "object") return null;
   const p = item as Record<string, unknown>;
@@ -1621,8 +1624,18 @@ function normalizeBeforeAfterPair(item: unknown): BeforeAfterPair | null {
   };
 }
 
-export function normalizeCmsJson(raw: unknown): CmsJson {
-  const base = defaultCmsJson();
+/**
+ * Normalizes an incoming CMS payload.
+ * When `existingFromDb` is set (typical admin save), fields omitted from `raw` keep the
+ * database values — avoiding accidental wipes that happen when merging against defaults.
+ */
+export function normalizeCmsJson(
+  raw: unknown,
+  existingFromDb?: CmsJson | null,
+): CmsJson {
+  const base = existingFromDb
+    ? cloneCmsJsonForNormalize(existingFromDb)
+    : defaultCmsJson();
   if (!raw || typeof raw !== "object") return base;
   const o = raw as Record<string, unknown>;
 
@@ -1654,7 +1667,10 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     ) {
       d.siteTagsSeparator = sep;
     }
-    if (Array.isArray(s.socialLinks)) {
+    if (
+      Object.prototype.hasOwnProperty.call(s, "socialLinks") &&
+      Array.isArray(s.socialLinks)
+    ) {
       const out: { label: string; url: string }[] = [];
       const seen = new Set<string>();
       for (const row of s.socialLinks) {
@@ -1669,9 +1685,12 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
         seen.add(key);
         out.push({ label, url });
       }
-      if (out.length > 0) d.socialLinks = out;
+      d.socialLinks = out;
     }
-    if (Array.isArray(s.paymentMethods)) {
+    if (
+      Object.prototype.hasOwnProperty.call(s, "paymentMethods") &&
+      Array.isArray(s.paymentMethods)
+    ) {
       const out: { label: string; imageUrl: string }[] = [];
       const seen = new Set<string>();
       for (const row of s.paymentMethods) {
@@ -1693,7 +1712,10 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       d.paymentMethods = out;
     }
 
-    if (Array.isArray(s.faqs)) {
+    if (
+      Object.prototype.hasOwnProperty.call(s, "faqs") &&
+      Array.isArray(s.faqs)
+    ) {
       const out: { question: string; answer: string }[] = [];
       for (const row of s.faqs) {
         if (!row || typeof row !== "object") continue;
@@ -1706,7 +1728,10 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
       d.faqs = out;
     }
 
-    if (Array.isArray(s.officeLocations)) {
+    if (
+      Object.prototype.hasOwnProperty.call(s, "officeLocations") &&
+      Array.isArray(s.officeLocations)
+    ) {
       const out: {
         label: string;
         address: string;
@@ -1729,7 +1754,7 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
         seen.add(key);
         out.push({ label, address, mapUrl, phone });
       }
-      if (out.length > 0) d.officeLocations = out;
+      d.officeLocations = out;
     }
     base.site = d;
   }
@@ -1753,59 +1778,84 @@ export function normalizeCmsJson(raw: unknown): CmsJson {
     base.beforeAfter = pairs;
   }
 
-  let services: ServiceRow[] = [];
-  if (Array.isArray(o.services)) {
-    for (const x of o.services) {
-      const row = normalizeServiceRow(x);
-      if (row && row.name.trim().length > 0) services.push(row);
-    }
-  }
   const legacyCats = Object.prototype.hasOwnProperty.call(
     o,
     "portfolioCategories",
   )
     ? normalizePortfolioCategoriesList(o.portfolioCategories)
     : [];
-  if (services.length === 0 && legacyCats.length > 0) {
-    services = legacyCats.map((name, i) => ({ id: i + 1, name }));
-  }
-  base.services = services;
-  const byService = new Map<number, ServicePageContent>();
-  if (Array.isArray(o.servicePages)) {
-    for (const x of o.servicePages) {
+
+  const incomingServicesProvided =
+    Object.prototype.hasOwnProperty.call(o, "services") &&
+    Array.isArray(o.services);
+  const incomingServicePagesProvided =
+    Object.prototype.hasOwnProperty.call(o, "servicePages") &&
+    Array.isArray(o.servicePages);
+
+  const touchesServicesStack =
+    incomingServicesProvided ||
+    incomingServicePagesProvided ||
+    legacyCats.length > 0;
+
+  if (touchesServicesStack) {
+    const rawServicesIncoming =
+      incomingServicesProvided && Array.isArray(o.services) ? o.services : null;
+    let services: ServiceRow[] = incomingServicesProvided
+      ? []
+      : [...base.services];
+    if (incomingServicesProvided && rawServicesIncoming) {
+      for (const x of rawServicesIncoming) {
+        const row = normalizeServiceRow(x);
+        if (row && row.name.trim().length > 0) services.push(row);
+      }
+    }
+    if (services.length === 0 && legacyCats.length > 0) {
+      services = legacyCats.map((name, i) => ({
+        id: i + 1,
+        name,
+      }));
+    }
+    base.services = services;
+
+    const byService = new Map<number, ServicePageContent>();
+    const pagesSource: unknown[] = incomingServicePagesProvided
+      ? (o.servicePages as unknown[])
+      : base.servicePages;
+    for (const x of pagesSource) {
       const row = normalizeServicePageContent(x);
       if (!row) continue;
       byService.set(row.serviceId, row);
     }
+
+    base.servicePages = base.services.map((svc) => {
+      const row = byService.get(svc.id);
+      const fallback = defaultServicePageContent(svc.id, svc.name);
+      if (!row) return fallback;
+      const name = svc.name.trim() || fallback.pageTitle;
+      return {
+        ...fallback,
+        ...row,
+        serviceId: svc.id,
+        slug: toServiceSlug(row.slug || name),
+        pageTitle: row.pageTitle.trim() ? row.pageTitle : name,
+        pageDescription: row.pageDescription ?? fallback.pageDescription,
+        heroBannerSrc: row.heroBannerSrc ?? fallback.heroBannerSrc,
+        introTitle: row.introTitle ?? fallback.introTitle,
+        introBody: row.introBody ?? fallback.introBody,
+        portfolioTitle: row.portfolioTitle ?? fallback.portfolioTitle,
+        selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
+          row.selectedPortfolioIndices,
+          base.portfolioGrid.length,
+        ),
+        faqSection: normalizeServiceFaqSection(row.faqSection, fallback.faqSection),
+        blocks: Array.isArray(row.blocks)
+          ? row.blocks
+              .map((x) => normalizeServicePageBlock(x))
+              .filter((x): x is ServicePageBlock => x !== null)
+          : fallback.blocks,
+      };
+    });
   }
-  base.servicePages = base.services.map((svc) => {
-    const row = byService.get(svc.id);
-    const fallback = defaultServicePageContent(svc.id, svc.name);
-    if (!row) return fallback;
-    const name = svc.name.trim() || fallback.pageTitle;
-    return {
-      ...fallback,
-      ...row,
-      serviceId: svc.id,
-      slug: toServiceSlug(row.slug || name),
-      pageTitle: row.pageTitle.trim() ? row.pageTitle : name,
-      pageDescription: row.pageDescription ?? fallback.pageDescription,
-      heroBannerSrc: row.heroBannerSrc ?? fallback.heroBannerSrc,
-      introTitle: row.introTitle ?? fallback.introTitle,
-      introBody: row.introBody ?? fallback.introBody,
-      portfolioTitle: row.portfolioTitle ?? fallback.portfolioTitle,
-      selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
-        row.selectedPortfolioIndices,
-        base.portfolioGrid.length,
-      ),
-      faqSection: normalizeServiceFaqSection(row.faqSection, fallback.faqSection),
-      blocks: Array.isArray(row.blocks)
-        ? row.blocks
-            .map((x) => normalizeServicePageBlock(x))
-            .filter((x): x is ServicePageBlock => x !== null)
-        : fallback.blocks,
-    };
-  });
 
   const categoryToServiceId = new Map<string, number>();
   for (const s of base.services) {

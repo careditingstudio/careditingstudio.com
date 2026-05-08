@@ -378,21 +378,10 @@ function IntroFallback({ page }: { page: ServicePageContent }) {
 
 export function ServicePageBody({ page, portfolioItems }: Props) {
   const blocks = page.blocks ?? [];
-  const hasPortfolio = portfolioItems.length > 0;
   const faqInBlocks = blocks.some((b) => b.type === "faq");
 
   if (blocks.length === 0) {
-    return (
-      <div className="space-y-14">
-        <IntroFallback page={page} />
-        {hasPortfolio ? (
-          <PortfolioStrip title={page.portfolioTitle} items={portfolioItems} />
-        ) : null}
-        <SectionShell>
-          <ServiceFaqSection section={page.faqSection} />
-        </SectionShell>
-      </div>
-    );
+    return <IntroFallback page={page} />;
   }
 
   return (

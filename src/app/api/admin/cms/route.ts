@@ -22,7 +22,8 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const merged = normalizeCmsJson(body) as CmsJson;
+  const current = await readCms();
+  const merged = normalizeCmsJson(body, current) as CmsJson;
   await writeCms(merged);
   revalidatePath("/");
   revalidatePath("/services");
