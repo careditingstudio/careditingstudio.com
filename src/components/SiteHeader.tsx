@@ -7,6 +7,7 @@ import { OrderNowLink } from "@/components/OrderNowLink";
 import { ServicesMegaMenuGrid } from "@/components/ServicesMegaMenu";
 import { navItems } from "@/config/site";
 import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
+import { SiteBrandLogo } from "@/components/SiteBrandLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -220,10 +221,11 @@ export function SiteHeader({
         <Link
           href="/"
           className={[
-            `${display.className} shrink-0 text-[1.2rem] font-semibold leading-none tracking-tight transition-colors sm:text-[1.35rem]`,
+            `${display.className} flex shrink-0 items-center gap-3 text-[1.2rem] font-semibold leading-none tracking-tight transition-colors sm:text-[1.35rem]`,
             overlayNav ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
+          <SiteBrandLogo blendMultiply />
           <span className="whitespace-nowrap">{brandName}</span>
         </Link>
 
