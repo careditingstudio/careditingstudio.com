@@ -23,6 +23,23 @@ export async function PUT(request: Request) {
   }
 
   const current = await readCms();
+  if (body && typeof body === "object") {
+    const b = body as Record<string, unknown>;
+    const clientAt = b.updatedAt;
+    if (typeof clientAt === "string" && clientAt.length > 0) {
+      if (clientAt !== current.updatedAt) {
+        return NextResponse.json(
+          {
+            error: "stale",
+            message:
+              "Content changed elsewhere while you were editing. Reload the admin to get the latest data, then save again.",
+            updatedAt: current.updatedAt,
+          },
+          { status: 409 },
+        );
+      }
+    }
+  }
   const merged = normalizeCmsJson(body, current) as CmsJson;
   await writeCms(merged);
   revalidatePath("/");

@@ -1,6 +1,5 @@
-import { InnerPageBody } from "@/components/InnerPageBody";
-import { ServicePageBody } from "@/components/ServicePageBody";
 import { ServicePageHero } from "@/components/ServicePageHero";
+import { ServicePageTemplate } from "@/components/ServicePageTemplate";
 import { readCms } from "@/lib/cms-store";
 import { DEFAULT_OG_IMAGE, absoluteUrl } from "@/lib/seo";
 import { getResolvedServicePages } from "@/lib/service-pages";
@@ -126,9 +125,10 @@ export default async function ServiceDetailPage({ params }: Props) {
         description={page.page.pageDescription}
         bannerSrc={page.page.heroBannerSrc}
       />
-      <InnerPageBody contentClassName="max-w-[88rem] space-y-0 text-base leading-relaxed">
-        <ServicePageBody page={page.page} portfolioItems={page.portfolioItems} />
-      </InnerPageBody>
+      <ServicePageTemplate
+        page={page.page}
+        portfolioItems={page.portfolioItems}
+      />
     </>
   );
 }

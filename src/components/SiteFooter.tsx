@@ -1,7 +1,15 @@
 import type { ServicePageContent, ServiceRow, SiteSettings } from "@/lib/cms-types";
 import { getServiceHrefMap } from "@/lib/service-pages";
 import { telHref } from "@/lib/tel-href";
-import { cleanSocialUrl, socialBrandColor, SocialMediaIcon } from "@/components/SocialMediaIcon";
+import {
+  cleanSocialUrl,
+  socialBrandColorForPlatform,
+  SocialMediaIcon,
+} from "@/components/SocialMediaIcon";
+import {
+  isSocialPlatformId,
+  socialPlatformTitle,
+} from "@/lib/social-platforms";
 import { FooterScrollToTop } from "@/components/FooterScrollToTop";
 import Link from "next/link";
 import Image from "next/image";
@@ -73,8 +81,17 @@ export function SiteFooter({
 }) {
   const brand = site.businessName.trim() || "Car Editing Studio";
   const socials = (site.socialLinks ?? [])
-    .map((s) => ({ label: s.label.trim(), url: cleanSocialUrl(s.url) }))
-    .filter((s) => s.label.length > 0 && s.url.length > 0);
+    .map((s) => ({
+      platform: s.platform,
+      url: cleanSocialUrl(s.url),
+      title: socialPlatformTitle(s.platform),
+    }))
+    .filter(
+      (s) =>
+        typeof s.platform === "string" &&
+        isSocialPlatformId(s.platform) &&
+        s.url.length > 0,
+    );
   const email = site.email.trim();
   const hasWhatsApp = site.whatsappDial.trim().length > 0;
   const waHref = hasWhatsApp ? `https://wa.me/${site.whatsappDial.trim()}` : "";
@@ -127,17 +144,17 @@ export function SiteFooter({
             {socials.length > 0 ? (
               <ul className="mt-6 flex flex-wrap items-center gap-3 sm:gap-3.5 lg:gap-4">
                 {socials.map((s) => (
-                  <li key={`${s.label}-${s.url}`}>
+                  <li key={`${s.platform}-${s.url}`}>
                     <a
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={s.label}
-                      title={s.label}
-                      style={{ "--social-brand": socialBrandColor(s.label) } as CSSProperties}
+                      aria-label={s.title}
+                      title={s.title}
+                      style={{ "--social-brand": socialBrandColorForPlatform(s.platform) } as CSSProperties}
                       className="inline-flex items-center justify-center text-white/80 transition-all duration-200 ease-in-out hover:scale-110 hover:text-[var(--social-brand)]"
                     >
-                      <SocialMediaIcon label={s.label} size={20} />
+                      <SocialMediaIcon platform={s.platform} size={20} />
                     </a>
                   </li>
                 ))}

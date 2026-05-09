@@ -26,6 +26,7 @@ import {
   remapFeaturedOrderAfterRemove,
   remapFeaturedOrderAfterSwap,
   toServiceSlug,
+  normalizeSocialLinksFromUnknown,
 } from "@/lib/cms-types";
 
 function nextTempServiceId(
@@ -290,20 +291,9 @@ function sanitizePayload(cms: CmsJson): CmsJson {
         mapUrl: o.mapUrl.trim(),
         phone: (o.phone ?? "").trim(),
       })),
-      socialLinks: (() => {
-        const seen = new Set<string>();
-        const out: { label: string; url: string }[] = [];
-        for (const row of cms.site.socialLinks) {
-          const label = row.label.trim();
-          const url = row.url.trim();
-          if (label.length === 0) continue;
-          const key = label.toLowerCase();
-          if (seen.has(key)) continue;
-          seen.add(key);
-          out.push({ label, url });
-        }
-        return out;
-      })(),
+      socialLinks: normalizeSocialLinksFromUnknown(
+        cms.site.socialLinks as unknown[],
+      ),
       paymentMethods: (() => {
         const out: { label: string; imageUrl: string }[] = [];
         const seen = new Set<string>();
@@ -393,6 +383,20 @@ export function AdminCmsProvider({ children }: { children: ReactNode }) {
       });
       if (r.status === 401) {
         window.location.href = "/admin-panel/login";
+        return false;
+      }
+      if (r.status === 409) {
+        let msg =
+          "Content changed elsewhere. Reload this page to get the latest data, then try saving again.";
+        try {
+          const errBody = (await r.json()) as { message?: string };
+          if (typeof errBody.message === "string" && errBody.message.trim()) {
+            msg = errBody.message.trim();
+          }
+        } catch {
+          // use default message
+        }
+        setFlash({ type: "err", text: msg });
         return false;
       }
       if (!r.ok) throw new Error("save");

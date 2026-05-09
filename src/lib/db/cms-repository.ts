@@ -20,6 +20,8 @@ import {
   dedupeFeaturedPortfolioOrder,
   parseHomeServiceFeaturesFromJson,
   parseHomeWhyChooseUsFromJson,
+  parsePricingContentFromJson,
+  normalizeSocialLinksFromUnknown,
 } from "@/lib/cms-types";
 import { ENV_VERCEL_SUPABASE } from "@/config/deployment-env";
 import { Prisma } from "@prisma/client";
@@ -118,6 +120,7 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
   const now = new Date().toISOString();
   await ensurePricingColumnsOnce();
   await ensureServicePagesColumnOnce();
+  const rowExisted = (await prisma.siteSettings.findUnique({ where: { id: 1 } })) != null;
   await prisma.siteSettings.upsert({
     where: { id: 1 },
     create: {
@@ -144,13 +147,16 @@ async function upsertDefaultSiteRow(site: SiteSettings): Promise<void> {
       updatedAt: now,
     },
   });
-  await prisma.$executeRaw`
-    UPDATE "site_settings"
-    SET "pricing_json" = ${JSON.stringify(defaultPricingContent())},
-        "payment_methods_json" = ${JSON.stringify(site.paymentMethods ?? [])},
-        "service_pages_json" = ${JSON.stringify([])}
-    WHERE "id" = 1
-  `;
+  /** Only seed JSON columns on first row creation — never reset live pricing/payment/service pages. */
+  if (!rowExisted) {
+    await prisma.$executeRaw`
+      UPDATE "site_settings"
+      SET "pricing_json" = ${JSON.stringify(defaultPricingContent())},
+          "payment_methods_json" = ${JSON.stringify(site.paymentMethods ?? [])},
+          "service_pages_json" = ${JSON.stringify([])}
+      WHERE "id" = 1
+    `;
+  }
 }
 
 function isMissingTablesError(e: unknown): boolean {
@@ -310,15 +316,9 @@ async function readCmsFromDbOnce(): Promise<ReadCmsFromDbResult> {
       socialLinks: (() => {
         try {
           const parsed = JSON.parse(siteRow.socialLinksJson || "[]") as unknown;
-          if (!Array.isArray(parsed)) return [];
-          const out: { label: string; url: string }[] = [];
-          for (const row of parsed) {
-            if (!row || typeof row !== "object") continue;
-            const p = row as Record<string, unknown>;
-            if (typeof p.label !== "string" || typeof p.url !== "string") continue;
-            out.push({ label: p.label, url: p.url });
-          }
-          return out;
+          return normalizeSocialLinksFromUnknown(
+            Array.isArray(parsed) ? parsed : [],
+          );
         } catch {
           return [];
         }
@@ -498,20 +498,9 @@ async function readCmsFromDbOnce(): Promise<ReadCmsFromDbResult> {
       siteRow.homeWhyChooseUsJson,
     );
 
-    const pricing: PricingContent = (() => {
-      const fallback = defaultPricingContent();
-      try {
-        const parsed = JSON.parse(extra.pricing_json || "{}") as unknown;
-        const merged = {
-          ...fallback,
-          ...(parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {}),
-        } as PricingContent;
-        if (!Array.isArray(merged.plans) || merged.plans.length === 0) return fallback;
-        return merged;
-      } catch {
-        return fallback;
-      }
-    })();
+    const pricing: PricingContent = parsePricingContentFromJson(
+      extra.pricing_json,
+    );
 
     return {
       cms: {

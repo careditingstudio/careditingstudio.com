@@ -64,7 +64,7 @@ export function TrustedClientsMarquee({
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 bg-gradient-to-t from-[var(--background)]/75 via-[var(--background)]/25 to-transparent sm:h-20"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-28 border-t border-white/[0.06] bg-gradient-to-t from-[var(--background)]/88 via-[var(--background)]/35 to-transparent backdrop-blur-2xl backdrop-saturate-150 sm:h-36"
         aria-hidden
       />
       <div className="relative z-10 mx-auto max-w-[82rem]">
@@ -85,7 +85,7 @@ export function TrustedClientsMarquee({
           </p>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-white/12 bg-transparent px-3 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.18)] sm:px-5">
+        <div className="mt-10 rounded-2xl border border-white/15 bg-white/[0.06] px-3 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl backdrop-saturate-150 sm:px-5">
           <div
             className="relative overflow-hidden"
             style={{

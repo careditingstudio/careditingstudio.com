@@ -15,48 +15,58 @@ export function ServicePageHero({
   const hasBanner = src.length > 0;
 
   return (
-    <header className="border-b border-[var(--line)] bg-[var(--background)]">
-      <div className="relative min-h-[220px] w-full overflow-hidden border-y border-[var(--line)] bg-zinc-100 dark:bg-zinc-900/60 sm:min-h-[260px] lg:min-h-[320px]">
-          {hasBanner ? (
-            <>
-              <Image
-                src={src}
-                alt={`${title} — hero banner`}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority
-                unoptimized={isUploadedAsset(src)}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/20" />
-            </>
-          ) : (
-            <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-2 p-8 text-center sm:min-h-[260px] lg:min-h-[320px]">
-              <span className="text-sm font-medium text-[var(--muted-2)]">
-                Banner
-              </span>
-              <span className="max-w-xs text-xs text-[var(--muted)]">
-                Add a hero image in the admin service page (Hero banner URL).
-              </span>
-            </div>
-          )}
+    <header
+      className="relative isolate w-full overflow-hidden bg-[#0a0a0a]"
+      aria-labelledby="service-hero-title"
+    >
+      <div className="relative h-[clamp(420px,52vw,620px)] w-full">
+        {hasBanner ? (
+          <Image
+            src={src}
+            alt={`${title} hero banner`}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+            unoptimized={isUploadedAsset(src)}
+          />
+        ) : (
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[radial-gradient(120%_90%_at_18%_10%,rgba(224,122,69,0.22)_0%,transparent_55%),radial-gradient(110%_85%_at_82%_90%,rgba(255,255,255,0.05)_0%,transparent_55%)]"
+          />
+        )}
 
-          <div className="absolute inset-x-0 top-0 z-10 p-5 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-[88rem]">
-              <div className="max-w-2xl">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.85)_0%,rgba(0,0,0,0.7)_38%,rgba(0,0,0,0.45)_70%,rgba(0,0,0,0.25)_100%)]"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.55)_0%,transparent_30%,transparent_70%,rgba(0,0,0,0.25)_100%)]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:linear-gradient(to_right,rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_75%_60%_at_50%_50%,black_0%,transparent_75%)]"
+        />
+
+        <div className="relative z-10 flex h-full w-full items-center">
+          <div className="mx-auto w-full max-w-[88rem] px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
+            <div className="max-w-2xl space-y-5">
               <h1
-                className={`${display.className} text-3xl font-semibold tracking-tight text-white sm:text-[2.15rem] sm:leading-tight lg:text-[2.35rem]`}
+                id="service-hero-title"
+                className={`${display.className} text-balance text-3xl font-semibold tracking-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)] sm:text-4xl md:text-[2.6rem] md:leading-[1.1] lg:text-[3rem]`}
               >
                 {title}
               </h1>
-              {description ? (
-                <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-200 sm:text-base">
+              {description?.trim() ? (
+                <p className="max-w-xl whitespace-pre-line text-sm leading-relaxed text-white/85 drop-shadow-[0_1px_10px_rgba(0,0,0,0.5)] sm:text-base md:text-[1.05rem]">
                   {description}
                 </p>
               ) : null}
-              </div>
             </div>
           </div>
+        </div>
       </div>
     </header>
   );

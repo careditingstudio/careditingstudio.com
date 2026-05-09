@@ -6,6 +6,7 @@ import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
 import { ChromeScrollLockProvider } from "@/components/ChromeScrollLockContext";
 import { HomeChromeProvider } from "@/components/HomeChromeProvider";
 import { SiteTopChromeWrapper } from "@/components/SiteTopChromeWrapper";
+import { FloatingWhatsAppButton } from "@/components/FloatingWhatsAppButton";
 import { readCms } from "@/lib/cms-store";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { parseSiteTags } from "@/lib/site-tags";
@@ -104,7 +105,9 @@ export default async function RootLayout({
 }>) {
   const h = await headers();
   const isAdminHost = isAdminHostFromIncomingHeaders((name) => h.get(name));
-  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  /** GA4 — override via NEXT_PUBLIC_GA_MEASUREMENT_ID for staging/preview builds */
+  const gaMeasurementId =
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "G-54LV6Y2J8R";
 
   if (isAdminHost) {
     return (
@@ -117,6 +120,14 @@ export default async function RootLayout({
         </body>
       </html>
     );
+  }
+
+  let whatsappDial = "";
+  try {
+    const cms = await readCms();
+    whatsappDial = cms.site.whatsappDial?.trim() ?? "";
+  } catch {
+    whatsappDial = "";
   }
 
   return (
@@ -151,6 +162,7 @@ export default async function RootLayout({
             <SiteTopChromeWrapper>{children}</SiteTopChromeWrapper>
           </ChromeScrollLockProvider>
         </HomeChromeProvider>
+        <FloatingWhatsAppButton whatsappDial={whatsappDial} />
         <Script id="tawk-to" strategy="lazyOnload">
           {`var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){

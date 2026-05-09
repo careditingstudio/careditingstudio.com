@@ -3,10 +3,17 @@
 import { AdminFormModal } from "@/components/admin/AdminFormModal";
 import { useAdminCms } from "@/components/admin/AdminCmsContext";
 import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
+import { SocialMediaIcon } from "@/components/SocialMediaIcon";
 import { isUploadedAsset } from "@/lib/cms-types";
+import {
+  DEFAULT_NEW_SOCIAL_PLATFORM,
+  SOCIAL_PLATFORM_OPTIONS,
+  socialPlatformTitle,
+  type SocialPlatformId,
+} from "@/lib/social-platforms";
 import Image from "next/image";
 import type { SiteSettings } from "@/lib/cms-types";
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 type Sep = SiteSettings["siteTagsSeparator"];
 
@@ -62,13 +69,32 @@ export default function AdminSettingsPage() {
   const [paymentUploadError, setPaymentUploadError] = useState("");
   const [paymentLibraryOpen, setPaymentLibraryOpen] = useState(false);
   const [editPaymentIndex, setEditPaymentIndex] = useState<number | null>(null);
+  const [socialPlatformQuery, setSocialPlatformQuery] = useState("");
   const [faqModalOpen, setFaqModalOpen] = useState(false);
+
+  const filteredSocialPlatforms = useMemo(() => {
+    const q = socialPlatformQuery.trim().toLowerCase();
+    if (!q) return SOCIAL_PLATFORM_OPTIONS;
+    return SOCIAL_PLATFORM_OPTIONS.filter(
+      (o) =>
+        o.title.toLowerCase().includes(q) ||
+        o.id.toLowerCase().includes(q),
+    );
+  }, [socialPlatformQuery]);
+
+  useEffect(() => {
+    setSocialPlatformQuery("");
+  }, [editSocialIndex]);
+
   if (!cms) return null;
   const site = cms.site;
   const currentSocial =
     editSocialIndex === null
-      ? { label: "", url: "" }
-      : site.socialLinks[editSocialIndex] ?? { label: "", url: "" };
+      ? { platform: DEFAULT_NEW_SOCIAL_PLATFORM as SocialPlatformId, url: "" }
+      : site.socialLinks[editSocialIndex] ?? {
+          platform: DEFAULT_NEW_SOCIAL_PLATFORM,
+          url: "",
+        };
   const currentOffice =
     editOfficeIndex === null
       ? { label: "", phone: "", address: "", mapUrl: "" }
@@ -82,7 +108,7 @@ export default function AdminSettingsPage() {
     editPaymentIndex === null
       ? { label: "", imageUrl: "" }
       : (site.paymentMethods ?? [])[editPaymentIndex] ?? { label: "", imageUrl: "" };
-  const socialSummary = site.socialLinks.filter((s) => s.label.trim() || s.url.trim()).length;
+  const socialSummary = site.socialLinks.filter((s) => s.url.trim()).length;
   const officeSummary = site.officeLocations.filter((o) => o.label.trim()).length;
   const paymentSummary = (site.paymentMethods ?? []).filter((m) => m.label.trim()).length;
   const faqSummary = (site.faqs ?? []).length;
@@ -257,26 +283,36 @@ export default function AdminSettingsPage() {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  const idx = site.socialLinks.length;
                   updateSite({
-                    socialLinks: [...site.socialLinks, { label: "New", url: "" }],
-                  })
-                }
+                    socialLinks: [
+                      ...site.socialLinks,
+                      { platform: DEFAULT_NEW_SOCIAL_PLATFORM, url: "" },
+                    ],
+                  });
+                  setEditSocialIndex(idx);
+                }}
                 className="rounded-lg bg-zinc-800 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700"
               >
-                Add social link
+                New social link
               </button>
             </div>
             {site.socialLinks.map((row, i) => (
               <div
-                key={`${row.label}-${i}`}
+                key={`${row.platform}-${i}`}
                 className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 p-3"
               >
                 <span className="w-5 shrink-0 text-center text-[10px] font-medium text-zinc-600">
                   {i + 1}
                 </span>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900/80 text-zinc-200">
+                  <SocialMediaIcon platform={row.platform} size={20} />
+                </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-zinc-200">{row.label || "—"}</p>
+                  <p className="truncate text-sm text-zinc-200">
+                    {socialPlatformTitle(row.platform)}
+                  </p>
                   <p className="truncate text-[11px] text-zinc-500">{row.url || "No URL"}</p>
                 </div>
                 <button
@@ -305,25 +341,63 @@ export default function AdminSettingsPage() {
         <AdminFormModal
           open={editSocialIndex !== null}
           onClose={() => setEditSocialIndex(null)}
-          title={`Edit social link ${editSocialIndex === null ? "" : editSocialIndex + 1}`}
+          title={`Social link ${editSocialIndex === null ? "" : editSocialIndex + 1}`}
           maxWidthClass="max-w-xl"
         >
           <div className="space-y-4">
-            <TextField
-              id="social-label-edit"
-              label="Label"
-              value={currentSocial.label}
-              onChange={(v) => {
-                if (editSocialIndex === null) return;
-                const next = [...site.socialLinks];
-                next[editSocialIndex] = { ...next[editSocialIndex]!, label: v };
-                updateSite({ socialLinks: next });
-              }}
-              placeholder="Instagram"
-            />
+            <div>
+              <label
+                htmlFor="social-platform-search"
+                className="block text-sm font-medium text-zinc-200"
+              >
+                Icon
+              </label>
+              <input
+                id="social-platform-search"
+                type="search"
+                value={socialPlatformQuery}
+                onChange={(e) => setSocialPlatformQuery(e.target.value)}
+                placeholder="Search networks…"
+                className="mt-3 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none ring-[var(--accent)]/30 focus:border-[var(--accent)] focus:ring-2"
+              />
+              <div className="mt-3 max-h-[min(240px,45vh)] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950/80 p-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {filteredSocialPlatforms.map((o) => {
+                    const selected = currentSocial.platform === o.id;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => {
+                          if (editSocialIndex === null) return;
+                          const next = [...site.socialLinks];
+                          next[editSocialIndex] = {
+                            ...next[editSocialIndex]!,
+                            platform: o.id,
+                          };
+                          updateSite({ socialLinks: next });
+                        }}
+                        className={[
+                          "flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center transition",
+                          selected
+                            ? "border-[var(--accent)] bg-[var(--accent)]/15 text-white"
+                            : "border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:border-zinc-600 hover:bg-zinc-900",
+                        ].join(" ")}
+                      >
+                        <SocialMediaIcon platform={o.id} size={22} />
+                        <span className="text-[11px] font-medium leading-tight">{o.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {filteredSocialPlatforms.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-zinc-500">No matches.</p>
+                ) : null}
+              </div>
+            </div>
             <TextField
               id="social-url-edit"
-              label="URL"
+              label="Link URL"
               type="url"
               value={currentSocial.url}
               onChange={(v) => {
@@ -332,7 +406,7 @@ export default function AdminSettingsPage() {
                 next[editSocialIndex] = { ...next[editSocialIndex]!, url: v };
                 updateSite({ socialLinks: next });
               }}
-              placeholder="https://instagram.com/yourhandle"
+              placeholder="https://…"
             />
           </div>
         </AdminFormModal>

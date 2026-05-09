@@ -884,6 +884,268 @@ export function AdminServiceBlockEditorModal({
               </div>
             </>
           ) : null}
+
+          {draft.type === "whyChooseQuad" ? (
+            <>
+              <div>
+                <label className={lab}>Section title</label>
+                <input
+                  type="text"
+                  value={draft.sectionTitle}
+                  onChange={(e) =>
+                    setDraft({ ...draft, sectionTitle: e.target.value })
+                  }
+                  className={`mt-1.5 ${inp}`}
+                />
+              </div>
+              <div>
+                <label className={lab}>Section subtitle (optional)</label>
+                <textarea
+                  value={draft.sectionSubtext ?? ""}
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      sectionSubtext: e.target.value,
+                    })
+                  }
+                  rows={2}
+                  className={`mt-1.5 resize-y ${inp}`}
+                />
+              </div>
+              {[0, 1, 2, 3].map((idx) => (
+                <div
+                  key={idx}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3"
+                >
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                    Card {idx + 1}
+                  </p>
+                  <label className={lab}>Title</label>
+                  <input
+                    type="text"
+                    value={draft.cards[idx]?.title ?? ""}
+                    onChange={(e) => {
+                      const next = [...draft.cards];
+                      next[idx] = {
+                        ...next[idx]!,
+                        title: e.target.value,
+                      };
+                      setDraft({ ...draft, cards: next });
+                    }}
+                    className={`mt-1.5 ${inp}`}
+                  />
+                  <label className={`${lab} mt-2 block`}>Icon</label>
+                  <select
+                    value={draft.cards[idx]?.iconKey ?? "sparkles"}
+                    onChange={(e) => {
+                      const next = [...draft.cards];
+                      next[idx] = {
+                        ...next[idx]!,
+                        iconKey: e.target.value,
+                      };
+                      setDraft({ ...draft, cards: next });
+                    }}
+                    className={`mt-1.5 ${inp}`}
+                  >
+                    {SERVICE_FEATURE_ICON_OPTIONS.map((opt) => (
+                      <option key={opt.key} value={opt.key}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <label className={`${lab} mt-2 block`}>Body</label>
+                  <textarea
+                    value={draft.cards[idx]?.body ?? ""}
+                    onChange={(e) => {
+                      const next = [...draft.cards];
+                      next[idx] = {
+                        ...next[idx]!,
+                        body: e.target.value,
+                      };
+                      setDraft({ ...draft, cards: next });
+                    }}
+                    rows={4}
+                    className={`mt-1.5 resize-y ${inp}`}
+                  />
+                </div>
+              ))}
+            </>
+          ) : null}
+
+          {draft.type === "serviceArticle" ? (
+            <>
+              <div>
+                <label className={lab}>Lead title (large)</label>
+                <input
+                  type="text"
+                  value={draft.leadTitle}
+                  onChange={(e) =>
+                    setDraft({ ...draft, leadTitle: e.target.value })
+                  }
+                  className={`mt-1.5 ${inp}`}
+                />
+              </div>
+              <div>
+                <label className={lab}>Lead paragraph</label>
+                <textarea
+                  value={draft.leadBody}
+                  onChange={(e) =>
+                    setDraft({ ...draft, leadBody: e.target.value })
+                  }
+                  rows={6}
+                  className={`mt-1.5 resize-y ${inp}`}
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500">
+                Add any number of H2 sections below (title + paragraph each).
+              </p>
+              {draft.sections.map((sec, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                      H2 section {idx + 1}
+                    </p>
+                    <button
+                      type="button"
+                      className="text-[11px] text-red-400 hover:underline"
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          sections: draft.sections.filter((_, j) => j !== idx),
+                        })
+                      }
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <label className={lab}>Section title</label>
+                  <input
+                    type="text"
+                    value={sec.title}
+                    onChange={(e) => {
+                      const next = [...draft.sections];
+                      next[idx] = { ...next[idx]!, title: e.target.value };
+                      setDraft({ ...draft, sections: next });
+                    }}
+                    className={`mt-1.5 ${inp}`}
+                  />
+                  <label className={`${lab} mt-2 block`}>Section body</label>
+                  <textarea
+                    value={sec.body}
+                    onChange={(e) => {
+                      const next = [...draft.sections];
+                      next[idx] = { ...next[idx]!, body: e.target.value };
+                      setDraft({ ...draft, sections: next });
+                    }}
+                    rows={5}
+                    className={`mt-1.5 resize-y ${inp}`}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="rounded-lg border border-zinc-600 px-3 py-2 text-xs text-zinc-200 hover:bg-zinc-800"
+                onClick={() =>
+                  setDraft({
+                    ...draft,
+                    sections: [...draft.sections, { title: "", body: "" }],
+                  })
+                }
+              >
+                + Add H2 section
+              </button>
+            </>
+          ) : null}
+
+          {draft.type === "mediaSpotlight" ? (
+            <>
+              <div>
+                <label className={lab}>Headline (above image)</label>
+                <input
+                  type="text"
+                  value={draft.title}
+                  onChange={(e) =>
+                    setDraft({ ...draft, title: e.target.value })
+                  }
+                  className={`mt-1.5 ${inp}`}
+                />
+              </div>
+              <div>
+                <label className={lab}>Image URL</label>
+                <input
+                  type="text"
+                  value={draft.imageSrc}
+                  onChange={(e) =>
+                    setDraft({ ...draft, imageSrc: e.target.value })
+                  }
+                  className={`mt-1.5 font-mono text-xs ${inp}`}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    openMediaPicker((url) =>
+                      setDraft({ ...draft, imageSrc: url }),
+                    )
+                  }
+                  className="mt-2 rounded-lg border border-[var(--accent)]/35 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)]/20"
+                >
+                  Choose from library
+                </button>
+              </div>
+              <div>
+                <label className={lab}>Alt text</label>
+                <input
+                  type="text"
+                  value={draft.imageAlt}
+                  onChange={(e) =>
+                    setDraft({ ...draft, imageAlt: e.target.value })
+                  }
+                  className={`mt-1.5 ${inp}`}
+                />
+              </div>
+              <div>
+                <label className={lab}>Description (below image)</label>
+                <textarea
+                  value={draft.body}
+                  onChange={(e) =>
+                    setDraft({ ...draft, body: e.target.value })
+                  }
+                  rows={8}
+                  className={`mt-1.5 resize-y ${inp}`}
+                />
+              </div>
+            </>
+          ) : null}
+
+          {draft.type === "pageOutro" ? (
+            <>
+              <div>
+                <label className={lab}>Title</label>
+                <input
+                  type="text"
+                  value={draft.title}
+                  onChange={(e) =>
+                    setDraft({ ...draft, title: e.target.value })
+                  }
+                  className={`mt-1.5 ${inp}`}
+                />
+              </div>
+              <div>
+                <label className={lab}>Body</label>
+                <textarea
+                  value={draft.body}
+                  onChange={(e) =>
+                    setDraft({ ...draft, body: e.target.value })
+                  }
+                  rows={8}
+                  className={`mt-1.5 resize-y ${inp}`}
+                />
+              </div>
+            </>
+          ) : null}
         </div>
 
         <div className="flex shrink-0 justify-end gap-2 border-t border-zinc-800 px-5 py-3">

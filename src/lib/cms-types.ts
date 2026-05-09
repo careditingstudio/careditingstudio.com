@@ -1,4 +1,9 @@
 import { siteConfig } from "@/config/site";
+import {
+  type SocialPlatformId,
+  inferPlatformFromLegacyLabel,
+  isSocialPlatformId,
+} from "@/lib/social-platforms";
 
 /** One before/after “post” on the home page — images plus all visible copy and CTAs. */
 export type BeforeAfterPair = {
@@ -51,6 +56,12 @@ export function defaultBeforeAfterPair(): BeforeAfterPair {
   };
 }
 
+/** One footer / announcement-bar social profile (URL empty = hidden on public site). */
+export type SocialLinkRow = {
+  platform: SocialPlatformId;
+  url: string;
+};
+
 /** Editable contact & branding shown on the public site */
 export type SiteSettings = {
   businessName: string;
@@ -66,8 +77,8 @@ export type SiteSettings = {
     /** Shown under each office map and in the footer contact column. */
     phone: string;
   }[];
-  /** Social links rendered in the public footer (label + URL). */
-  socialLinks: { label: string; url: string }[];
+  /** Social links rendered in the public footer (platform id + URL). */
+  socialLinks: SocialLinkRow[];
   /** Shared payment methods shown in footer and pricing page. */
   paymentMethods: { label: string; imageUrl: string }[];
   /**
@@ -256,7 +267,34 @@ export type ServicePageBlock =
       pillsLeft: string[];
       pillsRight: string[];
     }
-  | { id: string; type: "contentWide"; title?: string; body: string };
+  | { id: string; type: "contentWide"; title?: string; body: string }
+  /** 2×2 cards with icon + title + body (home “Why choose” style, horizontal rows). */
+  | {
+      id: string;
+      type: "whyChooseQuad";
+      sectionTitle: string;
+      sectionSubtext?: string;
+      cards: ServiceFeatureCard[];
+    }
+  /** Large lead title + intro, then repeatable H2 sections (grey band). */
+  | {
+      id: string;
+      type: "serviceArticle";
+      leadTitle: string;
+      leadBody: string;
+      sections: { title: string; body: string }[];
+    }
+  /** Headline, full-width image, description below (stacked). */
+  | {
+      id: string;
+      type: "mediaSpotlight";
+      title: string;
+      body: string;
+      imageSrc: string;
+      imageAlt: string;
+    }
+  /** Final page outro — title + paragraph. */
+  | { id: string; type: "pageOutro"; title: string; body: string };
 
 export type ServicePageContent = {
   serviceId: number;
@@ -414,6 +452,41 @@ export function newServicePageBlock(
       };
     case "contentWide":
       return { id, type: "contentWide", title: "", body: "" };
+    case "whyChooseQuad":
+      return {
+        id,
+        type: "whyChooseQuad",
+        sectionTitle: "",
+        sectionSubtext: "",
+        cards: [
+          { iconKey: "shield", title: "", body: "" },
+          { iconKey: "headphones", title: "", body: "" },
+          { iconKey: "sparkles", title: "", body: "" },
+          { iconKey: "globe", title: "", body: "" },
+        ],
+      };
+    case "serviceArticle":
+      return {
+        id,
+        type: "serviceArticle",
+        leadTitle: "",
+        leadBody: "",
+        sections: [
+          { title: "", body: "" },
+          { title: "", body: "" },
+        ],
+      };
+    case "mediaSpotlight":
+      return {
+        id,
+        type: "mediaSpotlight",
+        title: "",
+        body: "",
+        imageSrc: "",
+        imageAlt: "",
+      };
+    case "pageOutro":
+      return { id, type: "pageOutro", title: "", body: "" };
     default:
       return { id, type: "paragraph", text: "" };
   }
@@ -450,26 +523,27 @@ export function makeServiceMockBlocksPreset(serviceName: string): ServicePageBlo
       ],
     },
     {
-      id: makeServiceBlockId("splitA"),
-      type: "splitShowcase",
-      title: "",
-      body: `${name} sample showcase text.\nExplain your quality and process here.`,
-      imageSrc: "",
-      imageAlt: `${name} example image`,
-      imageRight: false,
+      id: makeServiceBlockId("portfolio"),
+      type: "portfolio",
+      title: "Portfolio",
+      sideTitle: `${name} in action`,
+      sideText:
+        "Add a long description in the admin (this block → Side title / Side text) to describe results, process, and what clients can expect.",
     },
     {
-      id: makeServiceBlockId("pill"),
-      type: "pillChecklist",
-      title: "another title 2",
-      subtext: "This is a subtitle",
-      pills: ["Pill one", "Pill two", "Pill three", "Pill four"],
-      checks: [
+      id: makeServiceBlockId("ticks"),
+      type: "tickChecklist",
+      title: "Why customers choose us",
+      subtext: "What every project delivers.",
+      items: [
         "High quality editing",
-        "Fast turnaround",
+        "Fast turnaround time",
+        "24/7 support",
         "Affordable pricing",
+        "100% satisfaction guarantee",
         "Easy communication",
       ],
+      columns: 2,
     },
     {
       id: makeServiceBlockId("vals"),
@@ -484,53 +558,72 @@ export function makeServiceMockBlocksPreset(serviceName: string): ServicePageBlo
       ],
     },
     {
-      id: makeServiceBlockId("igrid"),
-      type: "iconGrid",
-      title: "another title 6",
-      subtext: "This is a subtitle",
-      items: [
-        { title: "Precision + Consistency", body: "Reliable visual standard." },
-        { title: "Friendly Support", body: "Fast help when you need it." },
-        { title: "Honest Service", body: "Realistic expectations and delivery." },
-        { title: "Fluent English Support", body: "Clear communication." },
+      id: makeServiceBlockId("wquad"),
+      type: "whyChooseQuad",
+      sectionTitle: "What sets us apart",
+      sectionSubtext: "This is a subtitle",
+      cards: [
+        {
+          iconKey: "shield",
+          title: "Precision + Consistency",
+          body: "Precision editing, fast delivery, and consistent quality from a dedicated year-round team.",
+        },
+        {
+          iconKey: "headphones",
+          title: "Friendly Support",
+          body: "Our support team is ready anytime via email and WhatsApp with clear, quick responses.",
+        },
+        {
+          iconKey: "sparkles",
+          title: "Honest Service",
+          body: "We guarantee high-quality work and set realistic expectations, never false promises.",
+        },
+        {
+          iconKey: "globe",
+          title: "Fluent English Support",
+          body: "Clear communication, fast understanding, and professional interaction every time.",
+        },
       ],
     },
     {
-      id: makeServiceBlockId("wideA"),
-      type: "contentWide",
-      title: "another title 6",
-      body: "Long paragraph section for details. You can add another contentWide block under this one if needed.",
-    },
-    {
-      id: makeServiceBlockId("wideB"),
-      type: "contentWide",
-      title: "h2 title 6",
-      body: "Second long paragraph section under the first one.",
+      id: makeServiceBlockId("article"),
+      type: "serviceArticle",
+      leadTitle: "another title 6",
+      leadBody:
+        "Long lead paragraph for this service. Explain positioning, who it is for, and the outcomes you deliver. You can add more H2 sections below in this same block from the admin.",
+      sections: [
+        {
+          title: "h2 title 6",
+          body: "Second long paragraph — add as many H2 + text pairs as you need in the “Service article” block.",
+        },
+        {
+          title: "h2 title 6",
+          body: "Optional third section. Use the block editor to add or remove H2 sections.",
+        },
+      ],
     },
     {
       id: makeServiceBlockId("splitPills"),
       type: "splitPillColumns",
       titleLeft: "another title 3",
       titleRight: "another title 4",
-      pillsLeft: ["Left pill 1", "Left pill 2", "Left pill 3", "Left pill 4"],
-      pillsRight: ["Right pill 1", "Right pill 2", "Right pill 3", "Right pill 4"],
+      pillsLeft: ["Point one", "Point two", "Point three", "Point four", "Point five"],
+      pillsRight: ["Point one", "Point two", "Point three", "Point four", "Point five"],
     },
     {
-      id: makeServiceBlockId("splitB"),
-      type: "splitShowcase",
+      id: makeServiceBlockId("spotlight"),
+      type: "mediaSpotlight",
       title: "h2 title 6",
-      body: "Text under image section.",
+      body: "Description under the image. Use the Media spotlight block for headline, image, and copy.",
       imageSrc: "",
-      imageAlt: `${name} supporting image`,
-      imageRight: false,
+      imageAlt: `${name} showcase`,
     },
     {
-      id: makeServiceBlockId("wideC"),
-      type: "contentWide",
+      id: makeServiceBlockId("outro"),
+      type: "pageOutro",
       title: "another title 5",
-      body: "Final descriptive section at the bottom of the page.",
+      body: "Final outro section — closing message, CTA context, or next steps before the FAQ.",
     },
-    { id: makeServiceBlockId("portfolio"), type: "portfolio", title: "Portfolio" },
     { id: makeServiceBlockId("faq"), type: "faq" },
   ];
 }
@@ -843,14 +936,7 @@ export function defaultSiteSettings(): SiteSettings {
       { label: "Main office", address: "", mapUrl: "", phone: "" },
       { label: "UK office", address: "", mapUrl: "", phone: "" },
     ],
-    socialLinks: [
-      { label: "Facebook", url: "" },
-      { label: "Instagram", url: "" },
-      { label: "LinkedIn", url: "" },
-      { label: "X (Twitter)", url: "" },
-      { label: "YouTube", url: "" },
-      { label: "TikTok", url: "" },
-    ],
+    socialLinks: [],
     paymentMethods: [
       { label: "Mastercard", imageUrl: "" },
       { label: "Visa", imageUrl: "" },
@@ -907,6 +993,29 @@ export function defaultCmsJson(): CmsJson {
     homeWhyChooseUs: defaultHomeWhyChooseUsBlock(),
     updatedAt: "",
   };
+}
+
+/** Normalize admin/API social rows: legacy `{ label, url }` → `{ platform, url }`. */
+export function normalizeSocialLinksFromUnknown(raw: unknown): SocialLinkRow[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<SocialPlatformId>();
+  const out: SocialLinkRow[] = [];
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const p = row as Record<string, unknown>;
+    const url = typeof p.url === "string" ? p.url.trim() : "";
+    let platform: SocialPlatformId | null = null;
+    if (typeof p.platform === "string" && isSocialPlatformId(p.platform)) {
+      platform = p.platform;
+    } else if (typeof p.label === "string") {
+      platform = inferPlatformFromLegacyLabel(p.label);
+    }
+    if (!platform) continue;
+    if (seen.has(platform)) continue;
+    seen.add(platform);
+    out.push({ platform, url });
+  }
+  return out;
 }
 
 function strField(
@@ -1010,6 +1119,15 @@ function normalizeServiceValueColumn(item: unknown): ServiceValueColumn {
 
 function normalizeServiceIconGridItem(item: unknown): ServiceIconGridItem {
   return normalizeServiceValueColumn(item);
+}
+
+function normalizeArticleSection(item: unknown): { title: string; body: string } {
+  if (!item || typeof item !== "object") return { title: "", body: "" };
+  const o = item as Record<string, unknown>;
+  return {
+    title: typeof o.title === "string" ? o.title : "",
+    body: typeof o.body === "string" ? o.body : "",
+  };
 }
 
 function normalizeStringList(raw: unknown, max: number): string[] {
@@ -1218,6 +1336,52 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
         typeof p.title === "string" && p.title.trim().length > 0
           ? p.title
           : undefined,
+      body: typeof p.body === "string" ? p.body : "",
+    };
+  }
+  if (type === "whyChooseQuad") {
+    const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
+    const cards = cardsRaw.map(normalizeServiceFeatureCard).slice(0, 4);
+    while (cards.length < 4) {
+      cards.push({ iconKey: "sparkles", title: "", body: "" });
+    }
+    return {
+      id,
+      type: "whyChooseQuad",
+      sectionTitle: typeof p.sectionTitle === "string" ? p.sectionTitle : "",
+      sectionSubtext:
+        typeof p.sectionSubtext === "string" && p.sectionSubtext.trim().length > 0
+          ? p.sectionSubtext
+          : undefined,
+      cards,
+    };
+  }
+  if (type === "serviceArticle") {
+    const sectionsRaw = Array.isArray(p.sections) ? p.sections : [];
+    const sections = sectionsRaw.map(normalizeArticleSection);
+    return {
+      id,
+      type: "serviceArticle",
+      leadTitle: typeof p.leadTitle === "string" ? p.leadTitle : "",
+      leadBody: typeof p.leadBody === "string" ? p.leadBody : "",
+      sections,
+    };
+  }
+  if (type === "mediaSpotlight") {
+    return {
+      id,
+      type: "mediaSpotlight",
+      title: typeof p.title === "string" ? p.title : "",
+      body: typeof p.body === "string" ? p.body : "",
+      imageSrc: typeof p.imageSrc === "string" ? p.imageSrc : "",
+      imageAlt: typeof p.imageAlt === "string" ? p.imageAlt : "",
+    };
+  }
+  if (type === "pageOutro") {
+    return {
+      id,
+      type: "pageOutro",
+      title: typeof p.title === "string" ? p.title : "",
       body: typeof p.body === "string" ? p.body : "",
     };
   }
@@ -1446,14 +1610,19 @@ function normalizeHomeWhyChooseUsBlock(
   }
   if (badges.length > 3) badges.length = 3;
 
-  const pillars: HomeWhyChoosePillar[] = [];
-  if (Array.isArray(o.pillars)) {
+  let pillars: HomeWhyChoosePillar[] = [];
+  if (
+    Object.prototype.hasOwnProperty.call(o, "pillars") &&
+    Array.isArray(o.pillars)
+  ) {
     const fbP = fb.pillars;
     for (let i = 0; i < o.pillars.length; i++) {
       const fbRow =
         fbP[i] ?? fbP[fbP.length - 1] ?? defaultHomeWhyChoosePillar();
       pillars.push(normalizeHomeWhyChoosePillar(o.pillars[i], fbRow));
     }
+  } else {
+    pillars = fallback.pillars.map((p) => ({ ...p }));
   }
 
   const workflowSteps: HomeWhyChooseWorkflowStep[] = [];
@@ -1510,12 +1679,14 @@ function normalizeHomeReviewsBlock(
 ): HomeReviewsBlock {
   if (!raw || typeof raw !== "object") return fallback;
   const o = raw as Record<string, unknown>;
-  const items: HomeReviewItem[] = [];
-  if (Array.isArray(o.items)) {
+  let items: HomeReviewItem[] = [];
+  if (Object.prototype.hasOwnProperty.call(o, "items") && Array.isArray(o.items)) {
     for (const x of o.items) {
       const row = normalizeHomeReviewItem(x);
       if (row) items.push(row);
     }
+  } else {
+    items = fallback.items.map((it) => ({ ...it }));
   }
   return {
     eyebrow:
@@ -1671,21 +1842,7 @@ export function normalizeCmsJson(
       Object.prototype.hasOwnProperty.call(s, "socialLinks") &&
       Array.isArray(s.socialLinks)
     ) {
-      const out: { label: string; url: string }[] = [];
-      const seen = new Set<string>();
-      for (const row of s.socialLinks) {
-        if (!row || typeof row !== "object") continue;
-        const p = row as Record<string, unknown>;
-        if (typeof p.label !== "string" || typeof p.url !== "string") continue;
-        const label = p.label.trim();
-        const url = p.url.trim();
-        if (label.length === 0) continue;
-        const key = label.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        out.push({ label, url });
-      }
-      d.socialLinks = out;
+      d.socialLinks = normalizeSocialLinksFromUnknown(s.socialLinks);
     }
     if (
       Object.prototype.hasOwnProperty.call(s, "paymentMethods") &&
@@ -1759,20 +1916,25 @@ export function normalizeCmsJson(
     base.site = d;
   }
 
-  const heroBanners = o.heroBanners;
-  if (Array.isArray(heroBanners) && heroBanners.every((x) => typeof x === "string")) {
-    base.heroBanners = heroBanners.filter((s) => s.trim().length > 0);
+  if (
+    Object.prototype.hasOwnProperty.call(o, "heroBanners") &&
+    Array.isArray(o.heroBanners) &&
+    o.heroBanners.every((x) => typeof x === "string")
+  ) {
+    base.heroBanners = o.heroBanners.filter((s) => s.trim().length > 0);
   }
 
   if (typeof o.floatingCar === "string") {
     base.floatingCar = o.floatingCar.trim();
   }
 
-  const ba = o.beforeAfter;
-  if (Array.isArray(ba)) {
+  if (
+    Object.prototype.hasOwnProperty.call(o, "beforeAfter") &&
+    Array.isArray(o.beforeAfter)
+  ) {
     const pairs: BeforeAfterPair[] = [];
-    for (let idx = 0; idx < ba.length; idx++) {
-      const row = normalizeBeforeAfterPair(ba[idx]);
+    for (let idx = 0; idx < o.beforeAfter.length; idx++) {
+      const row = normalizeBeforeAfterPair(o.beforeAfter[idx]);
       if (row) pairs.push(row);
     }
     base.beforeAfter = pairs;
@@ -1862,10 +2024,12 @@ export function normalizeCmsJson(
     categoryToServiceId.set(s.name.trim().toLowerCase(), s.id);
   }
 
-  const pg = o.portfolioGrid;
-  if (Array.isArray(pg)) {
+  if (
+    Object.prototype.hasOwnProperty.call(o, "portfolioGrid") &&
+    Array.isArray(o.portfolioGrid)
+  ) {
     const grid: PortfolioGridItem[] = [];
-    for (const item of pg) {
+    for (const item of o.portfolioGrid) {
       const row = normalizePortfolioGridItem(item, categoryToServiceId);
       if (row) grid.push(row);
     }
@@ -1879,9 +2043,11 @@ export function normalizeCmsJson(
     ),
   }));
 
-  const fo = o.homeFeaturedPortfolioOrder;
-  if (Array.isArray(fo)) {
-    const raw = fo.filter(
+  if (
+    Object.prototype.hasOwnProperty.call(o, "homeFeaturedPortfolioOrder") &&
+    Array.isArray(o.homeFeaturedPortfolioOrder)
+  ) {
+    const raw = o.homeFeaturedPortfolioOrder.filter(
       (x): x is number => typeof x === "number" && Number.isFinite(x),
     );
     base.homeFeaturedPortfolioOrder = dedupeFeaturedPortfolioOrder(
@@ -1890,23 +2056,44 @@ export function normalizeCmsJson(
     );
   }
 
-  base.homeReviews = normalizeHomeReviewsBlock(o.homeReviews, base.homeReviews);
+  if (Object.prototype.hasOwnProperty.call(o, "homeReviews")) {
+    base.homeReviews = normalizeHomeReviewsBlock(o.homeReviews, base.homeReviews);
+  }
 
-  base.homeServiceFeatures = normalizeHomeServiceFeaturesBlock(
-    o.homeServiceFeatures,
-    base.homeServiceFeatures,
-  );
+  if (Object.prototype.hasOwnProperty.call(o, "homeServiceFeatures")) {
+    base.homeServiceFeatures = normalizeHomeServiceFeaturesBlock(
+      o.homeServiceFeatures,
+      base.homeServiceFeatures,
+    );
+  }
 
-  base.homeWhyChooseUs = normalizeHomeWhyChooseUsBlock(
-    o.homeWhyChooseUs,
-    base.homeWhyChooseUs,
-  );
+  if (Object.prototype.hasOwnProperty.call(o, "homeWhyChooseUs")) {
+    base.homeWhyChooseUs = normalizeHomeWhyChooseUsBlock(
+      o.homeWhyChooseUs,
+      base.homeWhyChooseUs,
+    );
+  }
 
-  base.pricing = normalizePricingContent(o.pricing, base.pricing);
+  if (Object.prototype.hasOwnProperty.call(o, "pricing")) {
+    base.pricing = normalizePricingContent(o.pricing, base.pricing);
+  }
 
   if (typeof o.updatedAt === "string") base.updatedAt = o.updatedAt;
 
   return base;
+}
+
+/** Parse `site_settings.pricing_json` into structured pricing (used by `cms-repository`). */
+export function parsePricingContentFromJson(
+  raw: string | null | undefined,
+): PricingContent {
+  const fallback = defaultPricingContent();
+  if (!raw?.trim()) return fallback;
+  try {
+    return normalizePricingContent(JSON.parse(raw) as unknown, fallback);
+  } catch {
+    return fallback;
+  }
 }
 
 /** Parse DB JSON string into a block (used by `cms-repository`). */

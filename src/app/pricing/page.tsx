@@ -42,9 +42,9 @@ export default async function PricingPage() {
       />
       <div className="mx-auto max-w-[88rem] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {plans.map((plan) => (
+          {plans.map((plan, planIndex) => (
             <article
-              key={plan.packageLabel}
+              key={`${plan.packageLabel}-${planIndex}`}
               className={[
                 "rounded-2xl border bg-[var(--background)] p-6 sm:p-7",
                 plan.featured

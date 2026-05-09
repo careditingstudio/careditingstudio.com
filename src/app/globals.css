@@ -24,6 +24,9 @@
   --announcement-hover: #ffffff;
   --hero-overlay-mid: rgba(0, 0, 0, 0.5);
   --hero-overlay-deep: rgba(0, 0, 0, 0.78);
+  /* shadcn-style secondary — Avatar fallbacks & shared primitives */
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
 }
 
 @theme inline {
@@ -40,6 +43,8 @@
   --color-ring: var(--accent);
   --color-popover: #18181b;
   --color-popover-foreground: var(--foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 }
 
 html {

@@ -6,6 +6,7 @@ import {
   type HomeReviewItem,
   type HomeReviewsBlock,
 } from "@/lib/cms-types";
+import { TrustedByPill } from "@/components/ui/trusted-by-pill";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -329,6 +330,10 @@ export function HomeReviews({ block, embedded = false }: Props) {
               );
             })}
           </div>
+        </div>
+
+        <div className="mt-6 flex justify-center sm:mt-8">
+          <TrustedByPill />
         </div>
       </div>
     </section>

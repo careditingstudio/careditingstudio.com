@@ -1,7 +1,11 @@
 "use client";
 
 import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
-import { cleanSocialUrl, socialBrandColor, SocialMediaIcon } from "@/components/SocialMediaIcon";
+import { cleanSocialUrl, socialBrandColorForPlatform, SocialMediaIcon } from "@/components/SocialMediaIcon";
+import {
+  isSocialPlatformId,
+  socialPlatformTitle,
+} from "@/lib/social-platforms";
 import type { SiteSettings } from "@/lib/cms-types";
 import { useEffect, useId, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
@@ -148,8 +152,17 @@ export function AnnouncementBar({ contact }: Props) {
     contact.whatsappDisplay.trim() || (digits ? digits : "");
 
   const socials = (contact.socialLinks ?? [])
-    .map((s) => ({ label: s.label.trim(), url: cleanSocialUrl(s.url) }))
-    .filter((s) => s.label.length > 0 && s.url.length > 0);
+    .map((s) => ({
+      platform: s.platform,
+      url: cleanSocialUrl(s.url),
+      title: socialPlatformTitle(s.platform),
+    }))
+    .filter(
+      (s) =>
+        typeof s.platform === "string" &&
+        isSocialPlatformId(s.platform) &&
+        s.url.length > 0,
+    );
 
   const linkClass = [
     "transition-colors",
@@ -213,14 +226,14 @@ export function AnnouncementBar({ contact }: Props) {
             aria-label="Social media"
           >
             {socials.map((s) => (
-              <li key={`${s.label}-${s.url}`}>
+              <li key={`${s.platform}-${s.url}`}>
                 <a
                   href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={s.label}
-                  title={s.label}
-                  style={{ "--social-brand": socialBrandColor(s.label) } as CSSProperties}
+                  aria-label={s.title}
+                  title={s.title}
+                  style={{ "--social-brand": socialBrandColorForPlatform(s.platform) } as CSSProperties}
                   className={[
                     "inline-flex items-center justify-center transition-all duration-200 ease-in-out hover:scale-110 hover:text-[var(--social-brand)]",
                     overlay
@@ -228,7 +241,7 @@ export function AnnouncementBar({ contact }: Props) {
                       : "text-[#666]",
                   ].join(" ")}
                 >
-                  <SocialMediaIcon label={s.label} size={18} />
+                  <SocialMediaIcon platform={s.platform} size={18} />
                 </a>
               </li>
             ))}

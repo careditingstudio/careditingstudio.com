@@ -43,6 +43,14 @@ function blockLabel(b: ServicePageBlock): string {
       return "Split pill columns";
     case "contentWide":
       return b.title?.trim() || "Wide content";
+    case "whyChooseQuad":
+      return b.sectionTitle.trim() || "4-point grid";
+    case "serviceArticle":
+      return b.leadTitle.trim() || "Article (lead + H2 sections)";
+    case "mediaSpotlight":
+      return b.title.trim() || "Media spotlight";
+    case "pageOutro":
+      return b.title.trim() || "Page outro";
     default:
       return "Block";
   }
@@ -207,6 +215,7 @@ export function AdminServiceBlocksModal({
                   "paragraph",
                   "image",
                   "featureCards",
+                  "whyChooseQuad",
                   "splitShowcase",
                   "pillChecklist",
                   "tickChecklist",
@@ -215,7 +224,10 @@ export function AdminServiceBlocksModal({
                   "iconGrid",
                   "compactFeatureCards",
                   "splitPillColumns",
+                  "serviceArticle",
                   "contentWide",
+                  "mediaSpotlight",
+                  "pageOutro",
                   "portfolio",
                   "faq",
                   "spacer",

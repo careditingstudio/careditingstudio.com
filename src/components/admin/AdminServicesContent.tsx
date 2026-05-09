@@ -12,7 +12,6 @@ export function AdminServicesContent() {
     moveService,
     setService,
     setServicePage,
-    setFlash,
   } = useAdminCms();
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
@@ -37,14 +36,12 @@ export function AdminServicesContent() {
           onClose={() => setEditIndex(null)}
           service={cms.services[editIndex]}
           serviceIndex={editIndex}
+          portfolioGridLength={cms.portfolioGrid.length}
           page={
             cms.servicePages.find(
               (row) => row.serviceId === cms.services[editIndex]?.id,
             ) ?? null
           }
-          portfolioLabels={cms.portfolioGrid.map(
-            (item, idx) => item.label.trim() || `Portfolio #${idx + 1}`,
-          )}
           onSetServiceName={(name) => setService(editIndex, { name })}
           onSetPage={(patch) => {
             const service = cms.services[editIndex];
@@ -55,7 +52,6 @@ export function AdminServicesContent() {
             removeService(editIndex);
             setEditIndex(null);
           }}
-          setFlash={setFlash}
         />
       ) : null}
 
