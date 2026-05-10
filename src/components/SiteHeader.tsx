@@ -226,7 +226,14 @@ export function SiteHeader({
             overlayNav ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
-          <span className="relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-hidden sm:h-10 sm:max-w-[11rem]">
+          <span
+            className={[
+              "relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl sm:h-10 sm:max-w-[11rem]",
+              overlayNav
+                ? "shadow-[0_12px_40px_-14px_rgba(255,255,255,0.45)]"
+                : "shadow-[0_10px_32px_-12px_rgba(0,0,0,0.45)]",
+            ].join(" ")}
+          >
             <Image
               src="/logo.png"
               alt=""

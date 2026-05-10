@@ -124,7 +124,7 @@ export function SiteFooter({
           {/* Brand + hours + social */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" prefetch className="inline-flex items-center gap-3">
-              <span className="relative flex h-11 max-h-11 w-auto max-w-[11rem] shrink-0 items-center overflow-hidden rounded-2xl border border-white/25 bg-white/10 px-2 shadow-[0_8px_28px_-14px_rgba(255,255,255,0.8)] sm:max-w-[12rem]">
+              <span className="relative flex h-11 max-h-11 w-auto max-w-[11rem] shrink-0 items-center overflow-visible rounded-2xl px-2 shadow-[0_12px_40px_-14px_rgba(255,255,255,0.55)] sm:max-w-[12rem]">
                 <Image
                   src="/logo.png"
                   alt=""
