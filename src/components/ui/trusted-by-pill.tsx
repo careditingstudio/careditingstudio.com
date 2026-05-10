@@ -59,7 +59,7 @@ export function TrustedByPill({ className }: TrustedByPillProps) {
         className={`${sans.className} px-2 text-[11px] leading-tight text-zinc-600 sm:text-xs`}
       >
         Trusted by{" "}
-        <strong className="font-semibold text-zinc-900">60K+</strong> clients.
+        <strong className="font-semibold text-zinc-900">20K+</strong> clients.
       </p>
     </div>
   );

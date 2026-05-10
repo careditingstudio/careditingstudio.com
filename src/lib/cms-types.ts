@@ -202,6 +202,8 @@ export type ServicePageBlock =
       type: "featureCards";
       sectionTitle: string;
       sectionSubtext?: string;
+      /** Optional `#RRGGBB` for icon frames and hover border on this strip; omit = site `--accent`. */
+      accentColor?: string;
       cards: ServiceFeatureCard[];
     }
   | {
@@ -1108,6 +1110,23 @@ function normalizeServiceFeatureCard(item: unknown): ServiceFeatureCard {
   };
 }
 
+/** Safe `#rrggbb` for CSS, or undefined if missing/invalid. */
+function normalizeCmsAccentHex(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const s = raw.trim();
+  if (!s) return undefined;
+  const m = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(s);
+  if (!m) return undefined;
+  let hex = m[1]!;
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  }
+  return `#${hex.toLowerCase()}`;
+}
+
 function normalizeServiceValueColumn(item: unknown): ServiceValueColumn {
   if (!item || typeof item !== "object") return { title: "", body: "" };
   const o = item as Record<string, unknown>;
@@ -1205,6 +1224,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
     while (cards.length < 3) {
       cards.push({ iconKey: "sparkles", title: "", body: "" });
     }
+    const accentColor = normalizeCmsAccentHex(p.accentColor);
     return {
       id,
       type: "featureCards",
@@ -1213,6 +1233,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
         typeof p.sectionSubtext === "string" && p.sectionSubtext.trim().length > 0
           ? p.sectionSubtext
           : undefined,
+      ...(accentColor ? { accentColor } : {}),
       cards,
     };
   }

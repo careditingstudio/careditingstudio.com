@@ -172,7 +172,7 @@ export function AdminServiceBlocksModal({
           className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative flex max-h-[96vh] w-[96vw] max-w-6xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
+        <div className="relative flex max-h-[96vh] w-[96vw] max-w-[min(88rem,96vw)] flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
             <h2 id={titleId} className="text-base font-semibold text-white">
               Page blocks

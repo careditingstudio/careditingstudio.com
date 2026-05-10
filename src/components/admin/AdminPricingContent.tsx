@@ -25,7 +25,7 @@ export function AdminPricingContent() {
   const featuredCount = pricing.plans.filter((p) => p.featured).length;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       <header className="border-b border-zinc-800 pb-6">
         <h1 className="text-2xl font-semibold text-white">Pricing page content</h1>
         <p className="mt-2 text-sm text-zinc-400">
@@ -181,7 +181,7 @@ export function AdminPricingContent() {
         open={headerOpen}
         onClose={() => setHeaderOpen(false)}
         title="Edit heading"
-        maxWidthClass="max-w-2xl"
+        maxWidthClass="max-w-4xl"
       >
         <div className="space-y-4">
           <label className="block text-sm text-zinc-300">
@@ -208,7 +208,7 @@ export function AdminPricingContent() {
         open={editPlan !== null}
         onClose={() => setEditPlanIndex(null)}
         title={`Edit pricing card ${editPlanIndex === null ? "" : editPlanIndex + 1}`}
-        maxWidthClass="max-w-2xl"
+        maxWidthClass="max-w-4xl"
       >
         {editPlan ? (
           <div className="space-y-4">
@@ -270,7 +270,7 @@ export function AdminPricingContent() {
         open={guaranteeOpen}
         onClose={() => setGuaranteeOpen(false)}
         title="Edit guarantee block"
-        maxWidthClass="max-w-2xl"
+        maxWidthClass="max-w-4xl"
       >
         <div className="space-y-4">
           <input
@@ -291,7 +291,7 @@ export function AdminPricingContent() {
         open={bulkOpen}
         onClose={() => setBulkOpen(false)}
         title="Edit bulk order block"
-        maxWidthClass="max-w-2xl"
+        maxWidthClass="max-w-4xl"
       >
         <div className="space-y-4">
           <input
@@ -312,7 +312,7 @@ export function AdminPricingContent() {
         open={paymentTitleOpen}
         onClose={() => setPaymentTitleOpen(false)}
         title="Edit payment section title"
-        maxWidthClass="max-w-2xl"
+        maxWidthClass="max-w-4xl"
       >
         <input
           value={pricing.paymentTitle}

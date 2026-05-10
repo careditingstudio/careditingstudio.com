@@ -51,7 +51,7 @@ export function AdminFloatingCarEditModal({
       open={open}
       onClose={onClose}
       title="Intro floating car"
-      maxWidthClass="max-w-3xl"
+      maxWidthClass="max-w-5xl"
       maxHeightClass="max-h-[min(90vh,42rem)]"
     >
       <div className="space-y-4">

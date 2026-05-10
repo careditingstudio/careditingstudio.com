@@ -58,7 +58,7 @@ function FaqItemEditorModal({
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg rounded-2xl border border-zinc-700/90 bg-zinc-950 p-5 shadow-2xl">
+      <div className="relative w-full max-w-2xl rounded-2xl border border-zinc-700/90 bg-zinc-950 p-5 shadow-2xl">
         <h3 id={titleId} className="text-sm font-semibold text-white">
           Edit FAQ item
         </h3>
@@ -181,7 +181,7 @@ export function AdminServiceFaqModal({
           className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
+        <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
             <h2 id={titleId} className="text-base font-semibold text-white">
               FAQ section (this service)

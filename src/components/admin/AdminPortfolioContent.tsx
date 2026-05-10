@@ -47,7 +47,7 @@ export function AdminPortfolioContent() {
   if (!cms) return null;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-16">
+    <div className="mx-auto max-w-6xl space-y-16">
       <MediaLibraryModal
         open={mediaOpen}
         onClose={() => setMediaOpen(false)}

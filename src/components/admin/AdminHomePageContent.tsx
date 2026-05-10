@@ -110,7 +110,7 @@ export function AdminHomePageContent() {
   const wu = cms.homeWhyChooseUs;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5 pb-8">
+    <div className="mx-auto max-w-6xl space-y-5 pb-8">
       <MediaLibraryModal
         open={mediaOpen}
         onClose={() => setMediaOpen(false)}

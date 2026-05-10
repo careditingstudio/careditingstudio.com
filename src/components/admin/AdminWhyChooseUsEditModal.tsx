@@ -41,7 +41,7 @@ export function AdminWhyChooseUsEditModal({
         open={open}
         onClose={onClose}
         title="Why choose us & how it works"
-        maxWidthClass="max-w-6xl"
+        maxWidthClass="max-w-[min(80rem,96vw)]"
         maxHeightClass="max-h-[min(94vh,58rem)]"
       >
         <p className="mb-6 text-xs text-zinc-500">

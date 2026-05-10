@@ -11,6 +11,7 @@ import type {
   ServiceValueColumn,
 } from "@/lib/cms-types";
 import Image from "next/image";
+import type { CSSProperties } from "react";
 
 type Props = {
   page: ServicePageContent;
@@ -88,10 +89,12 @@ function FeatureCardsSection({
   title,
   subtext,
   cards,
+  accentColor,
 }: {
   title: string;
   subtext?: string;
   cards: ServiceFeatureCard[];
+  accentColor?: string;
 }) {
   const heading = title.trim() || "Why our editing stands out";
   const subtitle =
@@ -108,9 +111,21 @@ function FeatureCardsSection({
     });
   }
 
+  const customAccent =
+    typeof accentColor === "string" &&
+    /^#[0-9a-fA-F]{6}$/.test(accentColor.trim())
+      ? accentColor.trim().toLowerCase()
+      : null;
+  const accentWrapStyle = customAccent
+    ? ({ ["--fea-accent" as string]: customAccent } as CSSProperties)
+    : undefined;
+
   return (
     <section className="bg-[#0a0a0a]">
-      <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+      <div
+        className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
+        style={accentWrapStyle}
+      >
         <div className="mx-auto max-w-2xl space-y-3 text-center">
           <h2
             className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
@@ -125,8 +140,22 @@ function FeatureCardsSection({
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {visible.map((card, idx) => (
             <li key={idx}>
-              <article className="group h-full rounded-2xl border border-white/10 bg-[#161618] p-7 transition-colors duration-300 hover:border-[var(--accent)]/40 sm:p-8">
-                <div className="grid h-14 w-14 place-items-center rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/12 text-[var(--accent)] transition-colors duration-300 group-hover:bg-[var(--accent)]/18">
+              <article
+                className={[
+                  "group h-full rounded-2xl border border-white/10 bg-[#161618] p-7 transition-colors duration-300 sm:p-8",
+                  customAccent
+                    ? "hover:border-[color:color-mix(in_srgb,var(--fea-accent)_40%,transparent)]"
+                    : "hover:border-[var(--accent)]/40",
+                ].join(" ")}
+              >
+                <div
+                  className={[
+                    "grid h-14 w-14 place-items-center rounded-2xl border transition-colors duration-300",
+                    customAccent
+                      ? "border-[color:color-mix(in_srgb,var(--fea-accent)_30%,transparent)] bg-[color:color-mix(in_srgb,var(--fea-accent)_12%,transparent)] text-[color:var(--fea-accent)] group-hover:bg-[color:color-mix(in_srgb,var(--fea-accent)_18%,transparent)]"
+                      : "border-[var(--accent)]/30 bg-[var(--accent)]/12 text-[var(--accent)] group-hover:bg-[var(--accent)]/18",
+                  ].join(" ")}
+                >
                   <ServiceFeatureIcon
                     iconKey={card.iconKey}
                     className="h-7 w-7"
@@ -865,6 +894,7 @@ export function ServicePageTemplate({ page, portfolioItems }: Props) {
         title={featureBlock?.sectionTitle ?? ""}
         subtext={featureBlock?.sectionSubtext}
         cards={featureBlock?.cards ?? []}
+        accentColor={featureBlock?.accentColor}
       />
 
       <PortfolioSection

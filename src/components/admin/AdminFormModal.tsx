@@ -18,7 +18,7 @@ export function AdminFormModal({
   onClose,
   title,
   children,
-  maxWidthClass = "max-w-5xl",
+  maxWidthClass = "max-w-[min(80rem,96vw)]",
   maxHeightClass = "max-h-[min(92vh,56rem)]",
   nested = false,
 }: Props) {

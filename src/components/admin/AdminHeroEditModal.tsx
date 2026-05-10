@@ -37,7 +37,7 @@ export function AdminHeroEditModal({
       open={open}
       onClose={onClose}
       title="Hero banner"
-      maxWidthClass="max-w-5xl"
+      maxWidthClass="max-w-6xl"
       maxHeightClass="max-h-[min(94vh,58rem)]"
     >
       <div>

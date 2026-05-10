@@ -1,7 +1,10 @@
 "use client";
 
 import type { ServicePageBlock } from "@/lib/cms-types";
-import { SERVICE_FEATURE_ICON_OPTIONS } from "@/lib/service-feature-icons";
+import {
+  SERVICE_FEATURE_ICON_OPTIONS,
+  ServiceFeatureIcon,
+} from "@/lib/service-feature-icons";
 import { useEffect, useId, useState } from "react";
 
 type Props = {
@@ -15,6 +18,13 @@ type Props = {
 const inp =
   "w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/30";
 const lab = "text-[11px] font-medium uppercase tracking-wide text-zinc-500";
+
+function featureCardsAccentPickerValue(hex: string | undefined): string {
+  if (hex && /^#[0-9a-fA-F]{6}$/i.test(hex.trim())) {
+    return hex.trim().toLowerCase();
+  }
+  return "#f97316";
+}
 
 function linesToArray(s: string): string[] {
   return s
@@ -76,7 +86,7 @@ export function AdminServiceBlockEditorModal({
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative flex max-h-[96vh] w-[96vw] max-w-6xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
+      <div className="relative flex max-h-[96vh] w-[96vw] max-w-[min(88rem,96vw)] flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
           <h2 id={titleId} className="text-base font-semibold text-white">
             Edit block ({draft.type})
@@ -286,6 +296,47 @@ export function AdminServiceBlockEditorModal({
                   className={`mt-1.5 resize-y ${inp}`}
                 />
               </div>
+              <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
+                <label className={lab}>Highlight accent (optional)</label>
+                <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
+                  Icon frame and card hover for this section only. Leave empty to
+                  use the site default accent.
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <input
+                    type="color"
+                    aria-label="Pick accent color"
+                    value={featureCardsAccentPickerValue(draft.accentColor)}
+                    onChange={(e) =>
+                      setDraft({ ...draft, accentColor: e.target.value })
+                    }
+                    className="h-9 w-14 cursor-pointer rounded border border-zinc-700 bg-zinc-900"
+                  />
+                  <input
+                    type="text"
+                    value={draft.accentColor ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value.trim();
+                      setDraft({
+                        ...draft,
+                        accentColor: v.length > 0 ? v : undefined,
+                      });
+                    }}
+                    placeholder="#e07a45"
+                    spellCheck={false}
+                    className={`${inp} max-w-[9rem] font-mono text-xs`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDraft({ ...draft, accentColor: undefined })
+                    }
+                    className="rounded-lg border border-zinc-600 px-2.5 py-1.5 text-[11px] text-zinc-300 hover:bg-zinc-800"
+                  >
+                    Site default
+                  </button>
+                </div>
+              </div>
               {[0, 1, 2].map((idx) => (
                 <div
                   key={idx}
@@ -308,25 +359,38 @@ export function AdminServiceBlockEditorModal({
                     }}
                     className={`mt-1.5 ${inp}`}
                   />
-                  <label className={`${lab} mt-2 block`}>Icon</label>
-                  <select
-                    value={draft.cards[idx]?.iconKey ?? "sparkles"}
-                    onChange={(e) => {
-                      const next = [...draft.cards];
-                      next[idx] = {
-                        ...next[idx]!,
-                        iconKey: e.target.value,
-                      };
-                      setDraft({ ...draft, cards: next });
-                    }}
-                    className={`mt-1.5 ${inp}`}
-                  >
-                    {SERVICE_FEATURE_ICON_OPTIONS.map((opt) => (
-                      <option key={opt.key} value={opt.key}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  <p className={`${lab} mt-2`}>Icon</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {SERVICE_FEATURE_ICON_OPTIONS.map((opt) => {
+                      const on = (draft.cards[idx]?.iconKey ?? "sparkles") === opt.key;
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          title={opt.label}
+                          onClick={() => {
+                            const next = [...draft.cards];
+                            next[idx] = {
+                              ...next[idx]!,
+                              iconKey: opt.key,
+                            };
+                            setDraft({ ...draft, cards: next });
+                          }}
+                          className={[
+                            "flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
+                            on
+                              ? "border-[var(--accent)] bg-[var(--accent)]/15 text-[var(--accent)]"
+                              : "border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200",
+                          ].join(" ")}
+                        >
+                          <ServiceFeatureIcon
+                            iconKey={opt.key}
+                            className="h-5 w-5"
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
                   <label className={`${lab} mt-2 block`}>Body</label>
                   <textarea
                     value={draft.cards[idx]?.body ?? ""}

@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useHomeChromeSolid } from "@/components/HomeChromeProvider";
 import { cleanSocialUrl, socialBrandColorForPlatform, SocialMediaIcon } from "@/components/SocialMediaIcon";
 import {
@@ -188,6 +190,20 @@ export function AnnouncementBar({ contact }: Props) {
     >
       <div className="mx-auto flex w-full max-w-[88rem] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4">
+          <Link
+            href="/"
+            prefetch
+            className="mr-0.5 shrink-0 sm:mr-1"
+            aria-label="Car Editing Studio home"
+          >
+            <Image
+              src="/logo.png"
+              alt=""
+              width={200}
+              height={48}
+              className="h-7 w-auto max-h-7 max-w-[min(46vw,9rem)] object-contain object-left sm:h-8 sm:max-w-[10rem]"
+            />
+          </Link>
           <a
             href={`mailto:${contact.email}`}
             className={`group flex min-w-0 items-center gap-2.5 text-[14px] leading-snug sm:text-[15px] ${linkClass}`}

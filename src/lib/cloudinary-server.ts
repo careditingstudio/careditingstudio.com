@@ -21,11 +21,21 @@ export function getCloudinaryUploadFolder(): string {
   );
 }
 
+/** True when Cloudinary env is present — used for public trial uploads. */
+export function hasCloudinaryConfigured(): boolean {
+  const cloud_name = process.env[ENV_APP.CLOUDINARY_CLOUD_NAME]?.trim();
+  const api_key = process.env[ENV_APP.CLOUDINARY_API_KEY]?.trim();
+  const api_secret = process.env[ENV_APP.CLOUDINARY_API_SECRET]?.trim();
+  return Boolean(cloud_name && api_key && api_secret);
+}
+
 export async function uploadImageBuffer(
   buffer: Buffer,
+  opts?: { folderSuffix?: string },
 ): Promise<{ secureUrl: string; publicId: string }> {
   ensureConfig();
-  const folder = getCloudinaryUploadFolder();
+  const base = getCloudinaryUploadFolder();
+  const folder = opts?.folderSuffix ? `${base}/${opts.folderSuffix}` : base;
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {

@@ -44,7 +44,7 @@ export async function createMailboxMessage(args: {
   }
   const country = cleanText(args.country, 120) || null;
   const message = cleanText(args.message, 4000);
-  const requirements = cleanText(args.requirements, 4000) || null;
+  const requirements = cleanText(args.requirements, 16000) || null;
 
   if (!fullName) throw new Error("Please enter your full name.");
   if (!email && !whatsapp) throw new Error("Please enter an email or WhatsApp number.");

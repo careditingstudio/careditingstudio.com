@@ -211,7 +211,9 @@ function AdminChrome({ children }: { children: ReactNode }) {
         <main
           className={[
             "flex-1 px-4 pt-6 sm:px-10 sm:pt-9",
-            isMailboxRoute ? "pb-6 sm:pb-6" : "pb-28 sm:pb-24",
+            isMailboxRoute
+              ? "flex min-h-0 flex-col pb-6 sm:pb-6"
+              : "pb-28 sm:pb-24",
           ].join(" ")}
         >
           {children}

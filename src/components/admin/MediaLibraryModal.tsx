@@ -99,7 +99,7 @@ export function MediaLibraryModal({
         onClick={onClose}
       />
       <div
-        className="relative flex max-h-[min(40rem,85vh)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl shadow-black/50"
+        className="relative flex max-h-[min(40rem,85vh)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl shadow-black/50"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-800 px-5 py-4 sm:px-6">

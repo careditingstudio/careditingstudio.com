@@ -34,7 +34,7 @@ export function ServiceFeatureCardEditModal({
       onClose={onClose}
       title={`Service feature ${cardIndex + 1}`}
       nested
-      maxWidthClass="max-w-3xl"
+      maxWidthClass="max-w-5xl"
       maxHeightClass="max-h-[min(92vh,52rem)]"
     >
       <div className="space-y-4">

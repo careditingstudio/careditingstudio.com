@@ -56,7 +56,7 @@ export function HomeReviewsSectionEditModal({
         onClick={onClose}
       />
       <div
-        className="relative flex max-h-[min(36rem,90vh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl"
+        className="relative flex max-h-[min(36rem,90vh)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">

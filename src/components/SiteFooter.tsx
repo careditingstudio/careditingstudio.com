@@ -13,7 +13,6 @@ import {
 import { FooterScrollToTop } from "@/components/FooterScrollToTop";
 import Link from "next/link";
 import Image from "next/image";
-import { SiteBrandLogo } from "@/components/SiteBrandLogo";
 import type { CSSProperties } from "react";
 import { isUploadedAsset } from "@/lib/cms-types";
 
@@ -125,7 +124,15 @@ export function SiteFooter({
           {/* Brand + hours + social */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" prefetch className="inline-flex items-center gap-3">
-              <SiteBrandLogo blendMultiply />
+              <span className="relative flex h-11 max-h-11 w-auto max-w-[11rem] shrink-0 items-center overflow-hidden rounded-2xl border border-white/25 bg-white/10 px-2 shadow-[0_8px_28px_-14px_rgba(255,255,255,0.8)] sm:max-w-[12rem]">
+                <Image
+                  src="/logo.png"
+                  alt=""
+                  width={220}
+                  height={56}
+                  className="h-9 w-auto max-h-full object-contain object-left sm:h-10"
+                />
+              </span>
               <span className="text-lg font-semibold tracking-tight">{brand}</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/78">

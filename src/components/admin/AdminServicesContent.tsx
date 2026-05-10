@@ -18,7 +18,7 @@ export function AdminServicesContent() {
   if (!cms) return null;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-white">Services</h2>
         <button
@@ -36,7 +36,7 @@ export function AdminServicesContent() {
           onClose={() => setEditIndex(null)}
           service={cms.services[editIndex]}
           serviceIndex={editIndex}
-          portfolioGridLength={cms.portfolioGrid.length}
+          portfolioGrid={cms.portfolioGrid}
           page={
             cms.servicePages.find(
               (row) => row.serviceId === cms.services[editIndex]?.id,

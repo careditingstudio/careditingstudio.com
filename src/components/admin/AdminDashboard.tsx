@@ -59,7 +59,7 @@ export function AdminDashboard() {
   if (!cms) return null;
 
   return (
-    <div className="mx-auto max-w-5xl pb-8">
+    <div className="mx-auto max-w-6xl pb-8">
       <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ADMIN_PAGE_NAV.map((c) => {
           const slug = c.href.replace("/editor/", "");

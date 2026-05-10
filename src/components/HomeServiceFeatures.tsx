@@ -84,13 +84,13 @@ export function HomeServiceFeatures({ block }: Props) {
           </ul>
         )}
 
-        {block.ctaLabel.trim() && block.ctaHref.trim() ? (
+        {block.ctaHref.trim() ? (
           <div className="mt-10 flex justify-center sm:mt-12">
             <Link
               href={block.ctaHref.trim()}
-              className={`${sans.className} group inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition duration-200 hover:bg-[var(--accent-hover)] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-sm sm:px-6 sm:py-3`}
+              aria-label={block.ctaLabel.trim() || "See more"}
+              className={`${sans.className} group inline-flex size-11 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-[var(--accent-hover)] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:size-12`}
             >
-              {block.ctaLabel.trim()}
               <span
                 aria-hidden
                 className="transition-transform duration-200 group-hover:translate-x-0.5"

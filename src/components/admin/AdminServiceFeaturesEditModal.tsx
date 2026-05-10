@@ -34,7 +34,7 @@ export function AdminServiceFeaturesEditModal({ open, onClose }: Props) {
         open={open}
         onClose={onClose}
         title="Service features"
-        maxWidthClass="max-w-6xl"
+        maxWidthClass="max-w-[min(80rem,96vw)]"
         maxHeightClass="max-h-[min(94vh,58rem)]"
       >
         <div className="space-y-6">

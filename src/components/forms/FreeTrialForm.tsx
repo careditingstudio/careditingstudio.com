@@ -121,26 +121,25 @@ export function FreeTrialForm({
     if (Object.keys(nextErr).length) return;
 
     const countryLabel = trialCountryLabelFromCode(country);
-    const uploadedFileNames = uploadedFiles.map(
-      (f) => `${f.name} (${Math.max(1, Math.round(f.size / 1024))} KB)`,
-    );
 
     setSubmitting(true);
     try {
+      const fd = new FormData();
+      fd.append("fullName", fullName.trim());
+      if (email.trim()) fd.append("email", email.trim());
+      if (whatsapp.trim()) fd.append("whatsapp", whatsapp.trim());
+      fd.append("country", countryLabel);
+      fd.append("message", message.trim());
+      fd.append("turnstileToken", turnstileToken);
+      fd.append("services", JSON.stringify(selectedServices));
+      if (googleDriveLink.trim()) fd.append("googleDriveLink", googleDriveLink.trim());
+      for (const f of uploadedFiles) {
+        fd.append("samples", f, f.name);
+      }
+
       const r = await fetch("/api/free-trial", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          email: email.trim() || undefined,
-          whatsapp: whatsapp.trim() || undefined,
-          country: countryLabel,
-          services: selectedServices,
-          googleDriveLink: googleDriveLink.trim() || undefined,
-          message,
-          uploadedFiles: uploadedFileNames,
-          turnstileToken,
-        }),
+        body: fd,
       });
       const j = (await r.json()) as { ok?: boolean; id?: number; error?: string };
       if (!r.ok) throw new Error(j.error || "Could not submit.");

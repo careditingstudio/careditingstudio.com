@@ -7,8 +7,8 @@ import { OrderNowLink } from "@/components/OrderNowLink";
 import { ServicesMegaMenuGrid } from "@/components/ServicesMegaMenu";
 import { navItems } from "@/config/site";
 import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
-import { SiteBrandLogo } from "@/components/SiteBrandLogo";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -220,12 +220,22 @@ export function SiteHeader({
       <div className="mx-auto flex h-[var(--header-h)] max-w-[88rem] items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6 lg:px-8">
         <Link
           href="/"
+          prefetch
           className={[
-            `${display.className} flex shrink-0 items-center gap-3 text-[1.2rem] font-semibold leading-none tracking-tight transition-colors sm:text-[1.35rem]`,
+            `${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight transition-colors sm:gap-3 sm:text-[1.35rem]`,
             overlayNav ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
-          <SiteBrandLogo blendMultiply />
+          <span className="relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-hidden sm:h-10 sm:max-w-[11rem]">
+            <Image
+              src="/logo.png"
+              alt=""
+              width={220}
+              height={56}
+              className="h-full w-auto max-h-full object-contain object-left"
+              priority
+            />
+          </span>
           <span className="whitespace-nowrap">{brandName}</span>
         </Link>
 

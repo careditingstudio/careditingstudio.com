@@ -2,6 +2,7 @@
 
 import type { MailboxKind } from "@/lib/mailbox-types";
 import { countryFromDialCode, formatCountryLabel } from "@/lib/country-display";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type MailItem = {
@@ -57,6 +58,69 @@ function displayCountry(it: MailItem): string {
   const stored = formatCountryLabel(it.country);
   if (stored) return stored;
   return countryFromDialCode(displayWhatsapp(it));
+}
+
+/** Renders requirements with clickable image URLs and previews for Cloudinary. */
+function MailboxRequirementsContent({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <div className="mt-1.5 space-y-3">
+      {lines.map((line, i) => {
+        const t = line.trim();
+        const numbered = /^(\d+)\.\s+(https?:\/\/\S+)$/i.exec(t);
+        if (numbered) {
+          const url = numbered[2];
+          const showThumb =
+            url.includes("res.cloudinary.com") &&
+            /\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(url);
+          return (
+            <div key={i} className="space-y-2">
+              <p className="break-all text-sm">
+                <span className="mr-2 font-medium text-zinc-500">{numbered[1]}.</span>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 underline hover:text-sky-300"
+                >
+                  {url}
+                </a>
+              </p>
+              {showThumb ? (
+                <Image
+                  src={url}
+                  alt=""
+                  width={640}
+                  height={480}
+                  unoptimized
+                  className="max-h-48 w-auto max-w-full rounded-lg border border-zinc-700 object-contain"
+                />
+              ) : null}
+            </div>
+          );
+        }
+        if (/^https?:\/\/\S+$/i.test(t)) {
+          return (
+            <p key={i} className="break-all text-sm">
+              <a
+                href={t}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-400 underline hover:text-sky-300"
+              >
+                {t}
+              </a>
+            </p>
+          );
+        }
+        return (
+          <p key={i} className="whitespace-pre-wrap text-sm text-zinc-200">
+            {line}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function AdminMailboxPage() {
@@ -141,9 +205,9 @@ export default function AdminMailboxPage() {
   }
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-9rem)] w-full flex-col">
-      <div className="flex flex-1 flex-col">
-        <div className="border-b border-zinc-800/80 px-1 pb-4">
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 border-b border-zinc-800/80 px-1 pb-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(320px,1fr)_180px_180px_auto_auto_auto] lg:items-center">
             <input
               value={q}
@@ -197,9 +261,9 @@ export default function AdminMailboxPage() {
           {msg ? <p className="mt-3 text-xs text-zinc-400">{msg}</p> : null}
         </div>
 
-        <div className="grid min-h-0 flex-1 border-t border-zinc-800/80 lg:grid-cols-[380px_minmax(0,1fr)]">
-          <aside className="border-b border-zinc-800/80 lg:border-b-0 lg:border-r lg:border-zinc-800/80">
-            <div className="max-h-[36vh] overflow-auto lg:max-h-[72vh]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 border-t border-zinc-800/80 lg:grid-cols-[380px_minmax(0,1fr)] lg:grid-rows-1 lg:overflow-hidden lg:min-h-[calc(100dvh-10rem)]">
+          <aside className="flex min-h-0 flex-col border-b border-zinc-800/80 lg:h-full lg:min-h-0 lg:border-b-0 lg:border-r lg:border-zinc-800/80">
+            <div className="max-h-[min(72vh,calc(100dvh-14rem))] min-h-[28vh] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
               {loading ? (
                 <p className="p-4 text-sm text-zinc-500">Loading…</p>
               ) : items.length === 0 ? (
@@ -253,9 +317,9 @@ export default function AdminMailboxPage() {
             </div>
           </aside>
 
-          <section className="min-h-[36vh] lg:min-h-[72vh]">
+          <section className="flex min-h-[min(52vh,calc(100dvh-16rem))] flex-col lg:h-full lg:min-h-0">
             {openItem ? (
-              <div className="flex h-full flex-col">
+              <div className="flex h-full min-h-0 flex-col">
                 <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-5 py-4">
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
@@ -308,9 +372,7 @@ export default function AdminMailboxPage() {
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                           Requirements
                         </p>
-                        <p className="mt-1.5 whitespace-pre-wrap text-sm text-zinc-200">
-                          {openItem.requirements}
-                        </p>
+                        <MailboxRequirementsContent text={openItem.requirements.trim()} />
                       </div>
                     ) : null}
                   </div>

@@ -5,6 +5,7 @@ import { MediaLibraryModal } from "@/components/admin/MediaLibraryModal";
 import {
   isUploadedAsset,
   makeServiceMockBlocksPreset,
+  type PortfolioGridItem,
   type ServicePageBlock,
   type ServicePageContent,
   type ServicePageFaqSection,
@@ -19,7 +20,7 @@ type Props = {
   service: ServiceRow;
   page: ServicePageContent | null;
   serviceIndex: number;
-  portfolioGridLength: number;
+  portfolioGrid: PortfolioGridItem[];
   onSetServiceName: (name: string) => void;
   onSetPage: (patch: Partial<Omit<ServicePageContent, "serviceId">>) => void;
   onDelete: () => void;
@@ -120,60 +121,121 @@ function TextareaField({
   );
 }
 
+function isCompletePortfolioTile(row: PortfolioGridItem) {
+  return row.before.trim().length > 0 && row.after.trim().length > 0;
+}
+
 function PortfolioPicker({
-  totalCount,
+  serviceId,
+  portfolioGrid,
   selected,
   onChange,
 }: {
-  totalCount: number;
+  serviceId: number;
+  portfolioGrid: PortfolioGridItem[];
   selected: number[];
   onChange: (next: number[]) => void;
 }) {
-  if (totalCount === 0) {
+  const entries = portfolioGrid
+    .map((row, gridIndex) => ({ row, gridIndex }))
+    .filter(({ row }) => row.serviceId === serviceId);
+
+  if (portfolioGrid.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-zinc-700 px-3 py-4 text-center text-[11px] text-zinc-500">
-        Add portfolio rows in the Portfolio admin first, then come back to
-        choose which one to feature on this service page.
+        Add portfolio rows under <strong>Portfolio</strong> in the sidebar first,
+        assign them to this service, then pick which ones to feature here.
       </p>
     );
   }
+
+  if (entries.length === 0) {
+    return (
+      <p className="rounded-lg border border-dashed border-zinc-700 px-3 py-4 text-[11px] leading-relaxed text-zinc-500">
+        No portfolio tiles are linked to this service yet. Open{" "}
+        <strong>Portfolio</strong>, edit a row, and set its service to match
+        this page — or add new portfolio rows for this service.
+      </p>
+    );
+  }
+
+  const selectedForService = selected.filter(
+    (i) =>
+      Number.isInteger(i) &&
+      i >= 0 &&
+      i < portfolioGrid.length &&
+      portfolioGrid[i]!.serviceId === serviceId,
+  );
+
+  function toggle(gridIndex: number) {
+    const isOn = selectedForService.includes(gridIndex);
+    const next = isOn
+      ? selectedForService.filter((x) => x !== gridIndex)
+      : [...selectedForService, gridIndex];
+    onChange(next);
+  }
+
   return (
     <div>
-      <p className="mb-2 text-[11px] text-zinc-500">
-        Click to select / deselect. The first chosen item shows next to the
-        portfolio section title on the page.
+      <p className="mb-2 text-[11px] leading-relaxed text-zinc-500">
+        Only tiles assigned to this service are listed. Click a thumbnail to
+        select or deselect; the badge shows order on the page (first = hero tile
+        beside the portfolio text).
       </p>
-      <div className="grid max-h-44 grid-cols-6 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-8 lg:grid-cols-10">
-        {Array.from({ length: totalCount }, (_, i) => {
-          const isSelected = selected.includes(i);
-          const order = isSelected ? selected.indexOf(i) + 1 : null;
+      <ul className="grid max-h-[min(28rem,52vh)] grid-cols-2 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {entries.map(({ row, gridIndex }) => {
+          const isSelected = selectedForService.includes(gridIndex);
+          const order = isSelected ? selectedForService.indexOf(gridIndex) + 1 : null;
+          const previewSrc = (row.after.trim() || row.before.trim()) as string;
+          const complete = isCompletePortfolioTile(row);
           return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                if (isSelected) {
-                  onChange(selected.filter((x) => x !== i));
-                } else {
-                  onChange([...selected, i]);
-                }
-              }}
-              className={`relative h-9 rounded-md border text-[11px] font-medium transition ${
-                isSelected
-                  ? "border-[var(--accent)] bg-[var(--accent)]/15 text-[var(--accent)]"
-                  : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-500"
-              }`}
-            >
-              #{i + 1}
-              {order !== null ? (
-                <span className="absolute right-0.5 top-0.5 rounded-sm bg-[var(--accent)]/30 px-1 text-[9px] font-bold text-white">
-                  {order}
+            <li key={gridIndex} className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={() => toggle(gridIndex)}
+                className={[
+                  "group relative aspect-[4/3] w-full overflow-hidden rounded-lg border bg-black text-left transition",
+                  isSelected
+                    ? "border-[var(--accent)] ring-2 ring-[var(--accent)]/35"
+                    : "border-zinc-700 hover:border-zinc-500",
+                  !complete ? "opacity-80" : "",
+                ].join(" ")}
+              >
+                {previewSrc ? (
+                  <Image
+                    src={previewSrc}
+                    alt=""
+                    fill
+                    className="object-cover transition group-hover:scale-[1.02]"
+                    sizes="(max-width: 640px) 50vw, 160px"
+                    unoptimized={isUploadedAsset(previewSrc)}
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-[10px] text-zinc-600">
+                    No image
+                  </span>
+                )}
+                {order !== null ? (
+                  <span className="absolute left-1.5 top-1.5 rounded-md bg-[var(--accent)] px-1.5 py-0.5 text-[10px] font-bold text-black">
+                    {order}
+                  </span>
+                ) : null}
+                {!complete ? (
+                  <span className="absolute bottom-1 left-1 rounded bg-black/75 px-1 py-0.5 text-[9px] font-medium text-amber-200/95">
+                    Incomplete
+                  </span>
+                ) : null}
+              </button>
+              <p className="line-clamp-2 text-[10px] leading-snug text-zinc-500">
+                {row.label.trim() || "Untitled"}
+                <span className="mt-0.5 block font-mono text-[9px] text-zinc-600">
+                  #{gridIndex + 1}
                 </span>
-              ) : null}
-            </button>
+              </p>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -295,7 +357,7 @@ export function AdminServiceEditModal({
   service,
   page,
   serviceIndex,
-  portfolioGridLength,
+  portfolioGrid,
   onSetServiceName,
   onSetPage,
   onDelete,
@@ -324,6 +386,28 @@ export function AdminServiceEditModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose, mediaOpen, blocksOpen]);
+
+  useEffect(() => {
+    if (!open || !page) return;
+    const raw = page.selectedPortfolioIndices ?? [];
+    const cleaned = raw.filter(
+      (i) =>
+        Number.isInteger(i) &&
+        i >= 0 &&
+        i < portfolioGrid.length &&
+        portfolioGrid[i]!.serviceId === service.id,
+    );
+    const hasBad = raw.some(
+      (i) =>
+        !Number.isInteger(i) ||
+        i < 0 ||
+        i >= portfolioGrid.length ||
+        portfolioGrid[i]!.serviceId !== service.id,
+    );
+    if (hasBad) {
+      onSetPage({ selectedPortfolioIndices: cleaned });
+    }
+  }, [open, page, portfolioGrid, service.id, onSetPage]);
 
   if (!open || !page) return null;
 
@@ -364,7 +448,7 @@ export function AdminServiceEditModal({
           className="absolute inset-0 bg-black/75 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative flex max-h-[96vh] w-[96vw] max-w-5xl flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
+        <div className="relative flex max-h-[96vh] w-[96vw] max-w-[min(88rem,96vw)] flex-col overflow-hidden rounded-2xl border border-zinc-700/90 bg-zinc-950 shadow-2xl">
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-5 py-4">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
@@ -567,7 +651,7 @@ export function AdminServiceEditModal({
             <SectionCard
               step="Step 4"
               title="Featured portfolio"
-              description="Pick one or more portfolio tiles to feature inside the page. The first picked tile is shown next to the portfolio section."
+              description="Pick portfolio tiles that are assigned to this service in the Portfolio library. Thumbnails show only those rows; the first pick appears beside the portfolio section on the page."
             >
               <TextField
                 label="Portfolio section title (override)"
@@ -576,7 +660,8 @@ export function AdminServiceEditModal({
                 placeholder="Leave empty to use the default title."
               />
               <PortfolioPicker
-                totalCount={portfolioGridLength}
+                serviceId={service.id}
+                portfolioGrid={portfolioGrid}
                 selected={page.selectedPortfolioIndices ?? []}
                 onChange={(selectedPortfolioIndices) =>
                   onSetPage({ selectedPortfolioIndices })
