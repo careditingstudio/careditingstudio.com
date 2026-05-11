@@ -16,16 +16,51 @@ const COOKIE_BASE = {
   path: "/",
   maxAge: 60 * 60 * 24 * 400,
   sameSite: "lax" as const,
+  /** Local dev is usually http:// — Secure cookies would not be stored, breaking geo/currency prefs. */
   secure: process.env.NODE_ENV === "production",
 };
 
+/** Optional server env `VISITOR_COUNTRY_OVERRIDE=DK` (ISO2) to simulate geo when IP headers are missing. */
+function countryFromEnvOverride(): string | null {
+  const raw =
+    process.env.VISITOR_COUNTRY_OVERRIDE?.trim() ||
+    process.env.NEXT_PUBLIC_VISITOR_COUNTRY?.trim();
+  if (!raw || raw.length !== 2) return null;
+  return raw.toUpperCase().slice(0, 2);
+}
+
+/**
+ * When CDN geo headers are absent (common on localhost), infer country from the
+ * first BCP47 tag that includes a region, e.g. `da-DK` → DK, `en-DK` → DK.
+ */
+function countryFromAcceptLanguage(header: string | null): string | null {
+  if (!header?.trim()) return null;
+  const parts = header.split(",").map((s) => s.trim().split(";")[0]!.trim());
+  for (const part of parts) {
+    const m = /^[a-z]{2}-([a-z]{2})$/i.exec(part);
+    if (!m?.[1]) continue;
+    const cc = m[1].toUpperCase();
+    if (cc.length === 2) return cc;
+  }
+  return null;
+}
+
 export function inferCountryCode(request: NextRequest): string {
-  const v =
+  const fromEnv = countryFromEnvOverride();
+  if (fromEnv) return fromEnv;
+
+  const fromCdn =
     request.headers.get("x-vercel-ip-country")?.trim() ||
     request.headers.get("cf-ipcountry")?.trim() ||
     "";
-  if (!v || v === "XX" || v.length !== 2) return "US";
-  return v.toUpperCase().slice(0, 2);
+  if (fromCdn && fromCdn !== "XX" && fromCdn.length === 2) {
+    return fromCdn.toUpperCase().slice(0, 2);
+  }
+
+  const fromLang = countryFromAcceptLanguage(request.headers.get("accept-language"));
+  if (fromLang) return fromLang;
+
+  return "US";
 }
 
 export function applyVisitorRequestHeaders(request: NextRequest): {
@@ -38,29 +73,15 @@ export function applyVisitorRequestHeaders(request: NextRequest): {
 } {
   const manual = request.cookies.get(CES_MANUAL)?.value === "1";
   const geoCountry = inferCountryCode(request);
-  const geoPrefs = countryPrefsFromCode(geoCountry);
-
-  const country = (
-    manual && request.cookies.get(CES_CC)?.value?.trim()
-      ? request.cookies.get(CES_CC)!.value.trim()
-      : geoCountry
-  )
-    .toUpperCase()
-    .slice(0, 2);
+  /** Always use inferred geo for pricing/currency so it updates when you travel; `ces_manual` only pins UI language. */
+  const country = geoCountry.toUpperCase().slice(0, 2);
 
   const prefs = countryPrefsFromCode(country);
-
-  const currency = (
-    manual && request.cookies.get(CES_CUR)?.value?.trim()
-      ? request.cookies.get(CES_CUR)!.value.trim()
-      : prefs.currency
-  )
-    .toUpperCase()
-    .slice(0, 3);
+  const currency = prefs.currency.toUpperCase().slice(0, 3);
 
   const rawLoc = manual && request.cookies.get(CES_LOC)?.value?.trim()
     ? request.cookies.get(CES_LOC)!.value.trim()
-    : geoPrefs.locale;
+    : prefs.locale;
 
   const locale = rawLoc
     .toLowerCase()
