@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { display, sans } from "@/app/fonts";
 import type { HomeServiceFeaturesBlock } from "@/lib/cms-types";
 import { ServiceFeatureIcon } from "@/lib/service-feature-icons";
@@ -83,23 +82,6 @@ export function HomeServiceFeatures({ block }: Props) {
             ))}
           </ul>
         )}
-
-        {block.ctaHref.trim() ? (
-          <div className="mt-10 flex justify-center sm:mt-12">
-            <Link
-              href={block.ctaHref.trim()}
-              aria-label={block.ctaLabel.trim() || "See more"}
-              className={`${sans.className} group inline-flex size-11 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-[var(--accent-hover)] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:size-12`}
-            >
-              <span
-                aria-hidden
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-              >
-                →
-              </span>
-            </Link>
-          </div>
-        ) : null}
       </div>
     </section>
   );

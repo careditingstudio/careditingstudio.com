@@ -2,11 +2,18 @@ import { DevPostgresDisconnectedBanner } from "@/components/DevPostgresDisconnec
 import { SiteLocationsMapSection } from "@/components/SiteLocationsMapSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteTopChrome } from "@/components/SiteTopChrome";
+import { VisitorLanguageBar } from "@/components/VisitorLanguageBar";
+import { getVisitorShellMessages, navLabelsFromMessages } from "@/i18n/visitor-shell";
+import { getPublicVisitorState } from "@/lib/public-visitor";
 import { readCmsWithDbStatus } from "@/lib/cms-store";
 import type { ReactNode } from "react";
 
 export async function SiteTopChromeWrapper({ children }: { children: ReactNode }) {
   const { cms, devDbUnreachable } = await readCmsWithDbStatus();
+  const visitor = await getPublicVisitorState();
+  const shell = getVisitorShellMessages(visitor.locale);
+  const navLabels = navLabelsFromMessages(shell);
+
   return (
     <>
       <DevPostgresDisconnectedBanner show={devDbUnreachable} />
@@ -14,6 +21,9 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
         site={cms.site}
         services={cms.services}
         servicePages={cms.servicePages}
+        navLabels={navLabels}
+        shell={shell}
+        reserveLanguageBarSpace={visitor.showLanguageBar}
       >
         {children}
         <SiteLocationsMapSection site={cms.site} />
@@ -21,8 +31,14 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
           site={cms.site}
           services={cms.services}
           servicePages={cms.servicePages}
+          shell={shell}
         />
       </SiteTopChrome>
+      <VisitorLanguageBar
+        show={visitor.showLanguageBar}
+        locale={visitor.locale}
+        altLocale={visitor.altLocale}
+      />
     </>
   );
 }

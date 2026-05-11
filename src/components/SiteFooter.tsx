@@ -1,4 +1,9 @@
-import type { ServicePageContent, ServiceRow, SiteSettings } from "@/lib/cms-types";
+import type {
+  ServicePageContent,
+  ServiceRow,
+  SiteSettings,
+} from "@/lib/cms-types";
+import type { VisitorShellMessages } from "@/i18n/visitor-shell";
 import { getServiceHrefMap } from "@/lib/service-pages";
 import { telHref } from "@/lib/tel-href";
 import {
@@ -74,10 +79,12 @@ export function SiteFooter({
   site,
   services = [],
   servicePages = [],
+  shell,
 }: {
   site: SiteSettings;
   services?: ServiceRow[];
   servicePages?: ServicePageContent[];
+  shell: VisitorShellMessages;
 }) {
   const brand = site.businessName.trim() || "Car Editing Studio";
   const socials = (site.socialLinks ?? [])
@@ -136,7 +143,7 @@ export function SiteFooter({
               <span className="text-lg font-semibold tracking-tight">{brand}</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/78">
-              Automotive photo editing for dealers, marketplaces, and creators.
+              {shell.footer.tagline}
             </p>
             <div className="mt-5">
               <Link
@@ -144,7 +151,7 @@ export function SiteFooter({
                 prefetch
                 className="inline-flex items-center justify-center rounded-full border border-white/20 bg-gradient-to-r from-[var(--accent)] to-[#ec8f62] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_-16px_rgba(224,122,69,0.8)] transition-all duration-300 hover:-translate-y-0.5 hover:from-[var(--accent-hover)] hover:to-[#f5a37d] hover:shadow-[0_18px_34px_-16px_rgba(224,122,69,0.95)]"
               >
-                Free trial
+                {shell.footer.freeTrial}
               </Link>
             </div>
             {socials.length > 0 ? (
@@ -171,7 +178,7 @@ export function SiteFooter({
           {/* Phones — no addresses (maps live above) */}
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
-              Call us
+              {shell.footer.callUs}
             </p>
             <ul className="mt-4 space-y-3 text-sm">
               {officesWithPhone.map((o, i) => {
@@ -199,7 +206,7 @@ export function SiteFooter({
             </ul>
             {officesWithPhone.length === 0 ? (
               <p className="mt-4 text-sm text-white/55">
-                Add office phone numbers in Settings — maps stay on the page above.
+              {shell.footer.noPhones}
               </p>
             ) : null}
             <div className="mt-6 space-y-2 border-t border-white/10 pt-5">
@@ -231,49 +238,49 @@ export function SiteFooter({
           {/* Quick links */}
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
-              Explore
+              {shell.footer.explore}
             </p>
             <ul className="mt-4 space-y-2.5 text-sm text-white/80">
               <li>
                 <Link prefetch href="/" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  Home
+                  {shell.footer.exploreHome}
                 </Link>
               </li>
               <li>
                 <Link prefetch href="/about" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  About us
+                  {shell.footer.exploreAbout}
                 </Link>
               </li>
               <li>
                 <Link prefetch href="/portfolio" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  Portfolio
+                  {shell.footer.explorePortfolio}
                 </Link>
               </li>
               <li>
                 <Link prefetch href="/contact" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  Contact
+                  {shell.footer.exploreContact}
                 </Link>
               </li>
               <li>
                 <Link prefetch href="/services" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  Services
+                  {shell.footer.exploreServices}
                 </Link>
               </li>
               <li>
                 <Link prefetch href="/pricing" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  Pricing
+                  {shell.footer.explorePricing}
                 </Link>
               </li>
               <li>
                 <Link prefetch href="/schedule-meeting" className="group inline-flex items-center gap-1.5 transition hover:translate-x-1 hover:text-white">
                   <span className="opacity-0 -translate-x-1 text-[var(--accent)] transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">{">"}</span>
-                  Schedule a meeting
+                  {shell.footer.exploreSchedule}
                 </Link>
               </li>
             </ul>
@@ -282,7 +289,7 @@ export function SiteFooter({
           {/* Services from CMS */}
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
-              Services
+              {shell.footer.servicesHeading}
             </p>
             {services.length === 0 ? (
               <p className="mt-4 text-sm text-white/55">—</p>

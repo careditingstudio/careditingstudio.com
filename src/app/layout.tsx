@@ -8,6 +8,7 @@ import { HomeChromeProvider } from "@/components/HomeChromeProvider";
 import { SiteTopChromeWrapper } from "@/components/SiteTopChromeWrapper";
 import { FloatingWhatsAppButton } from "@/components/FloatingWhatsAppButton";
 import { readCms } from "@/lib/cms-store";
+import { getPublicVisitorState } from "@/lib/public-visitor";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { parseSiteTags } from "@/lib/site-tags";
 import { sans } from "./fonts";
@@ -120,15 +121,31 @@ export default async function RootLayout({
   }
 
   let whatsappDial = "";
+  let visitorLocale = "en";
+  let visitorDir: "ltr" | "rtl" = "ltr";
   try {
     const cms = await readCms();
     whatsappDial = cms.site.whatsappDial?.trim() ?? "";
   } catch {
     whatsappDial = "";
   }
+  try {
+    const v = await getPublicVisitorState();
+    visitorLocale = v.locale;
+    visitorDir = v.locale === "ar" ? "rtl" : "ltr";
+  } catch {
+    /* headers unavailable — keep defaults */
+  }
+
+  const htmlLang = visitorLocale === "zh" ? "zh-Hans" : visitorLocale;
 
   return (
-    <html lang="en" className="h-full scroll-smooth" suppressHydrationWarning>
+    <html
+      lang={htmlLang}
+      dir={visitorDir}
+      className="h-full scroll-smooth"
+      suppressHydrationWarning
+    >
       <body
         className={`${sans.className} flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] antialiased`}
         suppressHydrationWarning

@@ -1,4 +1,8 @@
 import { isAdminHostFromIncomingHeaders } from "@/lib/admin-host";
+import {
+  applyVisitorRequestHeaders,
+  persistVisitorCookies,
+} from "@/lib/visitor-request";
 import { NextResponse, type NextRequest } from "next/server";
 
 const ADMIN_SESSION_COOKIE = "cms_admin";
@@ -106,7 +110,16 @@ export function middleware(request: NextRequest) {
     });
   }
 
-  return NextResponse.next();
+  const visitor = applyVisitorRequestHeaders(request);
+  const res = NextResponse.next({
+    request: { headers: visitor.headers },
+  });
+  persistVisitorCookies(request, res, {
+    country: visitor.country,
+    currency: visitor.currency,
+    locale: visitor.locale,
+  });
+  return res;
 }
 
 /**

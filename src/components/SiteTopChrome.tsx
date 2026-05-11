@@ -3,6 +3,7 @@
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { useChromeScrollLock } from "@/components/ChromeScrollLockContext";
 import { SiteHeader } from "@/components/SiteHeader";
+import type { VisitorShellMessages } from "@/i18n/visitor-shell";
 import type { ServicePageContent, ServiceRow, SiteSettings } from "@/lib/cms-types";
 import { siteConfig } from "@/config/site";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -12,9 +13,20 @@ type Props = {
   site: SiteSettings;
   services: ServiceRow[];
   servicePages: ServicePageContent[];
+  navLabels: string[];
+  shell: VisitorShellMessages;
+  reserveLanguageBarSpace: boolean;
 };
 
-export function SiteTopChrome({ children, site, services, servicePages }: Props) {
+export function SiteTopChrome({
+  children,
+  site,
+  services,
+  servicePages,
+  navLabels,
+  shell,
+  reserveLanguageBarSpace,
+}: Props) {
   const { isChromeHideLocked } = useChromeScrollLock();
   const [announcementHidden, setAnnouncementHidden] = useState(false);
   const lastY = useRef(0);
@@ -86,6 +98,8 @@ export function SiteTopChrome({ children, site, services, servicePages }: Props)
           brandName={siteConfig.name}
           services={services}
           servicePages={servicePages}
+          navLabels={navLabels}
+          shell={shell}
         />
       </div>
 
@@ -95,6 +109,7 @@ export function SiteTopChrome({ children, site, services, servicePages }: Props)
           hideAnnouncement
             ? "pt-[var(--header-h)]"
             : "pt-[calc(var(--announcement-h)+var(--header-h))]",
+          reserveLanguageBarSpace ? "pb-14 sm:pb-16" : "",
         ].join(" ")}
       >
         {children}

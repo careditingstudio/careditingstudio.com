@@ -1,5 +1,9 @@
 import { OrderNowLink } from "@/components/OrderNowLink";
 import { PageHeading } from "@/components/PageHeading";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
+import { getUsdExchangeRates } from "@/lib/exchange-rates";
+import { convertUsdPriceLabel } from "@/lib/price-convert";
+import { getPublicVisitorState } from "@/lib/public-visitor";
 import { isUploadedAsset } from "@/lib/cms-types";
 import { readCms } from "@/lib/cms-store";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
@@ -34,6 +38,27 @@ export default async function PricingPage() {
   const paymentMethods = (cms.site.paymentMethods ?? []).filter(
     (m) => m.label.trim().length > 0,
   );
+  const [visitor, rates] = await Promise.all([
+    getPublicVisitorState(),
+    getUsdExchangeRates(),
+  ]);
+  const shell = getVisitorShellMessages(visitor.locale);
+
+  const displayPlans = plans.map((plan) => ({
+    ...plan,
+    singleDisplay: convertUsdPriceLabel(
+      plan.singlePrice,
+      visitor.currency,
+      rates,
+      visitor.locale,
+    ),
+    bulkDisplay: convertUsdPriceLabel(
+      plan.bulkPrice,
+      visitor.currency,
+      rates,
+      visitor.locale,
+    ),
+  }));
   return (
     <>
       <PageHeading
@@ -42,7 +67,7 @@ export default async function PricingPage() {
       />
       <div className="mx-auto max-w-[88rem] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {plans.map((plan, planIndex) => (
+          {displayPlans.map((plan, planIndex) => (
             <article
               key={`${plan.packageLabel}-${planIndex}`}
               className={[
@@ -67,18 +92,18 @@ export default async function PricingPage() {
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-[var(--line)] bg-black/15 p-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-2)]">
-                    Single
+                    {shell.pricing.single}
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
-                    {plan.singlePrice}
+                    {plan.singleDisplay}
                   </p>
                 </div>
                 <div className="rounded-lg border border-[var(--line)] bg-black/15 p-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-2)]">
-                    Bulk
+                    {shell.pricing.bulk}
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
-                    {plan.bulkPrice}
+                    {plan.bulkDisplay}
                   </p>
                 </div>
               </div>
@@ -96,6 +121,10 @@ export default async function PricingPage() {
             </article>
           ))}
         </section>
+
+        <p className="mt-6 max-w-3xl text-xs leading-relaxed text-[var(--muted-2)]">
+          {shell.pricing.disclaimer}
+        </p>
 
         <section className="mt-8 grid gap-6 md:grid-cols-2">
           <article className="rounded-2xl border border-[var(--line)] bg-[var(--background)] p-6 sm:p-7">

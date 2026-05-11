@@ -113,13 +113,25 @@ type SiteHeaderProps = {
   brandName?: string;
   services?: ServiceRow[];
   servicePages?: ServicePageContent[];
+  navLabels?: string[];
+  shell?: {
+    header: { servicesMenuTitle: string; viewAllServices: string };
+  };
 };
 
 export function SiteHeader({
   brandName = "Car Editing Studio",
   services = [],
   servicePages = [],
+  navLabels: navLabelsProp,
+  shell,
 }: SiteHeaderProps) {
+  const labels =
+    navLabelsProp && navLabelsProp.length === navItems.length
+      ? navLabelsProp
+      : navItems.map((i) => i.label);
+  const megaTitle = shell?.header.servicesMenuTitle ?? "Services";
+  const megaViewAll = shell?.header.viewAllServices ?? "View all services";
   const pathname = usePathname();
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
@@ -250,7 +262,8 @@ export function SiteHeader({
           className="hidden min-w-0 flex-1 items-center justify-center gap-1.5 lg:flex"
           aria-label="Main"
         >
-          {navItems.map(({ href, label }) => {
+          {navItems.map(({ href }, idx) => {
+            const label = labels[idx] ?? navItems[idx]!.label;
             if (href === "/services") {
               return (
                 <div
@@ -291,7 +304,7 @@ export function SiteHeader({
                         <p
                           className={`${display.className} text-base font-semibold text-zinc-900 dark:text-zinc-50`}
                         >
-                          Services
+                          {megaTitle}
                         </p>
                         <Link
                           href="/services"
@@ -302,7 +315,7 @@ export function SiteHeader({
                             clearHoverTimer();
                           }}
                         >
-                          View all services
+                          {megaViewAll}
                         </Link>
                       </div>
                       <ServicesMegaMenuGrid
@@ -368,7 +381,8 @@ export function SiteHeader({
           ].join(" ")}
         >
           <nav className="flex flex-col gap-0.5" aria-label="Mobile main">
-            {navItems.map(({ href, label }) => {
+            {navItems.map(({ href }, idx) => {
+              const label = labels[idx] ?? navItems[idx]!.label;
               if (href === "/services") {
                 return (
                   <div key={href} className="flex flex-col">
@@ -431,7 +445,7 @@ export function SiteHeader({
                               : "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]",
                           ].join(" ")}
                         >
-                          View all services
+                          {megaViewAll}
                         </Link>
                       </div>
                     ) : null}
