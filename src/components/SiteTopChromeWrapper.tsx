@@ -2,7 +2,8 @@ import { DevPostgresDisconnectedBanner } from "@/components/DevPostgresDisconnec
 import { SiteLocationsMapSection } from "@/components/SiteLocationsMapSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteTopChrome } from "@/components/SiteTopChrome";
-import { VisitorLanguageBar } from "@/components/VisitorLanguageBar";
+import { VISITOR_I18N_ENABLED } from "@/config/visitor-i18n-gate";
+import { VisitorLanguageBar } from "@/i18n/visitor-language/VisitorLanguageBar";
 import { getVisitorShellMessages, navLabelsFromMessages } from "@/i18n/visitor-shell";
 import { getPublicVisitorState } from "@/lib/public-visitor";
 import { readCmsWithDbStatus } from "@/lib/cms-store";
@@ -34,7 +35,7 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
           shell={shell}
         />
       </SiteTopChrome>
-      <VisitorLanguageBar locale={visitor.locale} />
+      {VISITOR_I18N_ENABLED ? <VisitorLanguageBar locale={visitor.locale} /> : null}
     </>
   );
 }

@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Bottom language selector — **not rendered in production** unless
+ * `NEXT_PUBLIC_CES_VISITOR_I18N=1`. Wired from `SiteTopChromeWrapper`.
+ */
 import {
   getVisitorShellMessages,
   VISITOR_SHELL_UI_LOCALES,

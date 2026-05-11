@@ -155,7 +155,7 @@ export function WhyChooseUsSection({ block }: Props) {
 
   return (
     <div className="relative px-4 py-8 text-zinc-100 sm:px-6 sm:py-9 lg:px-8" aria-labelledby="why-choose-heading">
-      <div className="mx-auto grid max-w-[82rem] gap-4 lg:grid-cols-[1.42fr,0.88fr] lg:gap-6">
+      <div className="mx-auto grid max-w-[82rem] gap-8 lg:grid-cols-[1.42fr,0.88fr] lg:gap-6">
         <div className="relative">
           <div className="mx-auto max-w-3xl text-center">
             <h2
@@ -171,21 +171,23 @@ export function WhyChooseUsSection({ block }: Props) {
             </p>
           </div>
 
-          <div className="mt-5 w-full min-w-0 overflow-x-auto overflow-y-visible pb-1 [-webkit-overflow-scrolling:touch] sm:mt-6">
-            <div className="mx-auto flex w-max max-w-none flex-nowrap items-center justify-center gap-3 sm:gap-4">
+          <div className="mt-6 sm:mt-6">
+            <ul className="mx-auto flex max-w-2xl flex-wrap justify-center gap-2.5 sm:max-w-none sm:gap-3 lg:max-w-none">
               {block.manualAiLabel.trim() ? (
-                <span
-                  className={`${sans.className} relative inline-flex shrink-0 items-center gap-2.5 overflow-hidden rounded-2xl border border-violet-400/45 bg-gradient-to-br from-violet-500/35 via-violet-500/15 to-white/[0.08] px-4 py-2.5 text-sm font-semibold text-violet-50 shadow-[0_8px_32px_-12px_rgba(139,92,246,0.55),inset_0_1px_0_0_rgba(255,255,255,0.35)] backdrop-blur-md sm:px-5 sm:py-3 sm:text-[0.9375rem]`}
-                >
+                <li className="contents">
                   <span
-                    className="pointer-events-none absolute -left-1/4 top-0 h-full w-1/2 skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-60"
-                    aria-hidden
-                  />
-                  <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/35 text-violet-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/20 sm:h-9 sm:w-9">
-                    {MANUAL_AI_ICON}
+                    className={`${sans.className} relative inline-flex min-h-[44px] max-w-[min(100%,20rem)] flex-[1_1_calc(50%-0.35rem)] items-center justify-center gap-2.5 overflow-hidden rounded-2xl border border-violet-400/45 bg-gradient-to-br from-violet-500/35 via-violet-500/15 to-white/[0.08] px-3 py-2.5 text-xs font-semibold text-violet-50 shadow-[0_8px_32px_-12px_rgba(139,92,246,0.55),inset_0_1px_0_0_rgba(255,255,255,0.35)] backdrop-blur-md sm:min-h-0 sm:max-w-none sm:flex-none sm:px-5 sm:py-3 sm:text-[0.9375rem]`}
+                  >
+                    <span
+                      className="pointer-events-none absolute -left-1/4 top-0 h-full w-1/2 skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-60"
+                      aria-hidden
+                    />
+                    <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/35 text-violet-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] ring-1 ring-white/20 sm:h-9 sm:w-9">
+                      {MANUAL_AI_ICON}
+                    </span>
+                    <span className="relative text-balance">{block.manualAiLabel.trim()}</span>
                   </span>
-                  <span className="relative">{block.manualAiLabel.trim()}</span>
-                </span>
+                </li>
               ) : null}
               {[0, 1, 2].map((i) => {
                 const tones = [
@@ -207,29 +209,30 @@ export function WhyChooseUsSection({ block }: Props) {
                 ] as const;
                 const t = tones[i] ?? tones[0]!;
                 return (
-                  <span
-                    key={`badge-${i}`}
-                    className={`${sans.className} relative inline-flex shrink-0 items-center gap-2.5 overflow-hidden rounded-2xl border px-4 py-2.5 text-sm font-semibold backdrop-blur-md sm:px-5 sm:py-3 sm:text-[0.9375rem] ${t.wrap}`}
-                  >
+                  <li key={`badge-${i}`} className="contents">
                     <span
-                      className={`pointer-events-none absolute -left-1/4 top-0 h-full w-1/2 skew-x-12 bg-gradient-to-r from-transparent ${t.sheen} to-transparent opacity-50`}
-                      aria-hidden
-                    />
-                    <span
-                      className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22)] ring-1 ring-inset ring-white/15 sm:h-9 sm:w-9 ${t.icon}`}
+                      className={`${sans.className} relative inline-flex min-h-[44px] max-w-[min(100%,20rem)] flex-[1_1_calc(50%-0.35rem)] items-center justify-center gap-2.5 overflow-hidden rounded-2xl border px-3 py-2.5 text-xs font-semibold backdrop-blur-md sm:min-h-0 sm:max-w-none sm:flex-none sm:px-5 sm:py-3 sm:text-[0.9375rem] ${t.wrap}`}
                     >
-                      {BADGE_ICONS[i]}
+                      <span
+                        className={`pointer-events-none absolute -left-1/4 top-0 h-full w-1/2 skew-x-12 bg-gradient-to-r from-transparent ${t.sheen} to-transparent opacity-50`}
+                        aria-hidden
+                      />
+                      <span
+                        className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22)] ring-1 ring-inset ring-white/15 sm:h-9 sm:w-9 ${t.icon}`}
+                      >
+                        {BADGE_ICONS[i]}
+                      </span>
+                      <span className="relative text-balance text-left">
+                        {block.badges[i]?.trim() || "—"}
+                      </span>
                     </span>
-                    <span className="relative text-left">
-                      {block.badges[i]?.trim() || "—"}
-                    </span>
-                  </span>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
 
-          <p className={`${display.className} mt-3 text-lg font-semibold text-white`}>
+          <p className={`${display.className} mt-6 text-lg font-semibold text-white sm:mt-4`}>
             {block.easyCommunicationTitle}
           </p>
           <p className={`${sans.className} mt-1 text-[0.83rem] leading-relaxed text-zinc-300 sm:text-[0.89rem]`}>
@@ -237,14 +240,14 @@ export function WhyChooseUsSection({ block }: Props) {
           </p>
         </div>
 
-        <div className="relative grid grid-cols-2 gap-2 lg:self-start">
+        <div className="relative grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-2 lg:self-start">
           {pillarGridItems.map((item, idx) => {
             if (!item) {
               return (
                 <div
                   key="pillar-empty-slot"
                   aria-hidden
-                  className="rounded-xl border border-dashed border-white/10 bg-white/[0.02]"
+                  className="hidden rounded-xl border border-dashed border-white/10 bg-white/[0.02] sm:block"
                 />
               );
             }
@@ -256,26 +259,26 @@ export function WhyChooseUsSection({ block }: Props) {
                 onMouseEnter={() => setActiveIndex(idx)}
                 onFocus={() => setActiveIndex(idx)}
                 onClick={() => setActiveIndex(idx)}
-                className={`group relative overflow-hidden rounded-xl px-3 py-2.5 text-left backdrop-blur-sm transition duration-300 ${
+                className={`group relative min-h-[44px] overflow-hidden rounded-2xl border border-white/10 px-4 py-4 text-left backdrop-blur-sm transition duration-300 sm:min-h-0 sm:rounded-xl sm:border-0 sm:px-3 sm:py-2.5 ${
                   isActive
-                    ? "bg-white/[0.1] shadow-[0_10px_35px_rgba(0,0,0,0.24)]"
-                    : "bg-white/[0.05] hover:bg-white/[0.08]"
+                    ? "bg-white/[0.12] shadow-[0_12px_40px_rgba(0,0,0,0.28)] ring-1 ring-white/15 sm:bg-white/[0.1] sm:shadow-[0_10px_35px_rgba(0,0,0,0.24)] sm:ring-0"
+                    : "bg-white/[0.06] hover:bg-white/[0.1] sm:bg-white/[0.05] sm:hover:bg-white/[0.08]"
                 }`}
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.06] to-transparent" aria-hidden />
-                <div className="relative flex items-start gap-2.5">
+                <div className="relative flex items-start gap-3.5 sm:gap-2.5">
                   <span
-                    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-zinc-100 ${
+                    className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-zinc-100 sm:h-8 sm:w-8 ${
                       isActive ? "ring-1 ring-white/25" : ""
                     }`}
                   >
                     {item.icon}
                   </span>
-                  <div>
-                    <p className={`${display.className} text-[0.92rem] font-semibold text-white`}>
+                  <div className="min-w-0 flex-1">
+                    <p className={`${display.className} text-base font-semibold leading-snug text-white sm:text-[0.92rem]`}>
                       {item.title}
                     </p>
-                    <p className={`${sans.className} mt-0.5 text-[0.78rem] leading-relaxed text-zinc-300`}>
+                    <p className={`${sans.className} mt-1.5 text-sm leading-relaxed text-zinc-300 sm:mt-0.5 sm:text-[0.78rem]`}>
                       {item.body}
                     </p>
                   </div>

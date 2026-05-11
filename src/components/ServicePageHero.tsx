@@ -19,7 +19,7 @@ export function ServicePageHero({
       className="relative isolate w-full overflow-hidden bg-[#0a0a0a]"
       aria-labelledby="service-hero-title"
     >
-      <div className="relative h-[clamp(420px,52vw,620px)] w-full">
+      <div className="relative h-[clamp(260px,36vw,440px)] w-full">
         {hasBanner ? (
           <Image
             src={src}
@@ -51,8 +51,8 @@ export function ServicePageHero({
         />
 
         <div className="relative z-10 flex h-full w-full items-center">
-          <div className="mx-auto w-full max-w-[88rem] px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
-            <div className="max-w-2xl space-y-5">
+          <div className="mx-auto w-full max-w-[88rem] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
+            <div className="max-w-2xl space-y-3 sm:space-y-4">
               <h1
                 id="service-hero-title"
                 className={`${display.className} text-balance text-3xl font-semibold tracking-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)] sm:text-4xl md:text-[2.6rem] md:leading-[1.1] lg:text-[3rem]`}

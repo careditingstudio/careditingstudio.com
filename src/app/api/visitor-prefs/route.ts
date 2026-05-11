@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { VISITOR_I18N_ENABLED } from "@/config/visitor-i18n-gate";
 import { CES_LOC, CES_MANUAL } from "@/lib/visitor-request";
 
 const ALLOW = new Set([
@@ -24,6 +25,12 @@ const ALLOW = new Set([
 ]);
 
 export function GET(request: NextRequest) {
+  if (!VISITOR_I18N_ENABLED) {
+    return NextResponse.json(
+      { error: "Visitor language switching is disabled." },
+      { status: 404 },
+    );
+  }
   const url = request.nextUrl;
   const raw = url.searchParams.get("locale")?.toLowerCase().trim() ?? "";
   const locale = ALLOW.has(raw) ? raw : "en";

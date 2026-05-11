@@ -1,4 +1,5 @@
 import type { NextRequest, NextResponse } from "next/server";
+import { VISITOR_I18N_ENABLED } from "@/config/visitor-i18n-gate";
 import { VISITOR_SHELL_ALT_LOCALES } from "@/i18n/visitor-shell";
 import { countryPrefsFromCode } from "@/lib/country-currency-locale";
 
@@ -113,6 +114,16 @@ export function resolveVisitorState(
   const prefs = countryPrefsFromCode(country);
   const currency = prefs.currency.toUpperCase().slice(0, 3);
 
+  if (!VISITOR_I18N_ENABLED) {
+    return {
+      country,
+      currency,
+      locale: "en",
+      altLocale: "en",
+      showLangBar: false,
+    };
+  }
+
   const rawLoc =
     manual && cookieValue(CES_LOC) ? cookieValue(CES_LOC)! : prefs.locale;
 
@@ -172,5 +183,7 @@ export function persistVisitorCookies(
   if (request.cookies.get(CES_MANUAL)?.value === "1") return;
   response.cookies.set(CES_CC, prefs.country, COOKIE_BASE);
   response.cookies.set(CES_CUR, prefs.currency, COOKIE_BASE);
-  response.cookies.set(CES_LOC, prefs.locale, COOKIE_BASE);
+  if (VISITOR_I18N_ENABLED) {
+    response.cookies.set(CES_LOC, prefs.locale, COOKIE_BASE);
+  }
 }

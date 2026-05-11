@@ -36,4 +36,6 @@ export const ENV_APP = {
   CMS_AUTH_SECRET: "CMS_AUTH_SECRET",
   TURNSTILE_SITE_KEY: "TURNSTILE_SITE_KEY",
   TURNSTILE_SECRET_KEY: "TURNSTILE_SECRET_KEY",
+  /** Set to `1` to re-enable visitor language bar + `/api/visitor-prefs` (default: off). */
+  CES_VISITOR_I18N: "NEXT_PUBLIC_CES_VISITOR_I18N",
 } as const;
