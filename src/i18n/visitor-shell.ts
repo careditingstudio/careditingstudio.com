@@ -31,6 +31,58 @@ export type VisitorShellMessages = {
     english: string;
   };
   nativeLanguageName: string;
+  cta: {
+    orderNow: string;
+  };
+  layout: {
+    locateUsEyebrow: string;
+    locateUsHeading: string;
+    mapNotSet: string;
+  };
+  pages: {
+    contactTitle: string;
+    contactSubtitle: string;
+    contactScheduleEyebrow: string;
+    contactScheduleTitle: string;
+    contactScheduleBody: string;
+    contactOpenScheduler: string;
+    orderTitle: string;
+    orderSubtitle: string;
+    freeTrialTitle: string;
+    freeTrialSubtitle: string;
+  };
+  forms: {
+    contactEyebrow: string;
+    contactHeading: string;
+    sendMessage: string;
+    sending: string;
+    fullName: string;
+    email: string;
+    whatsapp: string;
+    message: string;
+    phName: string;
+    phEmail: string;
+    phWhatsapp: string;
+    phMessage: string;
+    messageReceived: string;
+    messageReceivedThanks: string;
+    couldNotSend: string;
+    country: string;
+    selectCountry: string;
+    countryOther: string;
+    orderStepService: string;
+    orderStepDetails: string;
+    orderStepDate: string;
+    orderStepMessage: string;
+    next: string;
+    back: string;
+    deadline: string;
+    googleDriveLink: string;
+    phDrive: string;
+    submitOrder: string;
+    submittingOrder: string;
+    trialRequest: string;
+  };
 };
 
 const EN: VisitorShellMessages = {
@@ -75,6 +127,59 @@ const EN: VisitorShellMessages = {
     english: "English",
   },
   nativeLanguageName: "English",
+  cta: {
+    orderNow: "Order now",
+  },
+  layout: {
+    locateUsEyebrow: "Locate us",
+    locateUsHeading: "Our offices",
+    mapNotSet: "Map not set",
+  },
+  pages: {
+    contactTitle: "Contact us",
+    contactSubtitle: "Reach out to us if you have any problems and questions.",
+    contactScheduleEyebrow: "Schedule a meeting",
+    contactScheduleTitle: "Book a 1-on-1 with our team",
+    contactScheduleBody:
+      "Pick a date and time. We'll review your photos and build a plan with you.",
+    contactOpenScheduler: "Open scheduler",
+    orderTitle: "Place your order",
+    orderSubtitle: "Select a service and send your details.",
+    freeTrialTitle: "Start your free trial",
+    freeTrialSubtitle: "Send your details and sample images.",
+  },
+  forms: {
+    contactEyebrow: "Contact",
+    contactHeading: "Send a message",
+    sendMessage: "Send message",
+    sending: "Sending…",
+    fullName: "Full name",
+    email: "Email",
+    whatsapp: "WhatsApp",
+    message: "Message",
+    phName: "Your name",
+    phEmail: "you@example.com",
+    phWhatsapp: "+1 234 567 8900",
+    phMessage: "Write your message…",
+    messageReceived: "Message received.",
+    messageReceivedThanks: "Thanks! We'll get back to you shortly.",
+    couldNotSend: "Couldn't send",
+    country: "Country",
+    selectCountry: "Select your country",
+    countryOther: "Other",
+    orderStepService: "Service",
+    orderStepDetails: "Details",
+    orderStepDate: "Date",
+    orderStepMessage: "Message",
+    next: "Next",
+    back: "Back",
+    deadline: "Deadline",
+    googleDriveLink: "Google Drive link",
+    phDrive: "https://drive.google.com/...",
+    submitOrder: "Proceed with order",
+    submittingOrder: "Submitting…",
+    trialRequest: "Request free trial",
+  },
 };
 
 const BN: Partial<VisitorShellMessages> = {
@@ -507,6 +612,10 @@ const NL: Partial<VisitorShellMessages> = {
     "/contact": "Contact",
     "/free-trial": "Gratis proef",
   },
+  header: {
+    servicesMenuTitle: "Diensten",
+    viewAllServices: "Alle diensten bekijken",
+  },
   footer: {
     tagline:
       "Automotive fotobewerking voor dealers, marktplaatsen en makers.",
@@ -532,6 +641,59 @@ const NL: Partial<VisitorShellMessages> = {
   },
   languageBar: { hint: "Taal", english: "Engels" },
   nativeLanguageName: "Nederlands",
+  cta: {
+    orderNow: "Bestellen",
+  },
+  layout: {
+    locateUsEyebrow: "Vind ons",
+    locateUsHeading: "Onze kantoren",
+    mapNotSet: "Kaart niet ingesteld",
+  },
+  pages: {
+    contactTitle: "Contact",
+    contactSubtitle: "Neem contact op bij vragen of problemen.",
+    contactScheduleEyebrow: "Afspraak plannen",
+    contactScheduleTitle: "Plan een 1-op-1 met ons team",
+    contactScheduleBody:
+      "Kies datum en tijd. We bekijken je foto's en maken samen een plan.",
+    contactOpenScheduler: "Planner openen",
+    orderTitle: "Je bestelling plaatsen",
+    orderSubtitle: "Kies een dienst en stuur je gegevens.",
+    freeTrialTitle: "Start je gratis proefperiode",
+    freeTrialSubtitle: "Stuur je gegevens en voorbeeldfoto's.",
+  },
+  forms: {
+    contactEyebrow: "Contact",
+    contactHeading: "Stuur een bericht",
+    sendMessage: "Bericht versturen",
+    sending: "Verzenden…",
+    fullName: "Volledige naam",
+    email: "E-mail",
+    whatsapp: "WhatsApp",
+    message: "Bericht",
+    phName: "Je naam",
+    phEmail: "jij@voorbeeld.nl",
+    phWhatsapp: "+31 6 12345678",
+    phMessage: "Schrijf je bericht…",
+    messageReceived: "Bericht ontvangen.",
+    messageReceivedThanks: "Bedankt! We reageren zo snel mogelijk.",
+    couldNotSend: "Verzenden mislukt",
+    country: "Land",
+    selectCountry: "Selecteer je land",
+    countryOther: "Overig",
+    orderStepService: "Dienst",
+    orderStepDetails: "Gegevens",
+    orderStepDate: "Datum",
+    orderStepMessage: "Bericht",
+    next: "Volgende",
+    back: "Terug",
+    deadline: "Uiterste datum",
+    googleDriveLink: "Google Drive-link",
+    phDrive: "https://drive.google.com/...",
+    submitOrder: "Bestelling afronden",
+    submittingOrder: "Verzenden…",
+    trialRequest: "Gratis proef aanvragen",
+  },
 };
 
 const PL: Partial<VisitorShellMessages> = {
@@ -543,6 +705,10 @@ const PL: Partial<VisitorShellMessages> = {
     "/pricing": "Cennik",
     "/contact": "Kontakt",
     "/free-trial": "Darmowy trial",
+  },
+  header: {
+    servicesMenuTitle: "Usługi",
+    viewAllServices: "Zobacz wszystkie usługi",
   },
   footer: {
     tagline:
@@ -581,6 +747,10 @@ const TR: Partial<VisitorShellMessages> = {
     "/contact": "İletişim",
     "/free-trial": "Ücretsiz deneme",
   },
+  header: {
+    servicesMenuTitle: "Hizmetler",
+    viewAllServices: "Tüm hizmetleri görüntüle",
+  },
   footer: {
     tagline:
       "Bayiler, pazar yerleri ve içerik üreticileri için otomotiv fotoğraf düzenleme.",
@@ -617,6 +787,10 @@ const RU: Partial<VisitorShellMessages> = {
     "/pricing": "Цены",
     "/contact": "Контакты",
     "/free-trial": "Бесплатный пробный",
+  },
+  header: {
+    servicesMenuTitle: "Услуги",
+    viewAllServices: "Все услуги",
   },
   footer: {
     tagline:
@@ -655,6 +829,10 @@ const VI: Partial<VisitorShellMessages> = {
     "/contact": "Liên hệ",
     "/free-trial": "Dùng thử miễn phí",
   },
+  header: {
+    servicesMenuTitle: "Dịch vụ",
+    viewAllServices: "Xem tất cả dịch vụ",
+  },
   footer: {
     tagline:
       "Chỉnh sửa ảnh xe cho đại lý, sàn TMĐT và nhà sáng tạo nội dung.",
@@ -692,6 +870,10 @@ const TH: Partial<VisitorShellMessages> = {
     "/contact": "ติดต่อ",
     "/free-trial": "ทดลองใช้ฟรี",
   },
+  header: {
+    servicesMenuTitle: "บริการ",
+    viewAllServices: "ดูบริการทั้งหมด",
+  },
   footer: {
     tagline: "บริการแต่งภาพรถยนต์สำหรับดีลเลอร์ แมร์เก็ตเพลส และครีเอเตอร์",
     freeTrial: "ทดลองใช้ฟรี",
@@ -726,6 +908,10 @@ const ID: Partial<VisitorShellMessages> = {
     "/pricing": "Harga",
     "/contact": "Kontak",
     "/free-trial": "Uji coba gratis",
+  },
+  header: {
+    servicesMenuTitle: "Layanan",
+    viewAllServices: "Lihat semua layanan",
   },
   footer: {
     tagline:
@@ -775,6 +961,15 @@ const OVERRIDES: Record<string, Partial<VisitorShellMessages>> = {
   id: ID,
 };
 
+/** Locales with visitor-shell copy (nav/footer/pricing). Used to match `Accept-Language`. */
+export const VISITOR_SHELL_ALT_LOCALES: ReadonlySet<string> = new Set(Object.keys(OVERRIDES));
+
+/** All UI language codes for the public language picker: English first, then A–Z by code. */
+export const VISITOR_SHELL_UI_LOCALES: readonly string[] = [
+  "en",
+  ...Array.from(VISITOR_SHELL_ALT_LOCALES).sort(),
+];
+
 function mergeShell(loc: string): VisitorShellMessages {
   const o = OVERRIDES[loc] ?? {};
   return {
@@ -784,6 +979,10 @@ function mergeShell(loc: string): VisitorShellMessages {
     pricing: { ...EN.pricing, ...o.pricing },
     languageBar: { ...EN.languageBar, ...o.languageBar },
     nativeLanguageName: o.nativeLanguageName ?? EN.nativeLanguageName,
+    cta: { ...EN.cta, ...o.cta },
+    layout: { ...EN.layout, ...o.layout },
+    pages: { ...EN.pages, ...o.pages },
+    forms: { ...EN.forms, ...o.forms },
   };
 }
 

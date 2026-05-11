@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { TRIAL_COUNTRY_OPTIONS, trialCountryLabelFromCode } from "@/config/countries";
+import {
+  countryLabelFromCode,
+  countrySelectOptionsForm,
+} from "@/lib/country-select-options";
+import type { VisitorShellMessages } from "@/i18n/visitor-shell";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
 import { Field, Input, PrimaryButton, Select, Textarea } from "@/components/forms/FormFields";
 import { TurnstileWidget } from "@/components/forms/TurnstileWidget";
 import { Calendar } from "@/components/ui/calendar";
@@ -25,19 +30,14 @@ function validWhatsapp(s: string): boolean {
   return digits.length >= 7;
 }
 
-function formatDate(d: Date): string {
-  return d.toLocaleDateString(undefined, {
+function formatDate(d: Date, locale?: string): string {
+  return d.toLocaleDateString(locale || undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 }
-
-const COUNTRY_SELECT: { code: string; name: string }[] = [
-  { code: "", name: "Select your country" },
-  ...TRIAL_COUNTRY_OPTIONS,
-];
 
 const DEFAULT_SERVICE_OPTIONS = [
   "Car photo editing",
@@ -54,11 +54,30 @@ type StepId = 0 | 1 | 2 | 3;
 export function OrderForm({
   turnstileSiteKey,
   serviceOptions = DEFAULT_SERVICE_OPTIONS,
+  uiLocale = "en",
+  forms: formsProp,
 }: {
   turnstileSiteKey: string;
   serviceOptions?: string[];
+  uiLocale?: string;
+  forms?: VisitorShellMessages["forms"];
 }) {
   const router = useRouter();
+  const f = formsProp ?? getVisitorShellMessages("en").forms;
+  const countryOptions = useMemo(
+    () => countrySelectOptionsForm(uiLocale, f.selectCountry, f.countryOther),
+    [uiLocale, f.selectCountry, f.countryOther],
+  );
+  const stepLabels = useMemo(
+    () =>
+      [f.orderStepService, f.orderStepDetails, f.orderStepDate, f.orderStepMessage] as [
+        string,
+        string,
+        string,
+        string,
+      ],
+    [f],
+  );
   const [step, setStep] = useState<StepId>(0);
   const [dateOpen, setDateOpen] = useState(false);
 
@@ -173,7 +192,7 @@ export function OrderForm({
 
     setSubmitting(true);
     try {
-      const countryLabel = trialCountryLabelFromCode(country);
+      const countryLabel = countryLabelFromCode(country, uiLocale, f.countryOther);
       const r = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -212,7 +231,7 @@ export function OrderForm({
     }
   }
 
-  const stepLabels = ["Service", "Details", "Date", "Message"] as const;
+  const stepCount = stepLabels.length;
 
   if (successId) {
     return (
@@ -232,7 +251,7 @@ export function OrderForm({
       <div className="overflow-hidden rounded-3xl border border-[var(--line-strong)] bg-[color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_18px_50px_-25px_rgba(0,0,0,0.55)]">
         {serverError ? (
           <div className="m-5 rounded-xl border border-red-200/50 bg-red-50/60 p-4 text-red-900 sm:m-6">
-            <p className="text-sm font-semibold">Couldn’t submit</p>
+            <p className="text-sm font-semibold">{f.couldNotSend}</p>
             <p className="mt-1 text-sm opacity-90">{serverError}</p>
           </div>
         ) : null}
@@ -243,7 +262,7 @@ export function OrderForm({
               <div className="absolute left-5 right-5 top-4 sm:top-5 h-px bg-[var(--line)]" aria-hidden />
               <div
                 className="absolute left-5 top-4 sm:top-5 h-px bg-[var(--accent)] transition-[width] duration-300"
-                style={{ width: `calc((100% - 2.5rem) * ${step / (stepLabels.length - 1)})` }}
+                style={{ width: `calc((100% - 2.5rem) * ${step / (stepCount - 1)})` }}
                 aria-hidden
               />
               {stepLabels.map((label, idx) => {
@@ -253,7 +272,7 @@ export function OrderForm({
                 const reachable = i <= step;
                 return (
                   <button
-                    key={label}
+                    key={idx}
                     type="button"
                     onClick={() => {
                       if (submitting) return;
@@ -294,7 +313,7 @@ export function OrderForm({
 
           {step === 0 ? (
             <div className="grid gap-3">
-              <Field label="Service" error={errors.services}>
+              <Field label={f.orderStepService} error={errors.services}>
                 {() => (
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {serviceOptions.map((service) => {
@@ -326,23 +345,23 @@ export function OrderForm({
 
           {step === 1 ? (
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Full name" error={errors.fullName}>
+              <Field label={f.fullName} error={errors.fullName}>
                 {(id, describedBy) => (
                   <Input
                     id={id}
                     describedBy={describedBy}
                     value={fullName}
                     onChange={setFullName}
-                    placeholder="Your name"
+                    placeholder={f.phName}
                     autoComplete="name"
                   />
                 )}
               </Field>
 
-              <Field label="Country" error={errors.country}>
+              <Field label={f.country} error={errors.country}>
                 {(id, describedBy) => (
                   <Select id={id} describedBy={describedBy} value={country} onChange={setCountry}>
-                    {COUNTRY_SELECT.map((c) => (
+                    {countryOptions.map((c) => (
                       <option key={c.code || "blank"} value={c.code}>
                         {c.name}
                       </option>
@@ -351,28 +370,28 @@ export function OrderForm({
                 )}
               </Field>
 
-              <Field label="Email">
+              <Field label={f.email}>
                 {(id, describedBy) => (
                   <Input
                     id={id}
                     describedBy={describedBy}
                     value={email}
                     onChange={setEmail}
-                    placeholder="you@example.com"
+                    placeholder={f.phEmail}
                     type="email"
                     autoComplete="email"
                   />
                 )}
               </Field>
 
-              <Field label="WhatsApp">
+              <Field label={f.whatsapp}>
                 {(id, describedBy) => (
                   <Input
                     id={id}
                     describedBy={describedBy}
                     value={whatsapp}
                     onChange={setWhatsapp}
-                    placeholder="+1 234 567 8900"
+                    placeholder={f.phWhatsapp}
                     type="tel"
                     autoComplete="tel"
                   />
@@ -384,14 +403,14 @@ export function OrderForm({
               ) : null}
 
               <div className="sm:col-span-2">
-                <Field label="Google Drive link" error={errors.googleDriveLink}>
+                <Field label={f.googleDriveLink} error={errors.googleDriveLink}>
                   {(id, describedBy) => (
                     <Input
                       id={id}
                       describedBy={describedBy}
                       value={googleDriveLink}
                       onChange={setGoogleDriveLink}
-                      placeholder="https://drive.google.com/..."
+                      placeholder={f.phDrive}
                       type="url"
                     />
                   )}
@@ -402,7 +421,7 @@ export function OrderForm({
 
           {step === 2 ? (
             <div className="mx-auto w-full max-w-[560px]">
-              <Field label="Deadline" error={errors.neededBefore}>
+              <Field label={f.deadline} error={errors.neededBefore}>
                 {(id, describedBy) => (
                   <Popover open={dateOpen} onOpenChange={setDateOpen}>
                     <PopoverTrigger asChild>
@@ -418,7 +437,7 @@ export function OrderForm({
                           "outline-none focus:border-[var(--accent)]/40 focus:ring-4 focus:ring-[var(--accent)]/25",
                         ].join(" ")}
                       >
-                        <span>{neededBefore ? formatDate(neededBefore) : "I need it before…"}</span>
+                        <span>{neededBefore ? formatDate(neededBefore, uiLocale) : "I need it before…"}</span>
                         <CalendarIcon className="h-4 w-4 opacity-80" />
                       </button>
                     </PopoverTrigger>
@@ -445,14 +464,14 @@ export function OrderForm({
 
           {step === 3 ? (
             <div className="grid gap-5">
-              <Field label="Message" error={errors.message}>
+              <Field label={f.orderStepMessage} error={errors.message}>
                 {(id, describedBy) => (
                   <Textarea
                     id={id}
                     describedBy={describedBy}
                     value={message}
                     onChange={setMessage}
-                    placeholder="Write your message…"
+                    placeholder={f.phMessage}
                     rows={7}
                   />
                 )}
@@ -487,7 +506,7 @@ export function OrderForm({
                 disabled={step === 0 || submitting}
                 className="rounded-xl border border-[var(--line)] bg-[var(--background)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--line-strong)] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Back
+                {f.back}
               </button>
               {step < 3 ? (
                 <button
@@ -496,7 +515,7 @@ export function OrderForm({
                   disabled={submitting}
                   className="rounded-xl bg-[color-mix(in_oklab,var(--accent)_82%,black_18%)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[color-mix(in_oklab,var(--accent)_90%,black_10%)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Next
+                  {f.next}
                 </button>
               ) : null}
             </div>
@@ -504,7 +523,7 @@ export function OrderForm({
             {step === 3 ? (
               <div className="sm:min-w-[220px]">
                 <PrimaryButton type="submit" disabled={!canSubmit}>
-                  {submitting ? "Submitting…" : "Proceed with order"}
+                  {submitting ? f.submittingOrder : f.submitOrder}
                 </PrimaryButton>
               </div>
             ) : null}

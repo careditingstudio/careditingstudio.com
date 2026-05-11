@@ -18,7 +18,17 @@ function fallbackEmbedSrc(query: string): string {
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
 }
 
-export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
+export function SiteLocationsMapSection({
+  site,
+  layout,
+}: {
+  site: SiteSettings;
+  layout: {
+    locateUsEyebrow: string;
+    locateUsHeading: string;
+    mapNotSet: string;
+  };
+}) {
   const offices = (site.officeLocations ?? []).filter(
     (o) =>
       o.label.trim().length > 0 ||
@@ -32,10 +42,10 @@ export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
       <div className="mx-auto w-full max-w-[88rem] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="mb-6 flex flex-col gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
-            Locate us
+            {layout.locateUsEyebrow}
           </p>
           <h2 className="text-xl font-semibold tracking-tight text-[var(--foreground)]">
-            Our offices
+            {layout.locateUsHeading}
           </h2>
         </div>
 
@@ -68,7 +78,7 @@ export function SiteLocationsMapSection({ site }: { site: SiteSettings }) {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center px-6 text-center text-sm text-zinc-400">
-                      Map not set
+                      {layout.mapNotSet}
                     </div>
                   )}
                 </div>

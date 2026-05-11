@@ -1,5 +1,27 @@
 import type { NextRequest, NextResponse } from "next/server";
+import { VISITOR_SHELL_ALT_LOCALES } from "@/i18n/visitor-shell";
 import { countryPrefsFromCode } from "@/lib/country-currency-locale";
+
+/**
+ * When geo defaults UI to English, offer a second language if the browser lists a
+ * supported locale first (after English entries).
+ */
+function inferAltLocaleFromAcceptLanguage(header: string | null): string | null {
+  if (!header?.trim()) return null;
+  const segments = header.split(",").map((s) => s.trim().split(";")[0]!.trim().toLowerCase());
+  for (const seg of segments) {
+    if (!seg) continue;
+    const primary = seg.split("-")[0] ?? "";
+    if (primary === "en") continue;
+    if (primary === "zh" || seg.startsWith("zh-")) {
+      if (VISITOR_SHELL_ALT_LOCALES.has("zh")) return "zh";
+      continue;
+    }
+    const tag = primary.replace(/[^a-z]/g, "").slice(0, 5);
+    if (tag && VISITOR_SHELL_ALT_LOCALES.has(tag)) return tag;
+  }
+  return null;
+}
 
 export const CES_CC = "ces_cc";
 export const CES_CUR = "ces_cur";
@@ -99,8 +121,11 @@ export function resolveVisitorState(
     .replace(/[^a-z-]/g, "")
     .slice(0, 12);
   const safeLocale = locale || "en";
-  const altLocale = prefs.locale === "en" ? "en" : prefs.locale;
-  const showLangBar = altLocale !== "en";
+  const inferredFromBrowser = inferAltLocaleFromAcceptLanguage(headers.get("accept-language"));
+  const altLocale =
+    prefs.locale !== "en" ? prefs.locale : inferredFromBrowser ?? "en";
+  /** Global audience: always offer English + every translated shell locale. */
+  const showLangBar = true;
 
   return {
     country,

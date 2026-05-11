@@ -116,6 +116,7 @@ type SiteHeaderProps = {
   navLabels?: string[];
   shell?: {
     header: { servicesMenuTitle: string; viewAllServices: string };
+    cta: { orderNow: string };
   };
 };
 
@@ -132,6 +133,7 @@ export function SiteHeader({
       : navItems.map((i) => i.label);
   const megaTitle = shell?.header.servicesMenuTitle ?? "Services";
   const megaViewAll = shell?.header.viewAllServices ?? "View all services";
+  const orderLabel = shell?.cta.orderNow ?? "Order now";
   const pathname = usePathname();
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
@@ -350,7 +352,7 @@ export function SiteHeader({
         </nav>
 
         <div className="hidden shrink-0 items-center lg:flex">
-          <OrderNowLink />
+          <OrderNowLink label={orderLabel} />
         </div>
 
         <button
@@ -470,6 +472,7 @@ export function SiteHeader({
             <OrderNowLink
               className="mt-3 w-full !px-5"
               onNavigate={() => setMenuOpen(false)}
+              label={orderLabel}
             />
           </nav>
         </div>

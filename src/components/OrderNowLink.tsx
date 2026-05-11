@@ -6,9 +6,11 @@ import Link from "next/link";
 type Props = {
   className?: string;
   onNavigate?: () => void;
+  /** Visitor-shell `cta.orderNow` — defaults to English */
+  label?: string;
 };
 
-export function OrderNowLink({ className = "", onNavigate }: Props) {
+export function OrderNowLink({ className = "", onNavigate, label = "Order now" }: Props) {
   return (
     <Link
       href="/order"
@@ -26,7 +28,7 @@ export function OrderNowLink({ className = "", onNavigate }: Props) {
         className,
       ].join(" ")}
     >
-      <span className="relative z-[1]">Order now</span>
+      <span className="relative z-[1]">{label}</span>
       <svg
         viewBox="0 0 20 20"
         fill="none"

@@ -1,5 +1,7 @@
 import { ContactForm } from "@/components/forms/ContactForm";
 import { readCms } from "@/lib/cms-store";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
+import { getPublicVisitorState } from "@/lib/public-visitor";
 import { DEFAULT_OG_IMAGE, absoluteUrl } from "@/lib/seo";
 import { telHref } from "@/lib/tel-href";
 import type { Metadata } from "next";
@@ -28,6 +30,8 @@ export const metadata: Metadata = {
 
 export default async function ContactPage() {
   const cms = await readCms();
+  const visitor = await getPublicVisitorState();
+  const shell = getVisitorShellMessages(visitor.locale);
   const site = cms.site;
   const wa = `https://wa.me/${site.whatsappDial}`;
   const offices = (site.officeLocations ?? []).filter(
@@ -55,10 +59,10 @@ export default async function ContactPage() {
         <div className="mx-auto w-full max-w-[82rem]">
           <div className="mb-8 text-center sm:mb-10">
             <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
-              Contact us
+              {shell.pages.contactTitle}
             </h1>
             <p className="mt-3 text-sm text-[var(--muted)] sm:text-base">
-              Reach out to us if you have any problems and questions.
+              {shell.pages.contactSubtitle}
             </p>
           </div>
           <div className="grid w-full gap-6 md:grid-cols-[0.9fr_1.1fr] md:items-start">
@@ -91,17 +95,16 @@ export default async function ContactPage() {
                   </span>
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                      Schedule a meeting
+                      {shell.pages.contactScheduleEyebrow}
                     </p>
                     <p className="mt-1.5 text-sm font-semibold text-[var(--foreground)]">
-                      Book a 1-on-1 with our team
+                      {shell.pages.contactScheduleTitle}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                      Pick a date and time. We&apos;ll review your photos and
-                      build a plan with you.
+                      {shell.pages.contactScheduleBody}
                     </p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent)] transition group-hover:gap-2.5">
-                      Open scheduler
+                      {shell.pages.contactOpenScheduler}
                       <svg
                         viewBox="0 0 20 20"
                         fill="none"
@@ -186,6 +189,7 @@ export default async function ContactPage() {
               <ContactForm
                 hideHeading
                 className="mt-0"
+                forms={shell.forms}
               />
             </div>
           </div>

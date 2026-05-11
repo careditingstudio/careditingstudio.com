@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { TRIAL_COUNTRY_OPTIONS, trialCountryLabelFromCode } from "@/config/countries";
+import {
+  countryLabelFromCode,
+  countrySelectOptionsForm,
+} from "@/lib/country-select-options";
+import type { VisitorShellMessages } from "@/i18n/visitor-shell";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
 import { Field, Input, PrimaryButton, Select, Textarea } from "@/components/forms/FormFields";
 import { TurnstileWidget } from "@/components/forms/TurnstileWidget";
 
@@ -21,11 +26,6 @@ function validWhatsapp(s: string): boolean {
   return digits.length >= 7;
 }
 
-const COUNTRY_SELECT: { code: string; name: string }[] = [
-  { code: "", name: "Select your country" },
-  ...TRIAL_COUNTRY_OPTIONS,
-];
-
 const DEFAULT_SERVICE_OPTIONS = [
   "Background removal",
   "Shadow creation",
@@ -38,10 +38,19 @@ const DEFAULT_SERVICE_OPTIONS = [
 export function FreeTrialForm({
   turnstileSiteKey,
   serviceOptions = DEFAULT_SERVICE_OPTIONS,
+  uiLocale = "en",
+  forms: formsProp,
 }: {
   turnstileSiteKey: string;
   serviceOptions?: string[];
+  uiLocale?: string;
+  forms?: VisitorShellMessages["forms"];
 }) {
+  const f = formsProp ?? getVisitorShellMessages("en").forms;
+  const countryOptions = useMemo(
+    () => countrySelectOptionsForm(uiLocale, f.selectCountry, f.countryOther),
+    [uiLocale, f.selectCountry, f.countryOther],
+  );
   const MAX_FILES = 8;
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
   const ALLOWED_FILE_TYPES = new Set([
@@ -120,7 +129,7 @@ export function FreeTrialForm({
     setErrors(nextErr);
     if (Object.keys(nextErr).length) return;
 
-    const countryLabel = trialCountryLabelFromCode(country);
+    const countryLabel = countryLabelFromCode(country, uiLocale, f.countryOther);
 
     setSubmitting(true);
     try {
@@ -230,23 +239,23 @@ export function FreeTrialForm({
 
         <form onSubmit={onSubmit} className="grid gap-7 p-5 sm:p-7 md:p-8">
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Full name" error={errors.fullName}>
+            <Field label={f.fullName} error={errors.fullName}>
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
                   value={fullName}
                   onChange={setFullName}
-                  placeholder="Your name"
+                  placeholder={f.phName}
                   autoComplete="name"
                 />
               )}
             </Field>
 
-            <Field label="Country" error={errors.country}>
+            <Field label={f.country} error={errors.country}>
               {(id, describedBy) => (
                 <Select id={id} describedBy={describedBy} value={country} onChange={setCountry}>
-                  {COUNTRY_SELECT.map((c) => (
+                  {countryOptions.map((c) => (
                     <option key={c.code || "blank"} value={c.code}>
                       {c.name}
                     </option>
@@ -255,27 +264,27 @@ export function FreeTrialForm({
               )}
             </Field>
 
-            <Field label="Email">
+            <Field label={f.email}>
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
                   value={email}
                   onChange={setEmail}
-                  placeholder="you@example.com"
+                  placeholder={f.phEmail}
                   type="email"
                   autoComplete="email"
                 />
               )}
             </Field>
-            <Field label="WhatsApp">
+            <Field label={f.whatsapp}>
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
                   value={whatsapp}
                   onChange={setWhatsapp}
-                  placeholder="+1 234 567 8900"
+                  placeholder={f.phWhatsapp}
                   type="tel"
                   autoComplete="tel"
                 />
@@ -378,14 +387,14 @@ export function FreeTrialForm({
             </div>
 
             <div className="sm:col-span-2">
-              <Field label="Message" error={errors.message}>
+              <Field label={f.message} error={errors.message}>
                 {(id, describedBy) => (
                   <Textarea
                     id={id}
                     describedBy={describedBy}
                     value={message}
                     onChange={setMessage}
-                    placeholder="Write your message…"
+                    placeholder={f.phMessage}
                     rows={6}
                   />
                 )}
@@ -416,7 +425,7 @@ export function FreeTrialForm({
             <p className="text-xs text-[var(--muted-2)]">Fast response after submission.</p>
             <div className="sm:min-w-[220px]">
               <PrimaryButton type="submit" disabled={!canSubmit}>
-                {submitting ? "Submitting…" : "Request free trial"}
+                {submitting ? f.submittingOrder : f.trialRequest}
               </PrimaryButton>
             </div>
           </div>

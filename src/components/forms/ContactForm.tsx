@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { Field, Input, PrimaryButton, Textarea } from "@/components/forms/FormFields";
+import type { VisitorShellMessages } from "@/i18n/visitor-shell";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
+
+const DEFAULT_FORMS = getVisitorShellMessages("en").forms;
 
 function validEmail(s: string): boolean {
   const t = s.trim();
@@ -23,12 +27,14 @@ type Props = {
   variant?: "full" | "compact";
   hideHeading?: boolean;
   className?: string;
+  forms?: VisitorShellMessages["forms"];
 };
 
 export function ContactForm({
   variant = "full",
   hideHeading = false,
   className = "mt-10",
+  forms = DEFAULT_FORMS,
 }: Props) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -103,10 +109,10 @@ export function ContactForm({
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
-                Contact
+                {forms.contactEyebrow}
               </p>
               <h2 className="mt-2 text-xl font-semibold tracking-tight text-[var(--foreground)]">
-                Send a message
+                {forms.contactHeading}
               </h2>
             </div>
           </div>
@@ -114,16 +120,16 @@ export function ContactForm({
 
         {successId ? (
           <div className={`${hideHeading ? "" : "mt-6"} rounded-xl border border-emerald-200/40 bg-emerald-50/60 p-4 text-emerald-900`}>
-            <p className="text-sm font-semibold">Message received.</p>
+            <p className="text-sm font-semibold">{forms.messageReceived}</p>
             <p className="mt-1 text-sm opacity-90">
-              Thanks! We’ll get back to you shortly.
+              {forms.messageReceivedThanks}
             </p>
           </div>
         ) : null}
 
         {serverError ? (
           <div className={`${hideHeading ? "" : "mt-6"} rounded-xl border border-red-200/50 bg-red-50/60 p-4 text-red-900`}>
-            <p className="text-sm font-semibold">Couldn’t send</p>
+            <p className="text-sm font-semibold">{forms.couldNotSend}</p>
             <p className="mt-1 text-sm opacity-90">{serverError}</p>
           </div>
         ) : null}
@@ -133,39 +139,39 @@ export function ContactForm({
           className={`${hideHeading && !successId && !serverError ? "" : "mt-8"} grid gap-6`}
         >
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Full name" error={errors.fullName}>
+            <Field label={forms.fullName} error={errors.fullName}>
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
                   value={fullName}
                   onChange={setFullName}
-                  placeholder="Your name"
+                  placeholder={forms.phName}
                   autoComplete="name"
                 />
               )}
             </Field>
-            <Field label="Email">
+            <Field label={forms.email}>
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
                   value={email}
                   onChange={setEmail}
-                  placeholder="you@example.com"
+                  placeholder={forms.phEmail}
                   type="email"
                   autoComplete="email"
                 />
               )}
             </Field>
-            <Field label="WhatsApp">
+            <Field label={forms.whatsapp}>
               {(id, describedBy) => (
                 <Input
                   id={id}
                   describedBy={describedBy}
                   value={whatsapp}
                   onChange={setWhatsapp}
-                  placeholder="+1 234 567 8900"
+                  placeholder={forms.phWhatsapp}
                   type="tel"
                   autoComplete="tel"
                 />
@@ -177,7 +183,7 @@ export function ContactForm({
           </div>
 
           <Field
-            label="Message"
+            label={forms.message}
             error={errors.message}
           >
             {(id, describedBy) => (
@@ -186,7 +192,7 @@ export function ContactForm({
                 describedBy={describedBy}
                 value={message}
                 onChange={setMessage}
-                placeholder="Write your message…"
+                placeholder={forms.phMessage}
                 rows={variant === "compact" ? 6 : 7}
               />
             )}
@@ -195,7 +201,7 @@ export function ContactForm({
           <div className="grid gap-3 sm:grid-cols-[1fr,auto] sm:items-center">
             <div className="sm:min-w-[220px] sm:justify-self-end">
               <PrimaryButton type="submit" disabled={!canSubmit}>
-                {submitting ? "Sending…" : "Send message"}
+                {submitting ? forms.sending : forms.sendMessage}
               </PrimaryButton>
             </div>
           </div>

@@ -23,10 +23,10 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
         servicePages={cms.servicePages}
         navLabels={navLabels}
         shell={shell}
-        reserveLanguageBarSpace={visitor.showLanguageBar}
+        reserveLanguageBarSpace
       >
         {children}
-        <SiteLocationsMapSection site={cms.site} />
+        <SiteLocationsMapSection site={cms.site} layout={shell.layout} />
         <SiteFooter
           site={cms.site}
           services={cms.services}
@@ -34,11 +34,7 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
           shell={shell}
         />
       </SiteTopChrome>
-      <VisitorLanguageBar
-        show={visitor.showLanguageBar}
-        locale={visitor.locale}
-        altLocale={visitor.altLocale}
-      />
+      <VisitorLanguageBar locale={visitor.locale} />
     </>
   );
 }

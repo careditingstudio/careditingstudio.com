@@ -1,6 +1,8 @@
 import { FreeTrialForm } from "@/components/forms/FreeTrialForm";
 import { ENV_APP } from "@/config/deployment-env";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
 import { readCms } from "@/lib/cms-store";
+import { getPublicVisitorState } from "@/lib/public-visitor";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import type { Metadata } from "next";
 
@@ -27,6 +29,8 @@ export const metadata: Metadata = {
 
 export default async function FreeTrialPage() {
   const cms = await readCms();
+  const visitor = await getPublicVisitorState();
+  const shell = getVisitorShellMessages(visitor.locale);
   const siteKey = process.env[ENV_APP.TURNSTILE_SITE_KEY]?.trim() ?? "";
   const serviceOptions = Array.from(
     new Set(cms.services.map((s) => s.name.trim()).filter((s) => s.length > 0)),
@@ -36,13 +40,18 @@ export default async function FreeTrialPage() {
       <div className="mx-auto w-full max-w-[82rem]">
         <div className="mb-8 text-center sm:mb-10">
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
-            Start your free trial
+            {shell.pages.freeTrialTitle}
           </h1>
           <p className="mt-3 text-sm text-[var(--muted)] sm:text-base">
-            Send your details and sample images.
+            {shell.pages.freeTrialSubtitle}
           </p>
         </div>
-        <FreeTrialForm turnstileSiteKey={siteKey} serviceOptions={serviceOptions} />
+        <FreeTrialForm
+          turnstileSiteKey={siteKey}
+          serviceOptions={serviceOptions}
+          uiLocale={visitor.locale}
+          forms={shell.forms}
+        />
       </div>
     </div>
   );
