@@ -45,22 +45,70 @@ function countryFromAcceptLanguage(header: string | null): string | null {
   return null;
 }
 
-export function inferCountryCode(request: NextRequest): string {
+/**
+ * Infer ISO2 country from CDN/geo headers and Accept-Language.
+ * Used by middleware and by Server Components — do not rely only on `x-ces-*`
+ * (those are not always visible to `headers()` in the App Router on Vercel).
+ */
+export function inferCountryFromHeaders(headers: Headers): string {
   const fromEnv = countryFromEnvOverride();
   if (fromEnv) return fromEnv;
 
   const fromCdn =
-    request.headers.get("x-vercel-ip-country")?.trim() ||
-    request.headers.get("cf-ipcountry")?.trim() ||
+    headers.get("x-vercel-ip-country")?.trim() ||
+    headers.get("cf-ipcountry")?.trim() ||
+    headers.get(H_CC)?.trim() ||
     "";
   if (fromCdn && fromCdn !== "XX" && fromCdn.length === 2) {
     return fromCdn.toUpperCase().slice(0, 2);
   }
 
-  const fromLang = countryFromAcceptLanguage(request.headers.get("accept-language"));
+  const fromLang = countryFromAcceptLanguage(headers.get("accept-language"));
   if (fromLang) return fromLang;
 
   return "US";
+}
+
+export function inferCountryCode(request: NextRequest): string {
+  return inferCountryFromHeaders(request.headers);
+}
+
+export type ResolvedVisitorState = {
+  country: string;
+  currency: string;
+  locale: string;
+  altLocale: string;
+  showLangBar: boolean;
+};
+
+/** Single source of truth for visitor prefs (geo + optional manual UI language). */
+export function resolveVisitorState(
+  headers: Headers,
+  cookieValue: (name: string) => string | undefined,
+): ResolvedVisitorState {
+  const manual = cookieValue(CES_MANUAL) === "1";
+  const country = inferCountryFromHeaders(headers).toUpperCase().slice(0, 2);
+  const prefs = countryPrefsFromCode(country);
+  const currency = prefs.currency.toUpperCase().slice(0, 3);
+
+  const rawLoc =
+    manual && cookieValue(CES_LOC) ? cookieValue(CES_LOC)! : prefs.locale;
+
+  const locale = rawLoc
+    .toLowerCase()
+    .replace(/[^a-z-]/g, "")
+    .slice(0, 12);
+  const safeLocale = locale || "en";
+  const altLocale = prefs.locale === "en" ? "en" : prefs.locale;
+  const showLangBar = altLocale !== "en";
+
+  return {
+    country,
+    currency,
+    locale: safeLocale,
+    altLocale,
+    showLangBar,
+  };
 }
 
 export function applyVisitorRequestHeaders(request: NextRequest): {
@@ -71,40 +119,22 @@ export function applyVisitorRequestHeaders(request: NextRequest): {
   showLangBar: boolean;
   headers: Headers;
 } {
-  const manual = request.cookies.get(CES_MANUAL)?.value === "1";
-  const geoCountry = inferCountryCode(request);
-  /** Always use inferred geo for pricing/currency so it updates when you travel; `ces_manual` only pins UI language. */
-  const country = geoCountry.toUpperCase().slice(0, 2);
-
-  const prefs = countryPrefsFromCode(country);
-  const currency = prefs.currency.toUpperCase().slice(0, 3);
-
-  const rawLoc = manual && request.cookies.get(CES_LOC)?.value?.trim()
-    ? request.cookies.get(CES_LOC)!.value.trim()
-    : prefs.locale;
-
-  const locale = rawLoc
-    .toLowerCase()
-    .replace(/[^a-z-]/g, "")
-    .slice(0, 12);
-
-  const safeLocale = locale || "en";
-  const altLocale = prefs.locale === "en" ? "en" : prefs.locale;
-  const showLangBar = altLocale !== "en";
-
+  const v = resolveVisitorState(request.headers, (n) =>
+    request.cookies.get(n)?.value?.trim(),
+  );
   const headers = new Headers(request.headers);
-  headers.set(H_CC, country);
-  headers.set(H_CUR, currency);
-  headers.set(H_LOC, safeLocale);
-  headers.set(H_ALT, altLocale);
-  headers.set(H_SHOW_BAR, showLangBar ? "1" : "0");
+  headers.set(H_CC, v.country);
+  headers.set(H_CUR, v.currency);
+  headers.set(H_LOC, v.locale);
+  headers.set(H_ALT, v.altLocale);
+  headers.set(H_SHOW_BAR, v.showLangBar ? "1" : "0");
 
   return {
-    country,
-    currency,
-    locale: safeLocale,
-    altLocale,
-    showLangBar,
+    country: v.country,
+    currency: v.currency,
+    locale: v.locale,
+    altLocale: v.altLocale,
+    showLangBar: v.showLangBar,
     headers,
   };
 }

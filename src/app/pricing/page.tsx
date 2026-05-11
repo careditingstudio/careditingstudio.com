@@ -10,6 +10,9 @@ import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import type { Metadata } from "next";
 import Image from "next/image";
 
+/** Per-request geo + rates; avoid static HTML snapshot with USD only. */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Pricing",
   description: "Simple and transparent pricing for automotive photo editing.",

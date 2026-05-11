@@ -4,79 +4,6 @@ type Props = {
   whatsappDisplay: string;
 };
 
-const HIGHLIGHTS: { title: string; body: string; icon: "video" | "sparkle" | "clock" }[] = [
-  {
-    title: "Free 15–30 min discovery call",
-    body: "Walk us through your photos, brand, and goals — we'll suggest the smartest editing path.",
-    icon: "video",
-  },
-  {
-    title: "Pricing & turnaround clarity",
-    body: "Get a transparent quote and timeline tailored to your batch size and complexity.",
-    icon: "clock",
-  },
-  {
-    title: "Style alignment, no surprises",
-    body: "Share references and get a same-day style plan so the first delivery hits the mark.",
-    icon: "sparkle",
-  },
-];
-
-function Icon({ name }: { name: "video" | "sparkle" | "clock" }) {
-  if (name === "video") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        width="22"
-        height="22"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <rect x="2" y="6" width="14" height="12" rx="2.5" />
-        <path d="m16 10 6-3v10l-6-3z" />
-      </svg>
-    );
-  }
-  if (name === "clock") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        width="22"
-        height="22"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </svg>
-    );
-  }
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="22"
-      height="22"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3z" />
-      <path d="M19 14l.9 2.1 2.1.9-2.1.9L19 20l-.9-2.1-2.1-.9 2.1-.9z" />
-    </svg>
-  );
-}
-
 export function ScheduleMeetingHero({ email, whatsappDial, whatsappDisplay }: Props) {
   const waHref = whatsappDial ? `https://wa.me/${whatsappDial}` : "";
 
@@ -84,24 +11,17 @@ export function ScheduleMeetingHero({ email, whatsappDial, whatsappDisplay }: Pr
     <section className="mx-auto w-full max-w-[82rem]">
       <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--line-strong)] bg-[color-mix(in_oklab,var(--background)_88%,white_12%)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            </span>
-            Booking open this week
+          <span className="inline-flex items-center rounded-full border border-[var(--line-strong)] bg-[color-mix(in_oklab,var(--background)_88%,white_12%)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            Schedule
           </span>
-          <h1 className="mt-5 text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-[var(--foreground)] sm:text-5xl lg:text-[3.5rem]">
-            Schedule a meeting with the
-            <span className="ml-2 bg-gradient-to-r from-[var(--accent)] via-[#f0a47a] to-[#ec8f62] bg-clip-text text-transparent">
+          <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight tracking-tight text-[var(--foreground)] sm:text-4xl lg:text-[2.75rem]">
+            Book a call with{" "}
+            <span className="bg-gradient-to-r from-[var(--accent)] via-[#f0a47a] to-[#ec8f62] bg-clip-text text-transparent">
               Car Editing Studio
-            </span>{" "}
-            team.
+            </span>
           </h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
-            Pick a date and time that works for you. We&apos;ll review your photos,
-            align on style and turnaround, and turn your ideas into a clear plan
-            you can move forward with — no commitment required.
+          <p className="mt-4 max-w-md text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+            Choose a slot below — we&apos;ll confirm by email or WhatsApp.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -139,29 +59,6 @@ export function ScheduleMeetingHero({ email, whatsappDial, whatsappDisplay }: Pr
               </a>
             ) : null}
           </div>
-
-          <ul className="mt-10 grid gap-3 sm:grid-cols-2">
-            {HIGHLIGHTS.map((h) => (
-              <li
-                key={h.title}
-                className="group relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[color-mix(in_oklab,var(--background)_92%,white_8%)] p-4 backdrop-blur-sm transition hover:border-[var(--accent)]/35"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent)]/12 text-[var(--accent)] ring-1 ring-[var(--accent)]/25">
-                    <Icon name={h.icon} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--foreground)]">
-                      {h.title}
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                      {h.body}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <aside className="relative">
@@ -170,25 +67,22 @@ export function ScheduleMeetingHero({ email, whatsappDial, whatsappDisplay }: Pr
             <div className="pointer-events-none absolute -bottom-16 -left-16 h-44 w-44 rounded-full bg-white/[0.04] blur-3xl" aria-hidden />
 
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
-              What you&apos;ll get
+              What to expect
             </p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-[1.65rem]">
-              A focused 1-on-1 with our retouching lead.
+            <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-[1.35rem]">
+              A quick call to align on your project.
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-              We tailor every meeting to your project — bring your shoot, sample
-              edits, or a Drive folder, and we&apos;ll build a delivery roadmap
-              with you in real-time.
+            <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+              References, scope, pricing, and timeline — in one conversation.
             </p>
 
-            <div className="mt-6 grid gap-3">
+            <div className="mt-5 grid gap-2.5">
               {[
-                "Edit-style review tailored to your brand",
-                "Workflow & file-handover plan that fits your pipeline",
-                "Pricing options for one-off, ongoing, and high-volume needs",
-                "A working timeline you can share with your team",
+                "Review your photos and goals",
+                "Quote and turnaround options",
+                "Next steps before we start",
               ].map((line) => (
-                <div key={line} className="flex items-start gap-3">
+                <div key={line} className="flex items-start gap-2.5">
                   <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
                     <svg
                       viewBox="0 0 20 20"
@@ -210,9 +104,9 @@ export function ScheduleMeetingHero({ email, whatsappDial, whatsappDisplay }: Pr
             </div>
 
             {(email || waHref) ? (
-              <div className="mt-7 grid gap-2 border-t border-[var(--line)] pt-5 text-sm">
+              <div className="mt-6 grid gap-2 border-t border-[var(--line)] pt-4 text-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-2)]">
-                  Prefer a quick chat?
+                  Contact
                 </p>
                 {email ? (
                   <a

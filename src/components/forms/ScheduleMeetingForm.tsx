@@ -154,11 +154,10 @@ export function ScheduleMeetingForm({
             </svg>
           </div>
           <h2 className="mt-5 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-            Meeting request received.
+            Request received
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-            Thanks! We&apos;ll confirm your slot shortly via email or WhatsApp
-            with a meeting link. Look out for our message in the next few hours.
+          <p className="mt-2 text-sm text-[var(--muted)] sm:text-base">
+            We&apos;ll confirm your time by email or WhatsApp.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -186,14 +185,11 @@ export function ScheduleMeetingForm({
       id="schedule-form"
       className="overflow-hidden rounded-3xl border border-[var(--line-strong)] bg-[color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_24px_60px_-25px_rgba(0,0,0,0.6)]"
     >
-      <div className="border-b border-[var(--line)] bg-[color-mix(in_oklab,var(--background)_85%,white_15%)] px-6 py-5 sm:px-8 sm:py-6">
+      <div className="border-b border-[var(--line)] bg-[color-mix(in_oklab,var(--background)_85%,white_15%)] px-6 py-4 sm:px-8 sm:py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-2)]">
-              Book your meeting
-            </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
-              Pick a date and time.
+            <h2 className="text-lg font-semibold tracking-tight text-[var(--foreground)] sm:text-xl">
+              Date & time
             </h2>
           </div>
         </div>
@@ -296,9 +292,7 @@ export function ScheduleMeetingForm({
         ) : null}
 
         <div className="flex flex-col items-stretch justify-between gap-3 border-t border-[var(--line)] pt-6 sm:flex-row sm:items-center">
-          <p className="text-xs text-[var(--muted-2)]">
-            By submitting you agree to be contacted about your meeting request.
-          </p>
+          <p className="text-xs text-[var(--muted-2)]">We may contact you about this request.</p>
           <button
             type="submit"
             disabled={!canSubmit}

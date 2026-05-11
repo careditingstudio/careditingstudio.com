@@ -9,15 +9,13 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Schedule a Meeting",
-  description:
-    "Book a meeting with the Car Editing Studio team to plan your project, review references, and align on style, budget, and turnaround.",
+  description: "Book a time with Car Editing Studio — we confirm by email or WhatsApp.",
   alternates: {
     canonical: "/schedule-meeting",
   },
   openGraph: {
     title: "Schedule a Meeting | Car Editing Studio",
-    description:
-      "Book a meeting with the Car Editing Studio team to plan your project, review references, and align on style, budget, and turnaround.",
+    description: "Book a time with Car Editing Studio — we confirm by email or WhatsApp.",
     url: "/schedule-meeting",
     type: "website",
     images: [{ url: DEFAULT_OG_IMAGE, alt: "Schedule a meeting with Car Editing Studio" }],
@@ -25,8 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Schedule a Meeting | Car Editing Studio",
-    description:
-      "Book a meeting with the Car Editing Studio team to plan your project, review references, and align on style, budget, and turnaround.",
+    description: "Book a time with Car Editing Studio — we confirm by email or WhatsApp.",
     images: [DEFAULT_OG_IMAGE],
   },
 };
@@ -50,8 +47,7 @@ export default async function ScheduleMeetingPage() {
             "@type": "ContactPage",
             url: absoluteUrl("/schedule-meeting"),
             name: `Schedule a Meeting | ${businessName}`,
-            description:
-              "Book a meeting with the Car Editing Studio team to plan your project.",
+            description: `Book a meeting with ${businessName}.`,
           }),
         }}
       />

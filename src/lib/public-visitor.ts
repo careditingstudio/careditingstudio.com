@@ -1,11 +1,5 @@
-import { headers } from "next/headers";
-import {
-  H_ALT,
-  H_CC,
-  H_CUR,
-  H_LOC,
-  H_SHOW_BAR,
-} from "@/lib/visitor-request";
+import { cookies, headers } from "next/headers";
+import { resolveVisitorState } from "@/lib/visitor-request";
 
 export type PublicVisitorState = {
   country: string;
@@ -15,18 +9,20 @@ export type PublicVisitorState = {
   showLanguageBar: boolean;
 };
 
+/**
+ * Resolves visitor country/currency/locale from request headers (CDN geo,
+ * Accept-Language) and cookies — same rules as middleware. Do not read only
+ * `x-ces-*` here; those headers are not always exposed to `headers()` in RSC.
+ */
 export async function getPublicVisitorState(): Promise<PublicVisitorState> {
   const h = await headers();
-  const country = (h.get(H_CC) || "US").toUpperCase().slice(0, 2);
-  const currency = (h.get(H_CUR) || "USD").toUpperCase().slice(0, 3);
-  const locale = (h.get(H_LOC) || "en").toLowerCase().slice(0, 12);
-  const altLocale = (h.get(H_ALT) || "en").toLowerCase().slice(0, 12);
-  const showLanguageBar = h.get(H_SHOW_BAR) === "1";
+  const c = await cookies();
+  const v = resolveVisitorState(h, (n) => c.get(n)?.value?.trim());
   return {
-    country,
-    currency,
-    locale,
-    altLocale,
-    showLanguageBar,
+    country: v.country,
+    currency: v.currency,
+    locale: v.locale,
+    altLocale: v.altLocale,
+    showLanguageBar: v.showLangBar,
   };
 }
