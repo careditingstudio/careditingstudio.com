@@ -340,35 +340,37 @@ export function WhyChooseUsSection({ block }: Props) {
             )}
           </div>
 
-          <div className="grid min-w-0 gap-0 rounded-2xl bg-black/25 ring-1 ring-white/10 sm:grid-cols-2">
+          <div className="grid min-w-0 gap-0 overflow-hidden rounded-2xl bg-black/25 ring-1 ring-white/10 sm:grid-cols-2">
             {block.workflowSteps.slice(0, 4).map((step, idx) => (
               <article
                 key={`wf-${idx}`}
-                className={`flex min-w-0 items-center gap-3 px-3 py-4 sm:px-4 ${
+                className={`group/wf flex min-w-0 cursor-default items-center gap-3 px-3 py-4 transition duration-200 ease-out hover:bg-[var(--accent)]/12 sm:px-4 ${
                   idx % 2 === 0 ? "sm:border-r sm:border-dashed sm:border-white/20" : ""
                 } ${idx < 2 ? "border-b border-dashed border-white/20" : ""}`}
               >
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0b1031] shadow-[0_8px_22px_rgba(255,255,255,0.14)]">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0b1031] shadow-[0_8px_22px_rgba(255,255,255,0.14)] transition duration-200 ease-out group-hover/wf:scale-[1.04] group-hover/wf:bg-[var(--accent)] group-hover/wf:text-white group-hover/wf:shadow-[0_10px_28px_rgba(224,122,69,0.35)]">
                   {WORKFLOW_ICONS[idx]}
                 </span>
                 <span className="min-w-0">
-                  <p className={`${display.className} text-[0.98rem] font-semibold leading-snug text-white`}>
+                  <p className={`${display.className} text-[0.98rem] font-semibold leading-snug text-white transition duration-200 group-hover/wf:text-[var(--accent-hover)]`}>
                     {step.title}
                   </p>
-                  <p className={`${sans.className} text-[0.8125rem] text-zinc-400`}>{step.subtitle}</p>
+                  <p className={`${sans.className} text-[0.8125rem] text-zinc-400 transition duration-200 group-hover/wf:text-zinc-200`}>
+                    {step.subtitle}
+                  </p>
                 </span>
               </article>
             ))}
             {block.workflowSteps[4] ? (
-              <article className="col-span-full flex items-center gap-3 border-t border-dashed border-white/20 px-3 py-4 sm:px-4">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0b1031] shadow-[0_8px_22px_rgba(255,255,255,0.14)]">
+              <article className="group/wf col-span-full flex cursor-default items-center gap-3 border-t border-dashed border-white/20 px-3 py-4 transition duration-200 ease-out hover:bg-[var(--accent)]/12 sm:px-4">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0b1031] shadow-[0_8px_22px_rgba(255,255,255,0.14)] transition duration-200 ease-out group-hover/wf:scale-[1.04] group-hover/wf:bg-[var(--accent)] group-hover/wf:text-white group-hover/wf:shadow-[0_10px_28px_rgba(224,122,69,0.35)]">
                   {WORKFLOW_ICONS[4]}
                 </span>
                 <span className="min-w-0">
-                  <p className={`${display.className} text-[0.98rem] font-semibold leading-snug text-white`}>
+                  <p className={`${display.className} text-[0.98rem] font-semibold leading-snug text-white transition duration-200 group-hover/wf:text-[var(--accent-hover)]`}>
                     {block.workflowSteps[4].title}
                   </p>
-                  <p className={`${sans.className} text-[0.8125rem] text-zinc-400`}>
+                  <p className={`${sans.className} text-[0.8125rem] text-zinc-400 transition duration-200 group-hover/wf:text-zinc-200`}>
                     {block.workflowSteps[4].subtitle}
                   </p>
                 </span>

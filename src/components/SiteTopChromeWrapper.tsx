@@ -17,24 +17,26 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
 
   return (
     <>
-      <DevPostgresDisconnectedBanner show={devDbUnreachable} />
-      <SiteTopChrome
-        site={cms.site}
-        services={cms.services}
-        servicePages={cms.servicePages}
-        navLabels={navLabels}
-        shell={shell}
-        reserveLanguageBarSpace
-      >
-        {children}
-        <SiteLocationsMapSection site={cms.site} layout={shell.layout} />
-        <SiteFooter
+      <div className="flex min-h-0 w-full flex-1 flex-col">
+        <DevPostgresDisconnectedBanner show={devDbUnreachable} />
+        <SiteTopChrome
           site={cms.site}
           services={cms.services}
           servicePages={cms.servicePages}
+          navLabels={navLabels}
           shell={shell}
-        />
-      </SiteTopChrome>
+          reserveLanguageBarSpace
+        >
+          {children}
+          <SiteLocationsMapSection site={cms.site} layout={shell.layout} />
+          <SiteFooter
+            site={cms.site}
+            services={cms.services}
+            servicePages={cms.servicePages}
+            shell={shell}
+          />
+        </SiteTopChrome>
+      </div>
       {VISITOR_I18N_ENABLED ? <VisitorLanguageBar locale={visitor.locale} /> : null}
     </>
   );

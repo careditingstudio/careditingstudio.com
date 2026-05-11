@@ -343,13 +343,13 @@ export function SiteFooter({
             © {new Date().getFullYear()} {brand}. All rights reserved.
           </p>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label="Legal">
-            <Link prefetch href="/contact" className="hover:text-white">
+            <Link prefetch href="/terms" className="hover:text-white">
               Terms &amp; conditions
             </Link>
             <span className="hidden text-white/30 sm:inline" aria-hidden>
               |
             </span>
-            <Link prefetch href="/contact" className="hover:text-white">
+            <Link prefetch href="/privacy" className="hover:text-white">
               Privacy policy
             </Link>
           </nav>

@@ -10,7 +10,12 @@ function toAbsoluteUrl(pathname: string): string {
 }
 
 const staticRoutes = Array.from(
-  new Set([...navItems.map((item) => item.href), "/schedule-meeting"]),
+  new Set([
+    ...navItems.map((item) => item.href),
+    "/schedule-meeting",
+    "/terms",
+    "/privacy",
+  ]),
 );
 const seoLandingRoutes = [
   "/car-photo-editing",

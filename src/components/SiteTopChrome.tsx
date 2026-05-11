@@ -74,7 +74,7 @@ export function SiteTopChrome({
   }, [isChromeHideLocked]);
 
   return (
-    <>
+    <div className="flex min-h-0 w-full flex-1 flex-col">
       <div className="pointer-events-none fixed left-0 right-0 top-0 z-[71]">
         <div
           className={[
@@ -105,7 +105,7 @@ export function SiteTopChrome({
 
       <div
         className={[
-          "flex flex-1 flex-col transition-[padding-top] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]",
+          "flex min-h-0 w-full flex-1 flex-col bg-[var(--background)] transition-[padding-top] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]",
           hideAnnouncement
             ? "pt-[var(--header-h)]"
             : "pt-[calc(var(--announcement-h)+var(--header-h))]",
@@ -114,6 +114,6 @@ export function SiteTopChrome({
       >
         {children}
       </div>
-    </>
+    </div>
   );
 }

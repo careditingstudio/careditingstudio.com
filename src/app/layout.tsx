@@ -148,7 +148,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${sans.className} flex min-h-screen flex-col bg-[var(--background)] text-[var(--foreground)] antialiased`}
+        className={`${sans.className} flex min-h-dvh flex-col bg-[var(--background)] text-[var(--foreground)] antialiased`}
         suppressHydrationWarning
       >
         <script

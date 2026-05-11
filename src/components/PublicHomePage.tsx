@@ -6,11 +6,16 @@ import { HomeServiceFeatures } from "@/components/HomeServiceFeatures";
 import { HomeWhyChooseReviewsBand } from "@/components/HomeWhyChooseReviewsBand";
 import { TrustedClientsMarquee } from "@/components/TrustedClientsMarquee";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { ScheduleMeetingPromoCard } from "@/components/ScheduleMeetingPromoCard";
 import { readCms } from "@/lib/cms-store";
+import { getVisitorShellMessages } from "@/i18n/visitor-shell";
+import { getPublicVisitorState } from "@/lib/public-visitor";
 import { display } from "@/app/fonts";
 
 export async function PublicHomePage() {
   const cms = await readCms();
+  const visitor = await getPublicVisitorState();
+  const shell = getVisitorShellMessages(visitor.locale);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -40,8 +45,20 @@ export async function PublicHomePage() {
             </h2>
           </div>
 
-          <div className="mx-auto mt-10 max-w-5xl">
-            <ContactForm hideHeading variant="compact" className="mt-0" />
+          <div className="mx-auto mt-10 grid max-w-5xl gap-8 lg:max-w-6xl lg:grid-cols-[minmax(0,1fr)_min(100%,22rem)] lg:items-start lg:gap-10">
+            <ContactForm
+              hideHeading
+              variant="compact"
+              className="mt-0 min-w-0"
+              forms={shell.forms}
+            />
+            <ScheduleMeetingPromoCard
+              eyebrow={shell.pages.contactScheduleEyebrow}
+              title={shell.pages.contactScheduleTitle}
+              body={shell.pages.contactScheduleBody}
+              ctaLabel={shell.pages.contactOpenScheduler}
+              className="max-lg:mx-auto max-lg:max-w-md lg:w-full"
+            />
           </div>
         </div>
       </section>

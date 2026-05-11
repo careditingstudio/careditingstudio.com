@@ -69,7 +69,7 @@ export function HomeChromeProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => solid, [solid]);
   return (
     <HomeChromeSolidContext.Provider value={value}>
-      {children}
+      <div className="flex min-h-0 w-full flex-1 flex-col">{children}</div>
     </HomeChromeSolidContext.Provider>
   );
 }
