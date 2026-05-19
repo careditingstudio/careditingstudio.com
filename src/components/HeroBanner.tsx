@@ -145,6 +145,13 @@ export function HeroBanner({ cms }: Props) {
         </section>
       </div>
 
+      {/* 
+        Structural spacer: Since the banner elements above are 'fixed', they don't occupy space in the 
+        document flow. This spacer pushes the rest of the page content (including the footer) 
+        down so it starts after the hero section.
+      */}
+      <div className="h-[var(--home-hero-band)] w-full" aria-hidden="true" />
+
     </>
   );
 }

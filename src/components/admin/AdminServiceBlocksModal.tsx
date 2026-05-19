@@ -143,7 +143,8 @@ export function AdminServiceBlocksModal({
           setFlash({ type: "ok", text: "Image selected." });
         }}
         title="Choose image"
-      />
+        modalZIndex={107} // Ensure it appears above AdminServiceBlockEditorModal
+       />
       <AdminServiceBlockEditorModal
         open={editorBlock !== null}
         onClose={() => setEditorBlock(null)}

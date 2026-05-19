@@ -671,227 +671,209 @@ function SplitPillColumnsSection({
   );
 }
 
-function findBlock<T extends ServicePageBlock["type"]>(
-  blocks: ServicePageBlock[],
-  type: T,
-): Extract<ServicePageBlock, { type: T }> | undefined {
-  return blocks.find(
-    (b): b is Extract<ServicePageBlock, { type: T }> => b.type === type,
-  );
-}
-
-function findFirst<T extends ServicePageBlock["type"]>(
-  blocks: ServicePageBlock[],
-  types: readonly T[],
-): Extract<ServicePageBlock, { type: T }> | undefined {
-  for (const t of types) {
-    const m = findBlock(blocks, t);
-    if (m) return m;
-  }
-  return undefined;
-}
-
-/**
- * Every service page renders the same fixed template in a fixed order.
- * Each section pulls content from any matching CMS block and falls back
- * to sensible defaults when the block is missing or empty.
- */
 export function ServicePageTemplate({ page, portfolioItems }: Props) {
-  const blocks = (page.blocks ?? []).filter(b => !b.hidden);
-
-  // 1. Three feature cards (icon + title + body)
-  const featureBlock = findBlock(blocks, "featureCards");
-
-  // 2. Portfolio + side title/text
-  const portfolioBlock = findBlock(blocks, "portfolio");
-
-  // 3. Bullets section (about-page style)
-  const bulletsBlock = findFirst(blocks, [
-    "tickChecklist",
-    "pillChecklist",
-  ] as const);
-  let bulletsTitle = "";
-  let bulletsSubtitle: string | undefined;
-  let bulletsList: string[] = [];
-  if (bulletsBlock) {
-    bulletsTitle = bulletsBlock.title;
-    bulletsSubtitle = bulletsBlock.subtext;
-    if (bulletsBlock.type === "tickChecklist") {
-      bulletsList = bulletsBlock.items;
-    } else {
-      bulletsList =
-        bulletsBlock.checks.length > 0 ? bulletsBlock.checks : bulletsBlock.pills;
-    }
-  }
-
-  // 4. Support: left (eyebrow + title + body) and 3 right-side cards
-  const supportBlock = findFirst(blocks, [
-    "supportCards",
-    "valueColumns",
-  ] as const);
-  const supportEyebrow = supportBlock?.eyebrow;
-  const supportTitle = supportBlock?.title ?? "";
-  const supportBody = supportBlock?.body ?? "";
-  const supportCards: ServiceValueColumn[] =
-    supportBlock?.type === "supportCards"
-      ? supportBlock.cards
-      : supportBlock?.type === "valueColumns"
-        ? supportBlock.columns
-        : [];
-
-  // 5. 2x2 “4 points” grid (icon + title + body)
-  const quadBlock = findBlock(blocks, "whyChooseQuad");
-  const quadFromIcons = findFirst(blocks, [
-    "iconGrid",
-    "compactFeatureCards",
-  ] as const);
-  let quadTitle = "";
-  let quadSubtext: string | undefined;
-  let quadCards: ServiceFeatureCard[] = [];
-  if (quadBlock) {
-    quadTitle = quadBlock.sectionTitle;
-    quadSubtext = quadBlock.sectionSubtext;
-    quadCards = quadBlock.cards;
-  } else if (quadFromIcons) {
-    quadTitle = quadFromIcons.title;
-    quadSubtext = quadFromIcons.subtext;
-    quadCards = quadFromIcons.items.map((it, i) => ({
-      iconKey: QUAD_ICON_CYCLE[i % 4]!,
-      title: it.title,
-      body: it.body,
-    }));
-  }
-
-  // 6. Big article: lead title + lead body, then any number of H2 sections.
-  //    Falls back to legacy contentWide blocks when serviceArticle isn’t set.
-  const articleBlock = findBlock(blocks, "serviceArticle");
-  let articleLeadTitle = "";
-  let articleLeadBody = "";
-  let articleSections: { title: string; body: string }[] = [];
-  if (articleBlock) {
-    articleLeadTitle = articleBlock.leadTitle;
-    articleLeadBody = articleBlock.leadBody;
-    articleSections = articleBlock.sections;
-  } else {
-    const wides = blocks.filter(
-      (b): b is Extract<ServicePageBlock, { type: "contentWide" }> =>
-        b.type === "contentWide",
-    );
-    if (wides.length > 0) {
-      const [head, ...rest] = wides;
-      articleLeadTitle = head!.title ?? "";
-      articleLeadBody = head!.body;
-      articleSections = rest.map((w) => ({
-        title: w.title ?? "",
-        body: w.body,
-      }));
-    }
-  }
-
-  // 7. Split pill columns
-  const splitPillsBlock = findBlock(blocks, "splitPillColumns");
-
-  // 8. Media spotlight (headline + image + description)
-  const spotlightBlock = findBlock(blocks, "mediaSpotlight");
-  const fallbackImage = findBlock(blocks, "image");
-  const fallbackSplit = findBlock(blocks, "splitShowcase");
-  const spotlightTitle =
-    spotlightBlock?.title ?? fallbackSplit?.title ?? "";
-  const spotlightBody = spotlightBlock?.body ?? fallbackSplit?.body ?? "";
-  const spotlightSrc =
-    spotlightBlock?.imageSrc ??
-    fallbackImage?.src ??
-    fallbackSplit?.imageSrc ??
-    "";
-  const spotlightAlt =
-    spotlightBlock?.imageAlt ??
-    fallbackImage?.alt ??
-    fallbackSplit?.imageAlt ??
-    "";
-
-  // 9. Page outro
-  const outroBlock = findBlock(blocks, "pageOutro");
-  const outroTitle = outroBlock?.title ?? "";
-  const outroBody = outroBlock?.body ?? "";
+  const blocks = (page.blocks ?? []).filter((b) => !b.hidden);
 
   return (
     <>
-      {featureBlock && (
-        <FeatureCardsSection
-          title={featureBlock.sectionTitle}
-          subtext={featureBlock.sectionSubtext}
-          cards={featureBlock.cards}
-          accentColor={featureBlock.accentColor}
-        />
-      )}
-
-      {portfolioBlock && (
-        <PortfolioSection
-          portfolioTitle={portfolioBlock.title ?? page.portfolioTitle}
-          sideTitle={portfolioBlock.sideTitle}
-          sideText={portfolioBlock.sideText}
-          item={portfolioItems[0]}
-        />
-      )}
-
-      {bulletsBlock && (
-        <BulletsSection
-          title={bulletsTitle}
-          subtitle={bulletsSubtitle}
-          bullets={bulletsList}
-        />
-      )}
-
-      {supportBlock && (
-        <SupportSection
-          eyebrow={supportEyebrow}
-          title={supportTitle}
-          body={supportBody}
-          cards={supportCards}
-        />
-      )}
-
-      {(quadBlock || quadFromIcons) && (
-        <WhyChooseQuadSection
-          sectionTitle={quadTitle}
-          sectionSubtext={quadSubtext}
-          cards={quadCards}
-        />
-      )}
-
-      {(articleBlock || articleLeadTitle || articleLeadBody || articleSections.length > 0) && (
-        <ServiceArticleSection
-          leadTitle={articleLeadTitle}
-          leadBody={articleLeadBody}
-          sections={articleSections}
-        />
-      )}
-
-      {splitPillsBlock && (
-        <SplitPillColumnsSection
-          titleLeft={splitPillsBlock.titleLeft}
-          titleRight={splitPillsBlock.titleRight}
-          pillsLeft={splitPillsBlock.pillsLeft}
-          pillsRight={splitPillsBlock.pillsRight}
-        />
-      )}
-
-      {(spotlightBlock || spotlightSrc) && (
-        <MediaSpotlightSection
-          title={spotlightTitle}
-          body={spotlightBody}
-          imageSrc={spotlightSrc}
-          imageAlt={spotlightAlt}
-        />
-      )}
-
-      {outroBlock && (
-        <PageOutroSection title={outroTitle} body={outroBody} />
-      )}
-
-      {findBlock(blocks, "faq") && (
-        <ServiceFaqSection section={page.faqSection} />
-      )}
+      {blocks.map((block) => {
+        switch (block.type) {
+          case "featureCards":
+            return (
+              <FeatureCardsSection
+                key={block.id}
+                title={block.sectionTitle}
+                subtext={block.sectionSubtext}
+                cards={block.cards}
+                accentColor={block.accentColor}
+              />
+            );
+          case "portfolio":
+            return (
+              <PortfolioSection
+                key={block.id}
+                portfolioTitle={block.title ?? page.portfolioTitle}
+                sideTitle={block.sideTitle}
+                sideText={block.sideText}
+                item={portfolioItems[0]}
+              />
+            );
+          case "tickChecklist":
+            return (
+              <BulletsSection
+                key={block.id}
+                title={block.title}
+                subtitle={block.subtext}
+                bullets={block.items}
+              />
+            );
+          case "pillChecklist":
+            return (
+              <BulletsSection
+                key={block.id}
+                title={block.title}
+                subtitle={block.subtext}
+                bullets={block.checks.length > 0 ? block.checks : block.pills}
+              />
+            );
+          case "supportCards":
+            return (
+              <SupportSection
+                key={block.id}
+                eyebrow={block.eyebrow}
+                title={block.title}
+                body={block.body}
+                cards={block.cards}
+              />
+            );
+          case "valueColumns":
+            return (
+              <SupportSection
+                key={block.id}
+                eyebrow={block.eyebrow}
+                title={block.title}
+                body={block.body}
+                cards={block.columns}
+              />
+            );
+          case "whyChooseQuad":
+            return (
+              <WhyChooseQuadSection
+                key={block.id}
+                sectionTitle={block.sectionTitle}
+                sectionSubtext={block.sectionSubtext}
+                cards={block.cards}
+              />
+            );
+          case "iconGrid":
+          case "compactFeatureCards":
+            return (
+              <WhyChooseQuadSection
+                key={block.id}
+                sectionTitle={block.title}
+                sectionSubtext={block.subtext}
+                cards={block.items.map((it, i) => ({
+                  iconKey: QUAD_ICON_CYCLE[i % 4]!,
+                  title: it.title,
+                  body: it.body,
+                }))}
+              />
+            );
+          case "serviceArticle":
+            return (
+              <ServiceArticleSection
+                key={block.id}
+                leadTitle={block.leadTitle}
+                leadBody={block.leadBody}
+                sections={block.sections}
+              />
+            );
+          case "contentWide":
+            return (
+              <ServiceArticleSection
+                key={block.id}
+                leadTitle={block.title ?? ""}
+                leadBody={block.body}
+                sections={[]}
+              />
+            );
+          case "splitPillColumns":
+            return (
+              <SplitPillColumnsSection
+                key={block.id}
+                titleLeft={block.titleLeft}
+                titleRight={block.titleRight}
+                pillsLeft={block.pillsLeft}
+                pillsRight={block.pillsRight}
+              />
+            );
+          case "mediaSpotlight":
+            return (
+              <MediaSpotlightSection
+                key={block.id}
+                title={block.title}
+                body={block.body}
+                imageSrc={block.imageSrc}
+                imageAlt={block.imageAlt}
+              />
+            );
+          case "image":
+            return (
+              <MediaSpotlightSection
+                key={block.id}
+                title=""
+                body={block.caption ?? ""}
+                imageSrc={block.src}
+                imageAlt={block.alt}
+              />
+            );
+          case "splitShowcase":
+            return (
+              <MediaSpotlightSection
+                key={block.id}
+                title={block.title ?? ""}
+                body={block.body}
+                imageSrc={block.imageSrc}
+                imageAlt={block.imageAlt}
+              />
+            );
+          case "pageOutro":
+            return (
+              <PageOutroSection
+                key={block.id}
+                title={block.title}
+                body={block.body}
+              />
+            );
+          case "faq":
+            return (
+              <ServiceFaqSection key={block.id} section={page.faqSection} />
+            );
+          case "heading":
+            return (
+              <section
+                key={block.id}
+                className="bg-[#0a0a0a] border-t border-white/5"
+              >
+                <div className="mx-auto max-w-2xl px-5 py-12 text-center sm:px-8">
+                  <h2
+                    className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem]`}
+                  >
+                    {block.text}
+                  </h2>
+                  {block.subtext && (
+                    <p className="mt-3 text-sm text-zinc-400 sm:text-base">
+                      {block.subtext}
+                    </p>
+                  )}
+                </div>
+              </section>
+            );
+          case "paragraph":
+            return (
+              <section
+                key={block.id}
+                className="bg-[#0a0a0a] border-t border-white/5"
+              >
+                <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8">
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-400 sm:text-base md:text-[1.0125rem]">
+                    {block.text}
+                  </p>
+                </div>
+              </section>
+            );
+          case "spacer":
+            const space =
+              block.size === "sm"
+                ? "py-4"
+                : block.size === "lg"
+                  ? "py-16"
+                  : "py-8";
+            return <div key={block.id} className={space} />;
+          default:
+            return null;
+        }
+      })}
     </>
   );
 }
