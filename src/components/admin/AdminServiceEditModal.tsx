@@ -518,7 +518,7 @@ export function AdminServiceEditModal({
                 value={page.pageTitle}
                 onChange={(pageTitle) => onSetPage({ pageTitle })}
                 placeholder="e.g. Car background removal"
-                hint="Falls back to the service name if empty."
+                hint="If left empty, the banner headline will not be shown."
               />
               <TextareaField
                 label="Page description (banner subtitle)"
@@ -639,6 +639,7 @@ export function AdminServiceEditModal({
                       <span className="truncate font-medium text-zinc-200 capitalize">
                         {b.type.replace(/([A-Z])/g, " $1")}
                       </span>
+                      {b.hidden && <span className="text-[9px] text-amber-500 font-bold uppercase">(Hidden)</span>}
                       <span className="ml-auto truncate text-[10px] text-zinc-500">
                         {summarizeBlock(b)}
                       </span>

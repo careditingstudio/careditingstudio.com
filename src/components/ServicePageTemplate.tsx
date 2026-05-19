@@ -18,48 +18,6 @@ type Props = {
   portfolioItems: PortfolioGridItem[];
 };
 
-const DEFAULT_BULLETS = [
-  "High quality editing",
-  "Fast turnaround time",
-  "24/7 support",
-  "Affordable pricing",
-  "100% satisfaction guarantee",
-  "Easy communication",
-];
-
-const FEATURE_CARD_FALLBACKS: ServiceFeatureCard[] = [
-  {
-    iconKey: "sparkles",
-    title: "High-quality editing",
-    body: "Pixel-perfect retouching and consistent results across your full catalog.",
-  },
-  {
-    iconKey: "shield",
-    title: "Reliable + consistent",
-    body: "Strict QA on every image, from background work to colour and detail.",
-  },
-  {
-    iconKey: "clock",
-    title: "Fast turnaround",
-    body: "Standard delivery within 12–24 hours with rush options when you need them.",
-  },
-];
-
-const SUPPORT_CARD_FALLBACKS: ServiceValueColumn[] = [
-  {
-    title: "Ecommerce-ready workflow",
-    body: "We support ecommerce businesses and content creators with consistent, marketplace-ready outputs.",
-  },
-  {
-    title: "Precision + consistency",
-    body: "Each photo is refined carefully and consistently to keep your brand visuals sharp across platforms.",
-  },
-  {
-    title: "Quick responses + support",
-    body: "Clear communication, quick responses, and support you can rely on whenever you need it.",
-  },
-];
-
 /** Icons for legacy iconGrid / compactFeatureCards (title-only items). */
 const QUAD_ICON_CYCLE = ["shield", "headphones", "sparkles", "award"] as const;
 
@@ -96,20 +54,10 @@ function FeatureCardsSection({
   cards: ServiceFeatureCard[];
   accentColor?: string;
 }) {
-  const heading = title.trim() || "Why our editing stands out";
-  const subtitle =
-    (subtext ?? "").trim() || "A quick overview of what this service includes.";
-
-  const visible: ServiceFeatureCard[] = [];
-  for (let i = 0; i < 3; i++) {
-    const c = cards[i] ?? { iconKey: "sparkles", title: "", body: "" };
-    const fb = FEATURE_CARD_FALLBACKS[i]!;
-    visible.push({
-      iconKey: c.iconKey?.trim() || fb.iconKey,
-      title: c.title.trim() || fb.title,
-      body: c.body.trim() || fb.body,
-    });
-  }
+  const heading = title.trim();
+  const subtitle = (subtext ?? "").trim();
+  const visible = cards.filter((c) => c.title.trim() || c.body.trim());
+  if (visible.length === 0 && !heading && !subtitle) return null;
 
   const customAccent =
     typeof accentColor === "string" &&
@@ -126,16 +74,20 @@ function FeatureCardsSection({
         className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
         style={accentWrapStyle}
       >
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <h2
-            className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
-          >
-            {heading}
-          </h2>
-          <p className="text-sm leading-relaxed text-zinc-400 sm:text-base">
-            {subtitle}
-          </p>
-        </div>
+        {heading || subtitle ? (
+          <div className="mx-auto max-w-2xl space-y-3 text-center">
+            {heading && (
+              <h2
+                className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
+              >
+                {heading}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="text-sm leading-relaxed text-zinc-400 sm:text-base">{subtitle}</p>
+            )}
+          </div>
+        ) : null}
 
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {visible.map((card, idx) => (
@@ -189,13 +141,9 @@ function PortfolioSection({
   sideText?: string;
   item?: PortfolioGridItem;
 }) {
-  const heading =
-    sideTitle?.trim() ||
-    portfolioTitle?.trim() ||
-    "Real results from our portfolio";
-  const body =
-    sideText?.trim() ||
-    "Featured work from our portfolio. Add a long description in the admin (Portfolio block → Side title / Side text) to highlight craft, process, and the results that matter for this service.";
+  if (!item && !sideTitle?.trim() && !sideText?.trim() && !portfolioTitle?.trim()) return null;
+  const heading = sideTitle?.trim() || portfolioTitle?.trim();
+  const body = sideText?.trim();
 
   return (
     <section className="border-t border-white/5 bg-[#111113]">
@@ -255,9 +203,9 @@ function BulletsSection({
   bullets: string[];
 }) {
   const items = bullets.map((b) => b.trim()).filter(Boolean);
-  const heading = title.trim() || "Why customers choose us";
-  const sub = (subtitle ?? "").trim() || "What every project delivers.";
-  const list = items.length > 0 ? items : DEFAULT_BULLETS;
+  if (items.length === 0 && !title.trim() && !subtitle?.trim()) return null;
+  const heading = title.trim();
+  const sub = (subtitle ?? "").trim();
 
   return (
     <section className="border-t border-white/5 bg-[#111113]">
@@ -274,7 +222,7 @@ function BulletsSection({
         </div>
 
         <ul className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-2">
-          {list.map((t) => (
+          {items.map((t) => (
             <li
               key={t}
               className="rounded-2xl border border-white/10 bg-[#161618] px-4 py-3 transition-colors duration-300 hover:border-[var(--accent)]/30"
@@ -304,37 +252,33 @@ function SupportSection({
   body: string;
   cards: ServiceValueColumn[];
 }) {
-  const heading = title.trim() || "Quick responses, strong support";
-  const description =
-    body.trim() ||
-    "Our marketing and client support team is fluent in English and available around the clock — we provide 24/7 assistance to ensure smooth and reliable service. We maintain clear and friendly communication with every client to deliver quick responses, strong support, and build trust.";
-
-  const visible: ServiceValueColumn[] = [];
-  for (let i = 0; i < 3; i++) {
-    const c = cards[i] ?? { title: "", body: "" };
-    const fb = SUPPORT_CARD_FALLBACKS[i]!;
-    visible.push({
-      title: c.title.trim() || fb.title,
-      body: c.body.trim() || fb.body,
-    });
-  }
+  const heading = title.trim();
+  const description = body.trim();
+  const visible = cards.filter(c => c.title.trim() || c.body.trim());
+  if (visible.length === 0 && !heading && !description) return null;
 
   return (
     <section className="border-t border-white/5 bg-[#0a0a0a]">
       <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="space-y-5 lg:col-span-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
-              {eyebrow?.trim() || "Support"}
-            </p>
-            <h2
-              className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
-            >
-              {heading}
-            </h2>
-            <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-400 sm:text-base md:text-[1.0125rem] md:leading-[1.75]">
-              {description}
-            </p>
+            {eyebrow?.trim() && (
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                {eyebrow.trim()}
+              </p>
+            )}
+            {heading && (
+              <h2
+                className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
+              >
+                {heading}
+              </h2>
+            )}
+            {description && (
+              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-400 sm:text-base md:text-[1.0125rem] md:leading-[1.75]">
+                {description}
+              </p>
+            )}
           </div>
 
           <div className="lg:col-span-7">
@@ -374,20 +318,10 @@ function WhyChooseQuadSection({
   sectionSubtext?: string;
   cards: ServiceFeatureCard[];
 }) {
-  const heading = sectionTitle.trim() || "What sets us apart";
-  const sub =
-    (sectionSubtext ?? "").trim() || "Consistent quality and support at every step.";
-  const row: ServiceFeatureCard[] = [];
-  for (let i = 0; i < 4; i++) {
-    const c = cards[i] ?? { iconKey: "sparkles", title: "", body: "" };
-    row.push({
-      iconKey: c.iconKey?.trim() || QUAD_ICON_CYCLE[i % 4]!,
-      title: c.title.trim() || `Point ${i + 1}`,
-      body:
-        c.body.trim() ||
-        "Add a short description that explains this point to your clients.",
-    });
-  }
+  const heading = sectionTitle.trim();
+  const sub = (sectionSubtext ?? "").trim();
+  const row = cards.filter(c => c.title.trim() || c.body.trim());
+  if (row.length === 0 && !heading) return null;
 
   return (
     <section className="relative overflow-hidden border-t border-white/5 bg-[#0a0a0a]">
@@ -396,14 +330,20 @@ function WhyChooseQuadSection({
         className="pointer-events-none absolute inset-0 opacity-60 [background-image:radial-gradient(900px_460px_at_15%_15%,rgba(224,122,69,0.10)_0%,transparent_60%),radial-gradient(700px_360px_at_85%_85%,rgba(255,255,255,0.04)_0%,transparent_55%)]"
       />
       <div className="relative mx-auto max-w-[88rem] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <h2
-            className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
-          >
-            {heading}
-          </h2>
-          <p className="text-sm leading-relaxed text-zinc-400 sm:text-base">{sub}</p>
-        </div>
+        {heading || sub ? (
+          <div className="mx-auto max-w-2xl space-y-3 text-center">
+            {heading && (
+              <h2
+                className={`${display.className} text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-[2.1rem] md:leading-tight`}
+              >
+                {heading}
+              </h2>
+            )}
+            {sub && (
+              <p className="text-sm leading-relaxed text-zinc-400 sm:text-base">{sub}</p>
+            )}
+          </div>
+        ) : null}
 
         <ul className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2 sm:gap-5">
           {row.map((card, idx) => (
@@ -449,11 +389,10 @@ function ServiceArticleSection({
   leadBody: string;
   sections: { title: string; body: string }[];
 }) {
-  const lead = leadTitle.trim() || "Section title";
-  const intro =
-    leadBody.trim() ||
-    "Add your lead paragraph in the Service article block in the admin.";
+  const lead = leadTitle.trim();
+  const intro = leadBody.trim();
   const filtered = sections.filter((s) => s.title.trim() || s.body.trim());
+  if (!lead && !intro && filtered.length === 0) return null;
 
   return (
     <section className="relative border-t border-white/5 bg-[#0e0e10]">
@@ -467,14 +406,18 @@ function ServiceArticleSection({
             aria-hidden
             className="block h-[3px] w-12 rounded-full bg-[var(--accent)]"
           />
-          <h2
-            className={`${display.className} mt-5 text-balance text-3xl font-semibold tracking-tight text-white sm:text-[2.5rem] sm:leading-[1.1] md:text-[2.875rem]`}
-          >
-            {lead}
-          </h2>
-          <p className="mt-6 whitespace-pre-line text-[0.975rem] leading-[1.8] text-zinc-300 sm:text-[1.0625rem] sm:leading-[1.85]">
-            {intro}
-          </p>
+          {lead && (
+            <h2
+              className={`${display.className} mt-5 text-balance text-3xl font-semibold tracking-tight text-white sm:text-[2.5rem] sm:leading-[1.1] md:text-[2.875rem]`}
+            >
+              {lead}
+            </h2>
+          )}
+          {intro && (
+            <p className="mt-6 whitespace-pre-line text-[0.975rem] leading-[1.8] text-zinc-300 sm:text-[1.0625rem] sm:leading-[1.85]">
+              {intro}
+            </p>
+          )}
 
           {filtered.length > 0 ? (
             <div className="mt-12 space-y-12 sm:mt-16 sm:space-y-14">
@@ -518,22 +461,23 @@ function MediaSpotlightSection({
   imageAlt: string;
 }) {
   const src = imageSrc.trim();
-  const heading = title.trim() || "Spotlight";
-  const text =
-    body.trim() ||
-    "Add supporting copy below the image in the Media spotlight block.";
+  if (!src && !title.trim() && !body.trim()) return null;
+  const heading = title.trim();
+  const text = body.trim();
 
   return (
     <section className="relative border-t border-white/5 bg-[#0a0a0a]">
       <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 sm:py-24 lg:px-10 lg:py-28">
         <div className="mx-auto max-w-5xl">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2
-              className={`${display.className} text-balance text-3xl font-semibold tracking-tight text-white sm:text-[2.25rem] md:text-[2.5rem] md:leading-[1.1]`}
-            >
-              {heading}
-            </h2>
-          </div>
+          {heading && (
+            <div className="mx-auto max-w-3xl text-center">
+              <h2
+                className={`${display.className} text-balance text-3xl font-semibold tracking-tight text-white sm:text-[2.25rem] md:text-[2.5rem] md:leading-[1.1]`}
+              >
+                {heading}
+              </h2>
+            </div>
+          )}
 
           <figure className="mt-10 sm:mt-12">
             <div className="group relative mx-auto aspect-[16/9] w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-[#161618] shadow-[0_40px_80px_-36px_rgba(0,0,0,0.85)] ring-1 ring-white/5">
@@ -552,32 +496,16 @@ function MediaSpotlightSection({
                     className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"
                   />
                 </>
-              ) : (
-                <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-2 bg-gradient-to-br from-white/[0.04] to-transparent text-center">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-10 w-10 text-zinc-600"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.2"
-                    aria-hidden
-                  >
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <circle cx="8.5" cy="10" r="1.5" />
-                    <path d="M3 17l5-5 4 4 5-6 4 4" />
-                  </svg>
-                  <p className="text-sm text-zinc-500">
-                    Add an image in the Media spotlight block
-                  </p>
-                </div>
-              )}
+              ) : null}
             </div>
 
-            <figcaption className="mx-auto mt-10 max-w-3xl">
-              <p className="whitespace-pre-line text-center text-[0.975rem] leading-[1.8] text-zinc-400 sm:text-base sm:leading-[1.85]">
-                {text}
-              </p>
-            </figcaption>
+            {text && (
+              <figcaption className="mx-auto mt-10 max-w-3xl">
+                <p className="whitespace-pre-line text-center text-[0.975rem] leading-[1.8] text-zinc-400 sm:text-base sm:leading-[1.85]">
+                  {text}
+                </p>
+              </figcaption>
+            )}
           </figure>
         </div>
       </div>
@@ -586,10 +514,9 @@ function MediaSpotlightSection({
 }
 
 function PageOutroSection({ title, body }: { title: string; body: string }) {
-  const h = title.trim() || "Thank you";
-  const t =
-    body.trim() ||
-    "Closing message — edit the Page outro block in the admin.";
+  const h = title.trim();
+  const t = body.trim();
+  if (!h && !t) return null;
 
   return (
     <section className="relative overflow-hidden border-t border-white/5 bg-[#0a0a0a]">
@@ -609,14 +536,18 @@ function PageOutroSection({ title, body }: { title: string; body: string }) {
                 aria-hidden
                 className="mx-auto block h-[3px] w-12 rounded-full bg-[var(--accent)]"
               />
-              <h2
-                className={`${display.className} mx-auto mt-5 max-w-2xl text-balance text-3xl font-semibold tracking-tight text-white sm:text-[2.25rem] md:text-[2.5rem] md:leading-[1.15]`}
-              >
-                {h}
-              </h2>
-              <p className="mx-auto mt-5 max-w-2xl whitespace-pre-line text-[0.975rem] leading-[1.8] text-zinc-300 sm:text-[1.0625rem] sm:leading-[1.85]">
-                {t}
-              </p>
+              {h && (
+                <h2
+                  className={`${display.className} mx-auto mt-5 max-w-2xl text-balance text-3xl font-semibold tracking-tight text-white sm:text-[2.25rem] md:text-[2.5rem] md:leading-[1.15]`}
+                >
+                  {h}
+                </h2>
+              )}
+              {t && (
+                <p className="mx-auto mt-5 max-w-2xl whitespace-pre-line text-[0.975rem] leading-[1.8] text-zinc-300 sm:text-[1.0625rem] sm:leading-[1.85]">
+                  {t}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -636,16 +567,11 @@ function SplitPillColumnsSection({
   pillsLeft: string[];
   pillsRight: string[];
 }) {
-  const left =
-    pillsLeft.length > 0
-      ? pillsLeft
-      : ["Point one", "Point two", "Point three", "Point four", "Point five"];
-  const right =
-    pillsRight.length > 0
-      ? pillsRight
-      : ["Point one", "Point two", "Point three", "Point four", "Point five"];
-  const lTitle = titleLeft.trim() || "Section title";
-  const rTitle = titleRight.trim() || "Section title";
+  const left = pillsLeft.map(p => p.trim()).filter(Boolean);
+  const right = pillsRight.map(p => p.trim()).filter(Boolean);
+  const lTitle = titleLeft.trim();
+  const rTitle = titleRight.trim();
+  if (left.length === 0 && right.length === 0 && !lTitle && !rTitle) return null;
 
   const renderRow = (
     label: string,
@@ -771,7 +697,7 @@ function findFirst<T extends ServicePageBlock["type"]>(
  * to sensible defaults when the block is missing or empty.
  */
 export function ServicePageTemplate({ page, portfolioItems }: Props) {
-  const blocks = page.blocks ?? [];
+  const blocks = (page.blocks ?? []).filter(b => !b.hidden);
 
   // 1. Three feature cards (icon + title + body)
   const featureBlock = findBlock(blocks, "featureCards");
@@ -890,62 +816,82 @@ export function ServicePageTemplate({ page, portfolioItems }: Props) {
 
   return (
     <>
-      <FeatureCardsSection
-        title={featureBlock?.sectionTitle ?? ""}
-        subtext={featureBlock?.sectionSubtext}
-        cards={featureBlock?.cards ?? []}
-        accentColor={featureBlock?.accentColor}
-      />
+      {featureBlock && (
+        <FeatureCardsSection
+          title={featureBlock.sectionTitle}
+          subtext={featureBlock.sectionSubtext}
+          cards={featureBlock.cards}
+          accentColor={featureBlock.accentColor}
+        />
+      )}
 
-      <PortfolioSection
-        portfolioTitle={portfolioBlock?.title ?? page.portfolioTitle}
-        sideTitle={portfolioBlock?.sideTitle}
-        sideText={portfolioBlock?.sideText}
-        item={portfolioItems[0]}
-      />
+      {portfolioBlock && (
+        <PortfolioSection
+          portfolioTitle={portfolioBlock.title ?? page.portfolioTitle}
+          sideTitle={portfolioBlock.sideTitle}
+          sideText={portfolioBlock.sideText}
+          item={portfolioItems[0]}
+        />
+      )}
 
-      <BulletsSection
-        title={bulletsTitle}
-        subtitle={bulletsSubtitle}
-        bullets={bulletsList}
-      />
+      {bulletsBlock && (
+        <BulletsSection
+          title={bulletsTitle}
+          subtitle={bulletsSubtitle}
+          bullets={bulletsList}
+        />
+      )}
 
-      <SupportSection
-        eyebrow={supportEyebrow}
-        title={supportTitle}
-        body={supportBody}
-        cards={supportCards}
-      />
+      {supportBlock && (
+        <SupportSection
+          eyebrow={supportEyebrow}
+          title={supportTitle}
+          body={supportBody}
+          cards={supportCards}
+        />
+      )}
 
-      <WhyChooseQuadSection
-        sectionTitle={quadTitle}
-        sectionSubtext={quadSubtext}
-        cards={quadCards}
-      />
+      {(quadBlock || quadFromIcons) && (
+        <WhyChooseQuadSection
+          sectionTitle={quadTitle}
+          sectionSubtext={quadSubtext}
+          cards={quadCards}
+        />
+      )}
 
-      <ServiceArticleSection
-        leadTitle={articleLeadTitle}
-        leadBody={articleLeadBody}
-        sections={articleSections}
-      />
+      {(articleBlock || articleLeadTitle || articleLeadBody || articleSections.length > 0) && (
+        <ServiceArticleSection
+          leadTitle={articleLeadTitle}
+          leadBody={articleLeadBody}
+          sections={articleSections}
+        />
+      )}
 
-      <SplitPillColumnsSection
-        titleLeft={splitPillsBlock?.titleLeft ?? ""}
-        titleRight={splitPillsBlock?.titleRight ?? ""}
-        pillsLeft={splitPillsBlock?.pillsLeft ?? []}
-        pillsRight={splitPillsBlock?.pillsRight ?? []}
-      />
+      {splitPillsBlock && (
+        <SplitPillColumnsSection
+          titleLeft={splitPillsBlock.titleLeft}
+          titleRight={splitPillsBlock.titleRight}
+          pillsLeft={splitPillsBlock.pillsLeft}
+          pillsRight={splitPillsBlock.pillsRight}
+        />
+      )}
 
-      <MediaSpotlightSection
-        title={spotlightTitle}
-        body={spotlightBody}
-        imageSrc={spotlightSrc}
-        imageAlt={spotlightAlt}
-      />
+      {(spotlightBlock || spotlightSrc) && (
+        <MediaSpotlightSection
+          title={spotlightTitle}
+          body={spotlightBody}
+          imageSrc={spotlightSrc}
+          imageAlt={spotlightAlt}
+        />
+      )}
 
-      <PageOutroSection title={outroTitle} body={outroBody} />
+      {outroBlock && (
+        <PageOutroSection title={outroTitle} body={outroBody} />
+      )}
 
-      <ServiceFaqSection section={page.faqSection} />
+      {findBlock(blocks, "faq") && (
+        <ServiceFaqSection section={page.faqSection} />
+      )}
     </>
   );
 }

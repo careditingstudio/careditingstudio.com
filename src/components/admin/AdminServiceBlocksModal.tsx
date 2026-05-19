@@ -140,8 +140,11 @@ export function AdminServiceBlocksModal({
         onPick={(url) => {
           pickRef.current(url);
           setMediaOpen(false);
+          setFlash({ type: "ok", text: "Image selected." });
         }}
         title="Choose image"
+        // Ensure it appears above AdminServiceBlocksModal (z-105)
+        modalZIndex={110}
       />
       <AdminServiceBlockEditorModal
         open={editorBlock !== null}

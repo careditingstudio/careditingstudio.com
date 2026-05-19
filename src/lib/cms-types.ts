@@ -191,12 +191,12 @@ export type ServiceValueColumn = { title: string; body: string };
 export type ServiceIconGridItem = { title: string; body: string };
 
 export type ServicePageBlock =
-  | { id: string; type: "heading"; text: string; subtext?: string }
-  | { id: string; type: "paragraph"; text: string }
-  | { id: string; type: "image"; src: string; alt: string; caption?: string }
-  | { id: string; type: "portfolio"; title?: string; sideTitle?: string; sideText?: string }
-  | { id: string; type: "faq" }
-  | { id: string; type: "spacer"; size?: "sm" | "md" | "lg" }
+  | { id: string; type: "heading"; text: string; subtext?: string; hidden?: boolean }
+  | { id: string; type: "paragraph"; text: string; hidden?: boolean }
+  | { id: string; type: "image"; src: string; alt: string; caption?: string; hidden?: boolean }
+  | { id: string; type: "portfolio"; title?: string; sideTitle?: string; sideText?: string; hidden?: boolean }
+  | { id: string; type: "faq"; hidden?: boolean }
+  | { id: string; type: "spacer"; size?: "sm" | "md" | "lg"; hidden?: boolean }
   | {
       id: string;
       type: "featureCards";
@@ -205,6 +205,7 @@ export type ServicePageBlock =
       /** Optional `#RRGGBB` for icon frames and hover border on this strip; omit = site `--accent`. */
       accentColor?: string;
       cards: ServiceFeatureCard[];
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -214,6 +215,7 @@ export type ServicePageBlock =
       imageSrc: string;
       imageAlt: string;
       imageRight: boolean;
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -222,6 +224,7 @@ export type ServicePageBlock =
       subtext?: string;
       pills: string[];
       checks: string[];
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -230,6 +233,7 @@ export type ServicePageBlock =
       subtext?: string;
       items: string[];
       columns?: 1 | 2;
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -238,6 +242,7 @@ export type ServicePageBlock =
       title: string;
       body: string;
       columns: ServiceValueColumn[];
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -246,6 +251,7 @@ export type ServicePageBlock =
       title: string;
       body: string;
       cards: ServiceValueColumn[];
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -253,6 +259,7 @@ export type ServicePageBlock =
       title: string;
       subtext?: string;
       items: ServiceIconGridItem[];
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -260,6 +267,7 @@ export type ServicePageBlock =
       title: string;
       subtext?: string;
       items: ServiceIconGridItem[];
+      hidden?: boolean;
     }
   | {
       id: string;
@@ -268,8 +276,9 @@ export type ServicePageBlock =
       titleRight: string;
       pillsLeft: string[];
       pillsRight: string[];
+      hidden?: boolean;
     }
-  | { id: string; type: "contentWide"; title?: string; body: string }
+  | { id: string; type: "contentWide"; title?: string; body: string; hidden?: boolean }
   /** 2×2 cards with icon + title + body (home “Why choose” style, horizontal rows). */
   | {
       id: string;
@@ -277,6 +286,7 @@ export type ServicePageBlock =
       sectionTitle: string;
       sectionSubtext?: string;
       cards: ServiceFeatureCard[];
+      hidden?: boolean;
     }
   /** Large lead title + intro, then repeatable H2 sections (grey band). */
   | {
@@ -285,6 +295,7 @@ export type ServicePageBlock =
       leadTitle: string;
       leadBody: string;
       sections: { title: string; body: string }[];
+      hidden?: boolean;
     }
   /** Headline, full-width image, description below (stacked). */
   | {
@@ -294,9 +305,10 @@ export type ServicePageBlock =
       body: string;
       imageSrc: string;
       imageAlt: string;
+      hidden?: boolean;
     }
   /** Final page outro — title + paragraph. */
-  | { id: string; type: "pageOutro"; title: string; body: string };
+  | { id: string; type: "pageOutro"; title: string; body: string; hidden?: boolean };
 
 export type ServicePageContent = {
   serviceId: number;
@@ -340,17 +352,17 @@ export function newServicePageBlock(
   const id = `b_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   switch (type) {
     case "heading":
-      return { id, type: "heading", text: "", subtext: "" };
+      return { id, type: "heading", text: "", subtext: "", hidden: false };
     case "paragraph":
-      return { id, type: "paragraph", text: "" };
+      return { id, type: "paragraph", text: "", hidden: false };
     case "image":
-      return { id, type: "image", src: "", alt: "", caption: "" };
+      return { id, type: "image", src: "", alt: "", caption: "", hidden: false };
     case "portfolio":
-      return { id, type: "portfolio", title: "", sideTitle: "", sideText: "" };
+      return { id, type: "portfolio", title: "", sideTitle: "", sideText: "", hidden: false };
     case "faq":
-      return { id, type: "faq" };
+      return { id, type: "faq", hidden: false };
     case "spacer":
-      return { id, type: "spacer", size: "md" };
+      return { id, type: "spacer", size: "md", hidden: false };
     case "featureCards":
       return {
         id,
@@ -362,6 +374,7 @@ export function newServicePageBlock(
           { iconKey: "sparkles", title: "", body: "" },
           { iconKey: "sparkles", title: "", body: "" },
         ],
+        hidden: false,
       };
     case "splitShowcase":
       return {
@@ -372,6 +385,7 @@ export function newServicePageBlock(
         imageSrc: "",
         imageAlt: "",
         imageRight: true,
+        hidden: false,
       };
     case "pillChecklist":
       return {
@@ -381,6 +395,7 @@ export function newServicePageBlock(
         subtext: "",
         pills: [],
         checks: [],
+        hidden: false,
       };
     case "tickChecklist":
       return {
@@ -390,6 +405,7 @@ export function newServicePageBlock(
         subtext: "",
         items: [],
         columns: 2,
+        hidden: false,
       };
     case "valueColumns":
       return {
@@ -403,6 +419,7 @@ export function newServicePageBlock(
           { title: "", body: "" },
           { title: "", body: "" },
         ],
+        hidden: false,
       };
     case "supportCards":
       return {
@@ -416,6 +433,7 @@ export function newServicePageBlock(
           { title: "", body: "" },
           { title: "", body: "" },
         ],
+        hidden: false,
       };
     case "iconGrid":
       return {
@@ -429,6 +447,7 @@ export function newServicePageBlock(
           { title: "", body: "" },
           { title: "", body: "" },
         ],
+        hidden: false,
       };
     case "compactFeatureCards":
       return {
@@ -442,6 +461,7 @@ export function newServicePageBlock(
           { title: "", body: "" },
           { title: "", body: "" },
         ],
+        hidden: false,
       };
     case "splitPillColumns":
       return {
@@ -451,9 +471,10 @@ export function newServicePageBlock(
         titleRight: "",
         pillsLeft: [],
         pillsRight: [],
+        hidden: false,
       };
     case "contentWide":
-      return { id, type: "contentWide", title: "", body: "" };
+      return { id, type: "contentWide", title: "", body: "", hidden: false };
     case "whyChooseQuad":
       return {
         id,
@@ -466,6 +487,7 @@ export function newServicePageBlock(
           { iconKey: "sparkles", title: "", body: "" },
           { iconKey: "globe", title: "", body: "" },
         ],
+        hidden: false,
       };
     case "serviceArticle":
       return {
@@ -477,6 +499,7 @@ export function newServicePageBlock(
           { title: "", body: "" },
           { title: "", body: "" },
         ],
+        hidden: false,
       };
     case "mediaSpotlight":
       return {
@@ -486,11 +509,12 @@ export function newServicePageBlock(
         body: "",
         imageSrc: "",
         imageAlt: "",
+        hidden: false,
       };
     case "pageOutro":
-      return { id, type: "pageOutro", title: "", body: "" };
+      return { id, type: "pageOutro", title: "", body: "", hidden: false };
     default:
-      return { id, type: "paragraph", text: "" };
+      return { id, type: "paragraph", text: "", hidden: false };
   }
 }
 
@@ -638,7 +662,7 @@ export function defaultServicePageContent(
   return {
     serviceId,
     slug: toServiceSlug(title),
-    pageTitle: title,
+    pageTitle: "",
     pageDescription: "",
     heroBannerSrc: "",
     introTitle: "",
@@ -1173,6 +1197,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
         typeof p.subtext === "string" && p.subtext.trim().length > 0
           ? p.subtext
           : undefined,
+      hidden,
     };
   }
   if (type === "paragraph") {
@@ -1188,6 +1213,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
         typeof p.caption === "string" && p.caption.trim().length > 0
           ? p.caption
           : undefined,
+      hidden,
     };
   }
   if (type === "portfolio") {
@@ -1206,6 +1232,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
         typeof p.sideText === "string" && p.sideText.trim().length > 0
           ? p.sideText
           : undefined,
+      hidden,
     };
   }
   if (type === "faq") {
@@ -1220,10 +1247,8 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
     const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
     const cards = cardsRaw
       .map(normalizeServiceFeatureCard)
-      .slice(0, 3);
-    while (cards.length < 3) {
-      cards.push({ iconKey: "sparkles", title: "", body: "" });
-    }
+      .filter((c) => c.title.trim() || c.body.trim())
+      .slice(0, 12);
     const accentColor = normalizeCmsAccentHex(p.accentColor);
     return {
       id,
@@ -1235,6 +1260,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           : undefined,
       ...(accentColor ? { accentColor } : {}),
       cards,
+      hidden,
     };
   }
   if (type === "splitShowcase") {
@@ -1249,6 +1275,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       imageSrc: typeof p.imageSrc === "string" ? p.imageSrc : "",
       imageAlt: typeof p.imageAlt === "string" ? p.imageAlt : "",
       imageRight: p.imageRight === false ? false : true,
+      hidden,
     };
   }
   if (type === "pillChecklist") {
@@ -1262,6 +1289,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           : undefined,
       pills: normalizeStringList(p.pills, 24),
       checks: normalizeStringList(p.checks, 24),
+      hidden,
     };
   }
   if (type === "tickChecklist") {
@@ -1275,12 +1303,15 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           : undefined,
       items: normalizeStringList(p.items, 40),
       columns: p.columns === 1 ? 1 : 2,
+      hidden,
     };
   }
   if (type === "valueColumns") {
     const colsRaw = Array.isArray(p.columns) ? p.columns : [];
-    const columns = colsRaw.map(normalizeServiceValueColumn).slice(0, 3);
-    while (columns.length < 3) columns.push({ title: "", body: "" });
+    const columns = colsRaw
+      .map(normalizeServiceValueColumn)
+      .filter((c) => c.title.trim() || c.body.trim())
+      .slice(0, 12);
     return {
       id,
       type: "valueColumns",
@@ -1291,12 +1322,15 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       title: typeof p.title === "string" ? p.title : "",
       body: typeof p.body === "string" ? p.body : "",
       columns,
+      hidden,
     };
   }
   if (type === "supportCards") {
     const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
-    const cards = cardsRaw.map(normalizeServiceValueColumn).slice(0, 3);
-    while (cards.length < 3) cards.push({ title: "", body: "" });
+    const cards = cardsRaw
+      .map(normalizeServiceValueColumn)
+      .filter((c) => c.title.trim() || c.body.trim())
+      .slice(0, 12);
     return {
       id,
       type: "supportCards",
@@ -1307,12 +1341,15 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       title: typeof p.title === "string" ? p.title : "",
       body: typeof p.body === "string" ? p.body : "",
       cards,
+      hidden,
     };
   }
   if (type === "iconGrid") {
     const itemsRaw = Array.isArray(p.items) ? p.items : [];
-    const items = itemsRaw.map(normalizeServiceIconGridItem).slice(0, 4);
-    while (items.length < 4) items.push({ title: "", body: "" });
+    const items = itemsRaw
+      .map(normalizeServiceIconGridItem)
+      .filter((c) => c.title.trim() || c.body.trim())
+      .slice(0, 16);
     return {
       id,
       type: "iconGrid",
@@ -1326,8 +1363,10 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
   }
   if (type === "compactFeatureCards") {
     const itemsRaw = Array.isArray(p.items) ? p.items : [];
-    const items = itemsRaw.map(normalizeServiceIconGridItem).slice(0, 4);
-    while (items.length < 4) items.push({ title: "", body: "" });
+    const items = itemsRaw
+      .map(normalizeServiceIconGridItem)
+      .filter((c) => c.title.trim() || c.body.trim())
+      .slice(0, 16);
     return {
       id,
       type: "compactFeatureCards",
@@ -1347,6 +1386,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       titleRight: typeof p.titleRight === "string" ? p.titleRight : "",
       pillsLeft: normalizeStringList(p.pillsLeft, 24),
       pillsRight: normalizeStringList(p.pillsRight, 24),
+      hidden,
     };
   }
   if (type === "contentWide") {
@@ -1358,14 +1398,15 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           ? p.title
           : undefined,
       body: typeof p.body === "string" ? p.body : "",
+      hidden,
     };
   }
   if (type === "whyChooseQuad") {
     const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
-    const cards = cardsRaw.map(normalizeServiceFeatureCard).slice(0, 4);
-    while (cards.length < 4) {
-      cards.push({ iconKey: "sparkles", title: "", body: "" });
-    }
+    const cards = cardsRaw
+      .map(normalizeServiceFeatureCard)
+      .filter((c) => c.title.trim() || c.body.trim())
+      .slice(0, 4);
     return {
       id,
       type: "whyChooseQuad",
@@ -1386,6 +1427,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       leadTitle: typeof p.leadTitle === "string" ? p.leadTitle : "",
       leadBody: typeof p.leadBody === "string" ? p.leadBody : "",
       sections,
+      hidden,
     };
   }
   if (type === "mediaSpotlight") {
@@ -1396,6 +1438,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       body: typeof p.body === "string" ? p.body : "",
       imageSrc: typeof p.imageSrc === "string" ? p.imageSrc : "",
       imageAlt: typeof p.imageAlt === "string" ? p.imageAlt : "",
+      hidden,
     };
   }
   if (type === "pageOutro") {
@@ -1404,6 +1447,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       type: "pageOutro",
       title: typeof p.title === "string" ? p.title : "",
       body: typeof p.body === "string" ? p.body : "",
+      hidden,
     };
   }
   return null;
@@ -2014,18 +2058,18 @@ export function normalizeCmsJson(
       const row = byService.get(svc.id);
       const fallback = defaultServicePageContent(svc.id, svc.name);
       if (!row) return fallback;
-      const name = svc.name.trim() || fallback.pageTitle;
+      const name = svc.name.trim();
       return {
         ...fallback,
         ...row,
         serviceId: svc.id,
         slug: toServiceSlug(row.slug || name),
-        pageTitle: row.pageTitle.trim() ? row.pageTitle : name,
+        pageTitle: row.pageTitle.trim(),
         pageDescription: row.pageDescription ?? fallback.pageDescription,
         heroBannerSrc: row.heroBannerSrc ?? fallback.heroBannerSrc,
         introTitle: row.introTitle ?? fallback.introTitle,
         introBody: row.introBody ?? fallback.introBody,
-        portfolioTitle: row.portfolioTitle ?? fallback.portfolioTitle,
+        portfolioTitle: row.portfolioTitle.trim(),
         selectedPortfolioIndices: dedupeFeaturedPortfolioOrder(
           row.selectedPortfolioIndices,
           base.portfolioGrid.length,
