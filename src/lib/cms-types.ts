@@ -1188,6 +1188,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
       ? p.id
       : `b_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   const type = p.type;
+  const hidden = Boolean(p.hidden);
   if (type === "heading") {
     return {
       id,
@@ -1201,7 +1202,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
     };
   }
   if (type === "paragraph") {
-    return { id, type: "paragraph", text: typeof p.text === "string" ? p.text : "" };
+    return { id, type: "paragraph", text: typeof p.text === "string" ? p.text : "", hidden };
   }
   if (type === "image") {
     return {
@@ -1236,12 +1237,12 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
     };
   }
   if (type === "faq") {
-    return { id, type: "faq" };
+    return { id, type: "faq", hidden };
   }
   if (type === "spacer") {
     const size =
       p.size === "sm" || p.size === "md" || p.size === "lg" ? p.size : "md";
-    return { id, type: "spacer", size };
+    return { id, type: "spacer", size, hidden };
   }
   if (type === "featureCards") {
     const cardsRaw = Array.isArray(p.cards) ? p.cards : [];
@@ -1359,6 +1360,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           ? p.subtext
           : undefined,
       items,
+      hidden,
     };
   }
   if (type === "compactFeatureCards") {
@@ -1376,6 +1378,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           ? p.subtext
           : undefined,
       items,
+      hidden,
     };
   }
   if (type === "splitPillColumns") {
@@ -1416,6 +1419,7 @@ function normalizeServicePageBlock(raw: unknown): ServicePageBlock | null {
           ? p.sectionSubtext
           : undefined,
       cards,
+      hidden,
     };
   }
   if (type === "serviceArticle") {
