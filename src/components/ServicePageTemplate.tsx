@@ -6,7 +6,6 @@ import { isUploadedAsset } from "@/lib/cms-types";
 import type {
   PortfolioGridItem,
   ServiceFeatureCard,
-  ServicePageBlock,
   ServicePageContent,
   ServiceValueColumn,
 } from "@/lib/cms-types";

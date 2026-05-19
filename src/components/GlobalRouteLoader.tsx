@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { isUploadedAsset } from "@/lib/cms-types";
 import { useEffect, useState } from "react";
 
 type Props = {
@@ -33,13 +35,15 @@ export function GlobalRouteLoader({ carSrc = "", revealDelayMs = 140 }: Props) {
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.08),transparent_62%)]" />
               {carSrc.trim().length > 0 ? (
                 <div className="route-loader-car-motion absolute inset-0 flex items-center justify-center">
-                  <img
+                  <Image
                     src={carSrc}
                     alt=""
                     draggable={false}
-                    loading="eager"
-                    decoding="async"
+                    priority
                     className="pointer-events-none h-auto w-[170%] max-w-none select-none object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.55)]"
+                    width={400}
+                    height={200}
+                    unoptimized={isUploadedAsset(carSrc)}
                   />
                 </div>
               ) : (
