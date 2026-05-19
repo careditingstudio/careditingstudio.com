@@ -415,29 +415,8 @@ export function AdminServiceEditModal({
 
   return (
     <>
-      <MediaLibraryModal
-        open={mediaOpen}
-        onClose={() => setMediaOpen(false)}
-        onPick={(url) => {
-          onSetPage({ heroBannerSrc: url });
-          setMediaOpen(false);
-          setFlash({ type: "ok", text: "Banner image updated." });
-          setTimeout(() => setFlash(null), 2000);
-        }}
-        title="Choose hero banner"
-      />
-
-      <AdminServiceBlocksModal
-        open={blocksOpen}
-        onClose={() => setBlocksOpen(false)}
-        serviceName={service.name}
-        blocks={blocks}
-        onChangeBlocks={(next) => onSetPage({ blocks: next })}
-        setFlash={setFlash}
-      />
-
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-[40] flex items-center justify-center p-4 sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -708,6 +687,27 @@ export function AdminServiceEditModal({
           </div>
         </div>
       </div>
+
+      <AdminServiceBlocksModal
+        open={blocksOpen}
+        onClose={() => setBlocksOpen(false)}
+        serviceName={service.name}
+        blocks={blocks}
+        onChangeBlocks={(next) => onSetPage({ blocks: next })}
+        setFlash={setFlash}
+      />
+
+      <MediaLibraryModal
+        open={mediaOpen}
+        onClose={() => setMediaOpen(false)}
+        onPick={(url) => {
+          onSetPage({ heroBannerSrc: url });
+          setMediaOpen(false);
+          setFlash({ type: "ok", text: "Banner image updated." });
+          setTimeout(() => setFlash(null), 2000);
+        }}
+        title="Choose hero banner"
+      />
     </>
   );
 }

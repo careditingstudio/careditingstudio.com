@@ -134,35 +134,8 @@ export function AdminServiceBlocksModal({
 
   return (
     <>
-      <MediaLibraryModal
-        open={mediaOpen}
-        onClose={() => setMediaOpen(false)}
-        onPick={(url) => {
-          pickRef.current(url);
-          setMediaOpen(false);
-          setFlash({ type: "ok", text: "Image selected." });
-        }}
-        title="Choose image"
-      />
-      <AdminServiceBlockEditorModal
-        open={editorBlock !== null}
-        onClose={() => setEditorBlock(null)}
-        block={editorBlock}
-        onSave={(b) => {
-          const idx = blocks.findIndex((x) => x.id === b.id);
-          if (idx < 0) return;
-          const next = [...blocks];
-          next[idx] = b;
-          onChangeBlocks(next);
-        }}
-        openMediaPicker={(cb) => {
-          pickRef.current = cb;
-          setMediaOpen(true);
-        }}
-      />
-
       <div
-        className="fixed inset-0 z-[101] flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-[50] flex items-center justify-center p-4 sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -315,6 +288,34 @@ export function AdminServiceBlocksModal({
           </div>
         </div>
       </div>
+
+      <AdminServiceBlockEditorModal
+        open={editorBlock !== null}
+        onClose={() => setEditorBlock(null)}
+        block={editorBlock}
+        onSave={(b) => {
+          const idx = blocks.findIndex((x) => x.id === b.id);
+          if (idx < 0) return;
+          const next = [...blocks];
+          next[idx] = b;
+          onChangeBlocks(next);
+        }}
+        openMediaPicker={(cb) => {
+          pickRef.current = cb;
+          setMediaOpen(true);
+        }}
+      />
+
+      <MediaLibraryModal
+        open={mediaOpen}
+        onClose={() => setMediaOpen(false)}
+        onPick={(url) => {
+          pickRef.current(url);
+          setMediaOpen(false);
+          setFlash({ type: "ok", text: "Image selected." });
+        }}
+        title="Choose image"
+      />
     </>
   );
 }
