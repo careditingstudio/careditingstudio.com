@@ -134,6 +134,7 @@ type SiteHeaderProps = {
     header: { servicesMenuTitle: string; viewAllServices: string };
     cta: { orderNow: string };
   };
+  onMenuOpenChange?: (open: boolean) => void;
 };
 
 export function SiteHeader({
@@ -142,6 +143,7 @@ export function SiteHeader({
   servicePages = [],
   navLabels: navLabelsProp,
   shell,
+  onMenuOpenChange,
 }: SiteHeaderProps) {
   const labels =
     navLabelsProp && navLabelsProp.length === navItems.length
@@ -157,6 +159,14 @@ export function SiteHeader({
   const serviceHrefMap = useMemo(() => getServiceHrefMap(services, servicePages), [services, servicePages]);
 
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleSetMenuOpen = useCallback((val: boolean | ((prev: boolean) => boolean)) => {
+    setMenuOpen((prev) => {
+      const next = typeof val === "function" ? val(prev) : val;
+      onMenuOpenChange?.(next);
+      return next;
+    });
+  }, [onMenuOpenChange]);
   const [servicesHover, setServicesHover] = useState(false);
   const [servicesMobileOpen, setServicesMobileOpen] = useState(false);
 
@@ -185,9 +195,10 @@ export function SiteHeader({
   }, [clearHoverTimer]);
 
   useEffect(() => {
-    setMenuOpen(false);
+    handleSetMenuOpen(false);
     setServicesHover(false);
     setServicesMobileOpen(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   useEffect(() => {
@@ -205,7 +216,7 @@ export function SiteHeader({
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") handleSetMenuOpen(false);
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -213,7 +224,7 @@ export function SiteHeader({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [menuOpen]);
+  }, [menuOpen, handleSetMenuOpen]);
 
   useEffect(() => {
     return () => clearHoverTimer();
@@ -389,7 +400,7 @@ return (
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
-          onClick={() => setMenuOpen((o) => !o)}
+          onClick={() => handleSetMenuOpen((o) => !o)}
         >
           <IconMenu open={menuOpen} />
         </button>
@@ -406,7 +417,7 @@ return (
           <div className="flex h-[var(--header-h)] items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6">
             <Link
               href="/"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => handleSetMenuOpen(false)}
               className={`${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight text-white transition-colors sm:gap-3 sm:text-[1.35rem]`}
             >
               <span className="relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl shadow-[0_12px_40px_-14px_rgba(255,255,255,0.25)] sm:h-10 sm:max-w-[11rem]">
@@ -427,7 +438,7 @@ return (
               aria-expanded={true}
               aria-controls="mobile-nav"
               aria-label="Close menu"
-              onClick={() => setMenuOpen(false)}
+              onClick={() => handleSetMenuOpen(false)}
             >
               <IconMenu open={true} />
             </button>
@@ -477,7 +488,7 @@ return (
                               <Link
                                 key={svc.id}
                                 href={svcHref}
-                                onClick={() => { setMenuOpen(false); setServicesMobileOpen(false); }}
+                                onClick={() => { handleSetMenuOpen(false); setServicesMobileOpen(false); }}
                                 className="text-lg font-medium text-[var(--muted)] transition-colors hover:text-[var(--foreground)] sm:text-xl"
                               >
                                 {svc.name.trim() || "Service"}
@@ -486,7 +497,7 @@ return (
                           })}
                           <Link
                             href="/services"
-                            onClick={() => { setMenuOpen(false); setServicesMobileOpen(false); }}
+                            onClick={() => { handleSetMenuOpen(false); setServicesMobileOpen(false); }}
                             className="text-lg font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)] sm:text-xl"
                           >
                             {megaViewAll} &rarr;
@@ -501,7 +512,7 @@ return (
                   <Link
                     key={href}
                     href={href}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={() => handleSetMenuOpen(false)}
                     className={[
                       `${display.className} block text-[2rem] font-semibold leading-tight tracking-tight transition-colors sm:text-4xl`,
                       active ? "text-[var(--accent)]" : "hover:text-[var(--accent)]",
@@ -516,13 +527,13 @@ return (
             <div className="mt-14 flex flex-col gap-4 sm:mt-16">
               <OrderNowLink
                 className="flex min-h-[3.5rem] items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-lg font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-transform hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
-                onNavigate={() => setMenuOpen(false)}
+                onNavigate={() => handleSetMenuOpen(false)}
                 label={orderLabel}
               />
               <Link
                 href="/free-trial"
                 prefetch
-                onClick={() => setMenuOpen(false)}
+                onClick={() => handleSetMenuOpen(false)}
                 className="flex min-h-[3.5rem] items-center justify-center rounded-2xl border border-[var(--line-strong)] bg-transparent px-6 text-lg font-semibold transition-colors hover:bg-white/[0.04]"
               >
                 {freeTrialLabel}

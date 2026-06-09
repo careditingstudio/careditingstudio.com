@@ -29,10 +29,11 @@ export function SiteTopChrome({
 }: Props) {
   const { isChromeHideLocked } = useChromeScrollLock();
   const [announcementHidden, setAnnouncementHidden] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const lastY = useRef(0);
   const ticking = useRef(false);
 
-  const hideAnnouncement = announcementHidden && !isChromeHideLocked;
+  const hideAnnouncement = mobileMenuOpen || (announcementHidden && !isChromeHideLocked);
 
   useEffect(() => {
     lastY.current = window.scrollY;
@@ -100,6 +101,7 @@ export function SiteTopChrome({
           servicePages={servicePages}
           navLabels={navLabels}
           shell={shell}
+          onMenuOpenChange={setMobileMenuOpen}
         />
       </div>
 
