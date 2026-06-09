@@ -25,7 +25,7 @@ export async function SiteTopChromeWrapper({ children }: { children: ReactNode }
           servicePages={cms.servicePages}
           navLabels={navLabels}
           shell={shell}
-          reserveLanguageBarSpace
+          reserveLanguageBarSpace={VISITOR_I18N_ENABLED}
         >
           {children}
           <SiteLocationsMapSection site={cms.site} layout={shell.layout} />
