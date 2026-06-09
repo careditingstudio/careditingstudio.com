@@ -51,7 +51,7 @@ export function BeforeAfterSlider({
     !isCloudinaryUrl(beforeSrc) ||
     !isCloudinaryUrl(afterSrc);
   const aspectClass =
-    layout === "square" || layout === "portfolio"
+    layout === "square"
       ? "aspect-square"
       : "aspect-[4/3]";
   const imageSizes =
