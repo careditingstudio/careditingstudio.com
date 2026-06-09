@@ -248,10 +248,12 @@ export function SiteHeader({
   return (
     <header
       className={[
-        "relative z-0 w-full transition-[background-color,backdrop-filter,border-color,box-shadow] duration-300",
-        overlayNav
-          ? "border-b-0 !border-transparent !bg-transparent shadow-none [backdrop-filter:none] [-webkit-backdrop-filter:none]"
-          : "border-b border-[var(--line)] bg-[var(--header-bg)] shadow-sm backdrop-blur-xl backdrop-saturate-150",
+        "relative z-0 w-full transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-300",
+        menuOpen
+          ? "border-b-0 !border-transparent bg-[var(--background)]/95 shadow-none backdrop-blur-2xl"
+          : overlayNav
+            ? "border-b-0 !border-transparent !bg-transparent shadow-none [backdrop-filter:none] [-webkit-backdrop-filter:none]"
+            : "border-b border-[var(--line)] bg-[var(--header-bg)] shadow-sm backdrop-blur-xl backdrop-saturate-150",
       ].join(" ")}
       role="banner"
     >
@@ -261,13 +263,13 @@ export function SiteHeader({
           prefetch
           className={[
             `${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight transition-colors sm:gap-3 sm:text-[1.35rem]`,
-            overlayNav ? "text-white" : "text-[var(--foreground)]",
+            overlayNav && !menuOpen ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
           <span
             className={[
               "relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl sm:h-10 sm:max-w-[11rem]",
-              overlayNav
+              overlayNav && !menuOpen
                 ? "shadow-[0_12px_40px_-14px_rgba(255,255,255,0.45)]"
                 : "shadow-[0_10px_32px_-12px_rgba(0,0,0,0.45)]",
             ].join(" ")}
@@ -383,7 +385,7 @@ export function SiteHeader({
           type="button"
           className={[
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors lg:hidden",
-            overlayNav
+            overlayNav && !menuOpen
               ? "text-white hover:bg-white/10"
               : "text-[var(--foreground)] hover:bg-black/[0.05] dark:hover:bg-white/[0.08]",
           ].join(" ")}
