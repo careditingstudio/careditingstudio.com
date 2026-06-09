@@ -250,7 +250,7 @@ export function SiteHeader({
       className={[
         "relative z-0 w-full transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-300",
         menuOpen
-          ? "border-b-0 !border-transparent bg-[var(--background)]/95 shadow-none backdrop-blur-2xl"
+          ? "border-b-0 !border-transparent bg-zinc-950/95 shadow-none backdrop-blur-2xl"
           : overlayNav
             ? "border-b-0 !border-transparent !bg-transparent shadow-none [backdrop-filter:none] [-webkit-backdrop-filter:none]"
             : "border-b border-[var(--line)] bg-[var(--header-bg)] shadow-sm backdrop-blur-xl backdrop-saturate-150",
@@ -407,7 +407,7 @@ export function SiteHeader({
           className={[
             "fixed bottom-0 left-0 right-0 z-[75] flex flex-col overflow-y-auto lg:hidden",
             "top-[calc(var(--announcement-h)+var(--header-h))]",
-            "bg-[var(--background)]/95 text-[var(--foreground)] backdrop-blur-2xl",
+            "bg-zinc-950/95 text-[var(--foreground)] backdrop-blur-2xl",
           ].join(" ")}
         >
           <div className="flex min-h-full flex-col px-6 py-10 sm:px-8 sm:py-12">
