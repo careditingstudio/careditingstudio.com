@@ -395,162 +395,115 @@ export function SiteHeader({
       </div>
 
       {menuOpen ? (
-        <>
-          <button
-            type="button"
-            className="fixed bottom-0 left-0 right-0 top-[calc(var(--announcement-h)+var(--header-h))] z-[72] bg-black/50 backdrop-blur-[2px] transition-opacity duration-200 lg:hidden"
-            aria-label="Close menu"
-            onClick={() => setMenuOpen(false)}
-          />
-          <div
-            id="mobile-nav"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile navigation"
-            className={[
-              "fixed bottom-0 left-0 right-0 z-[75] flex max-h-[min(92dvh,calc(100dvh-var(--announcement-h)-var(--header-h)+8px))] flex-col overflow-hidden rounded-t-3xl border shadow-[0_-12px_48px_-12px_rgba(0,0,0,0.55)] lg:hidden",
-              "top-[calc(var(--announcement-h)+var(--header-h))]",
-              overlayNav
-                ? "border-white/10 bg-zinc-950 text-white"
-                : "border-[var(--line)] bg-[var(--popover)] text-[var(--foreground)] shadow-xl",
-            ].join(" ")}
-          >
-            <div
-              className={[
-                "mx-auto mt-1 mb-2 h-1 w-10 shrink-0 rounded-full",
-                overlayNav ? "bg-white/20" : "bg-[var(--muted)]/40",
-              ].join(" ")}
-              aria-hidden
-            />
-            <div className="flex min-h-[12rem] flex-1 flex-col">
-              <nav
-                className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 pb-2 pt-1"
-                aria-label="Mobile main"
-              >
-                {mainMobileNavItems.map(({ href }) => {
-                  const navIdx = navItems.findIndex((n) => n.href === href);
-                  const label =
-                    navIdx >= 0
-                      ? (labels[navIdx] ?? navItems[navIdx]!.label)
-                      : href;
-                  if (href === "/services") {
-                    return (
-                      <div key={href} className="flex flex-col">
-                        <button
-                          type="button"
-                          className={[
-                            `${sans.className} flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[0.9375rem] font-semibold leading-snug transition-colors duration-200`,
-                            overlayNav
-                              ? "text-white/90 hover:bg-white/[0.08]"
-                              : "text-[var(--foreground)] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
-                          ].join(" ")}
-                          aria-expanded={servicesMobileOpen}
-                          aria-controls="mobile-services-panel"
-                          id="mobile-services-trigger"
-                          onClick={() =>
-                            setServicesMobileOpen((open) => !open)
-                          }
-                        >
-                          {label}
-                          <IconChevronDown
-                            className={[
-                              "shrink-0 opacity-70 transition-transform duration-200",
-                              servicesMobileOpen ? "rotate-180" : "",
-                            ].join(" ")}
-                          />
-                        </button>
-                        {servicesMobileOpen ? (
-                          <div
-                            id="mobile-services-panel"
-                            role="region"
-                            aria-labelledby="mobile-services-trigger"
-                            className={[
-                              "mt-1 rounded-xl p-2.5",
-                              overlayNav
-                                ? "bg-white/[0.06] ring-1 ring-white/10"
-                                : "bg-zinc-100/80 ring-1 ring-[var(--line)] dark:bg-zinc-900/70 dark:ring-white/10",
-                            ].join(" ")}
-                          >
-                            <ServicesMegaMenuGrid
-                              dense
-                              tone={overlayNav ? "overlay" : "default"}
-                              services={services}
-                              servicePages={servicePages}
-                              onNavigate={() => {
-                                setMenuOpen(false);
-                                setServicesMobileOpen(false);
-                              }}
-                            />
-                            <Link
-                              href="/services"
-                              prefetch
-                              onClick={() => {
-                                setMenuOpen(false);
-                                setServicesMobileOpen(false);
-                              }}
-                              className={[
-                                `${sans.className} mt-2 flex w-full items-center justify-center rounded-lg py-2.5 text-center text-[0.875rem] font-semibold transition-colors`,
-                                overlayNav
-                                  ? "bg-white/12 text-white hover:bg-white/18"
-                                  : "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]",
-                              ].join(" ")}
-                            >
-                              {megaViewAll}
-                            </Link>
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  }
-                  const active =
-                    href === "/"
-                      ? pathname === "/"
-                      : pathname === href || pathname.startsWith(`${href}/`);
+        <div
+          id="mobile-nav"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
+          className={[
+            "fixed bottom-0 left-0 right-0 z-[75] flex flex-col overflow-y-auto lg:hidden",
+            "top-[calc(var(--announcement-h)+var(--header-h))]",
+            "bg-[var(--background)]/95 text-[var(--foreground)] backdrop-blur-2xl",
+          ].join(" ")}
+        >
+          <div className="flex min-h-full flex-col px-6 py-10 sm:px-8 sm:py-12">
+            <nav
+              className="flex flex-1 flex-col space-y-6 sm:space-y-8"
+              aria-label="Mobile main"
+            >
+              {mainMobileNavItems.map(({ href }) => {
+                const navIdx = navItems.findIndex((n) => n.href === href);
+                const label = navIdx >= 0 ? (labels[navIdx] ?? navItems[navIdx]!.label) : href;
+                const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+                
+                if (href === "/services") {
                   return (
-                    <NavLink
-                      key={href}
-                      href={href}
-                      label={label}
-                      active={active}
-                      variant={overlayNav ? "overlay" : "solid"}
-                      dense
-                      onNavigate={() => setMenuOpen(false)}
-                    />
+                    <div key={href} className="flex flex-col">
+                      <button
+                        type="button"
+                        className={[
+                          `${display.className} flex w-full items-center justify-between text-left text-[2rem] font-semibold leading-tight tracking-tight transition-colors sm:text-4xl`,
+                          servicesMobileOpen || active ? "text-[var(--accent)]" : "hover:text-[var(--accent)]",
+                        ].join(" ")}
+                        aria-expanded={servicesMobileOpen}
+                        aria-controls="mobile-services-panel"
+                        id="mobile-services-trigger"
+                        onClick={() => setServicesMobileOpen((open) => !open)}
+                      >
+                        {label}
+                        <IconChevronDown
+                          className={[
+                            "h-7 w-7 shrink-0 transition-transform duration-300",
+                            servicesMobileOpen ? "rotate-180" : "",
+                          ].join(" ")}
+                        />
+                      </button>
+                      {servicesMobileOpen ? (
+                        <div
+                          id="mobile-services-panel"
+                          role="region"
+                          aria-labelledby="mobile-services-trigger"
+                          className="mt-5 flex flex-col space-y-4 pl-4 sm:mt-6 sm:space-y-5 sm:pl-6"
+                        >
+                          {services.map(svc => {
+                            const svcHref = servicePages.find(p => p.id === svc.id)?.href ?? `/services`;
+                            return (
+                              <Link
+                                key={svc.id}
+                                href={svcHref}
+                                onClick={() => { setMenuOpen(false); setServicesMobileOpen(false); }}
+                                className="text-lg font-medium text-[var(--muted)] transition-colors hover:text-[var(--foreground)] sm:text-xl"
+                              >
+                                {svc.name.trim() || "Service"}
+                              </Link>
+                            );
+                          })}
+                          <Link
+                            href="/services"
+                            onClick={() => { setMenuOpen(false); setServicesMobileOpen(false); }}
+                            className="text-lg font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)] sm:text-xl"
+                          >
+                            {megaViewAll} &rarr;
+                          </Link>
+                        </div>
+                      ) : null}
+                    </div>
                   );
-                })}
-              </nav>
-              <div
-                className={[
-                  "shrink-0 border-t px-4 py-3 backdrop-blur-md supports-[padding:env(safe-area-inset-bottom)]:pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
-                  overlayNav
-                    ? "border-white/10 bg-zinc-950/90"
-                    : "border-[var(--line)] bg-[color-mix(in_oklab,var(--background)_92%,transparent)]",
-                ].join(" ")}
-              >
-                <div className="flex gap-2.5">
-                  <OrderNowLink
-                    className="min-h-0 flex-1 !min-h-10 !rounded-xl !py-2.5 !text-[0.9375rem] !shadow-[0_8px_20px_-12px_rgba(0,0,0,0.45)]"
-                    onNavigate={() => setMenuOpen(false)}
-                    label={orderLabel}
-                  />
+                }
+
+                return (
                   <Link
-                    href="/free-trial"
-                    prefetch
+                    key={href}
+                    href={href}
                     onClick={() => setMenuOpen(false)}
                     className={[
-                      `${sans.className} inline-flex min-h-10 flex-1 items-center justify-center rounded-xl border px-3 text-center text-[0.9375rem] font-semibold leading-none transition-colors duration-200`,
-                      overlayNav
-                        ? "border-white/25 bg-white/[0.06] text-white hover:bg-white/[0.11]"
-                        : "border-[var(--line)] bg-white/[0.04] text-[var(--foreground)] hover:bg-white/[0.08] dark:bg-white/[0.05]",
+                      `${display.className} block text-[2rem] font-semibold leading-tight tracking-tight transition-colors sm:text-4xl`,
+                      active ? "text-[var(--accent)]" : "hover:text-[var(--accent)]",
                     ].join(" ")}
                   >
-                    {freeTrialLabel}
+                    {label}
                   </Link>
-                </div>
-              </div>
+                );
+              })}
+            </nav>
+
+            <div className="mt-14 flex flex-col gap-4 sm:mt-16">
+              <OrderNowLink
+                className="flex min-h-[3.5rem] items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-lg font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-transform hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
+                onNavigate={() => setMenuOpen(false)}
+                label={orderLabel}
+              />
+              <Link
+                href="/free-trial"
+                prefetch
+                onClick={() => setMenuOpen(false)}
+                className="flex min-h-[3.5rem] items-center justify-center rounded-2xl border border-[var(--line-strong)] bg-transparent px-6 text-lg font-semibold transition-colors hover:bg-white/[0.04]"
+              >
+                {freeTrialLabel}
+              </Link>
             </div>
           </div>
-        </>
+        </div>
       ) : null}
     </header>
   );
