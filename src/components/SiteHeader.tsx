@@ -244,16 +244,13 @@ export function SiteHeader({
               : "text-[var(--muted)] hover:-translate-y-0.5 hover:border-[var(--line)] hover:bg-white/70 hover:text-[var(--foreground)] hover:shadow-[0_14px_30px_-20px_rgba(0,0,0,0.65)] dark:hover:bg-white/[0.08]",
           ].join(" "),
     ].join(" ");
-
-  return (
+return (
     <header
       className={[
         "relative z-0 w-full transition-[background-color,backdrop-filter,border-color,box-shadow,color] duration-300",
-        menuOpen
-          ? "border-b-0 !border-transparent bg-zinc-950/95 shadow-none backdrop-blur-2xl"
-          : overlayNav
-            ? "border-b-0 !border-transparent !bg-transparent shadow-none [backdrop-filter:none] [-webkit-backdrop-filter:none]"
-            : "border-b border-[var(--line)] bg-[var(--header-bg)] shadow-sm backdrop-blur-xl backdrop-saturate-150",
+        overlayNav
+          ? "border-b-0 !border-transparent !bg-transparent shadow-none [backdrop-filter:none] [-webkit-backdrop-filter:none]"
+          : "border-b border-[var(--line)] bg-[var(--header-bg)] shadow-sm backdrop-blur-xl backdrop-saturate-150",
       ].join(" ")}
       role="banner"
     >
@@ -263,13 +260,13 @@ export function SiteHeader({
           prefetch
           className={[
             `${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight transition-colors sm:gap-3 sm:text-[1.35rem]`,
-            overlayNav && !menuOpen ? "text-white" : "text-[var(--foreground)]",
+            overlayNav ? "text-white" : "text-[var(--foreground)]",
           ].join(" ")}
         >
           <span
             className={[
               "relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl sm:h-10 sm:max-w-[11rem]",
-              overlayNav && !menuOpen
+              overlayNav
                 ? "shadow-[0_12px_40px_-14px_rgba(255,255,255,0.45)]"
                 : "shadow-[0_10px_32px_-12px_rgba(0,0,0,0.45)]",
             ].join(" ")}
@@ -385,7 +382,7 @@ export function SiteHeader({
           type="button"
           className={[
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors lg:hidden",
-            overlayNav && !menuOpen
+            overlayNav
               ? "text-white hover:bg-white/10"
               : "text-[var(--foreground)] hover:bg-black/[0.05] dark:hover:bg-white/[0.08]",
           ].join(" ")}
@@ -404,12 +401,37 @@ export function SiteHeader({
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
-          className={[
-            "fixed bottom-0 left-0 right-0 z-[75] flex flex-col overflow-y-auto lg:hidden",
-            "top-[calc(var(--announcement-h)+var(--header-h))]",
-            "bg-zinc-950/95 text-[var(--foreground)] backdrop-blur-2xl",
-          ].join(" ")}
+          className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-zinc-950/98 text-zinc-50 backdrop-blur-3xl lg:hidden"
         >
+          <div className="flex h-[var(--header-h)] items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6">
+            <Link
+              href="/"
+              onClick={() => setMenuOpen(false)}
+              className={`${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight text-white transition-colors sm:gap-3 sm:text-[1.35rem]`}
+            >
+              <span className="relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl shadow-[0_12px_40px_-14px_rgba(255,255,255,0.25)] sm:h-10 sm:max-w-[11rem]">
+                <Image
+                  src="/logo.png"
+                  alt=""
+                  width={220}
+                  height={56}
+                  className="h-full w-auto max-h-full object-contain object-left"
+                  priority
+                />
+              </span>
+              <span className="whitespace-nowrap">{brandName}</span>
+            </Link>
+            <button
+              type="button"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-white transition-colors hover:bg-white/10"
+              aria-expanded={true}
+              aria-controls="mobile-nav"
+              aria-label="Close menu"
+              onClick={() => setMenuOpen(false)}
+            >
+              <IconMenu open={true} />
+            </button>
+          </div>
           <div className="flex min-h-full flex-col px-6 py-10 sm:px-8 sm:py-12">
             <nav
               className="flex flex-1 flex-col space-y-6 sm:space-y-8"
