@@ -7,10 +7,11 @@ import { OrderNowLink } from "@/components/OrderNowLink";
 import { ServicesMegaMenuGrid } from "@/components/ServicesMegaMenu";
 import { navItems } from "@/config/site";
 import type { ServicePageContent, ServiceRow } from "@/lib/cms-types";
+import { getServiceHrefMap } from "@/lib/service-pages";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type NavVariant = "overlay" | "solid";
 
@@ -153,6 +154,7 @@ export function SiteHeader({
   const isHome = pathname === "/";
   const chromeSolid = useHomeChromeSolid();
   const { lockChromeHide, unlockChromeHide } = useChromeScrollLock();
+  const serviceHrefMap = useMemo(() => getServiceHrefMap(services, servicePages), [services, servicePages]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesHover, setServicesHover] = useState(false);
@@ -446,7 +448,7 @@ export function SiteHeader({
                           className="mt-5 flex flex-col space-y-4 pl-4 sm:mt-6 sm:space-y-5 sm:pl-6"
                         >
                           {services.map(svc => {
-                            const svcHref = servicePages.find(p => p.id === svc.id)?.href ?? `/services`;
+                            const svcHref = serviceHrefMap.get(svc.id) ?? `/services`;
                             return (
                               <Link
                                 key={svc.id}
