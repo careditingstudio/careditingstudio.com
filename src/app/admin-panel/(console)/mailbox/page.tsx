@@ -2,6 +2,8 @@
 
 import type { MailboxKind } from "@/lib/mailbox-types";
 import { countryFromDialCode, formatCountryLabel } from "@/lib/country-display";
+import { useAdminCms } from "@/components/admin/AdminCmsContext";
+import { AdminEmailTemplateBuilder } from "@/components/admin/AdminEmailTemplateBuilder";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -125,6 +127,25 @@ function MailboxRequirementsContent({ text }: { text: string }) {
 
 export default function AdminMailboxPage() {
   const TAWK_DASHBOARD_URL = "https://dashboard.tawk.to/#/dashboard/69e0f8ff06245e1c331a9ce4";
+  
+  const adminCms = useAdminCms();
+  const site = adminCms.cms?.site;
+  const heroBanners = adminCms.cms?.heroBanners ?? [];
+  const portfolioImages = useMemo(
+    () =>
+      adminCms.cms?.portfolioGrid
+        .map((p) => p.after)
+        .filter((u) => u && u.trim().length > 0) ?? [],
+    [adminCms.cms],
+  );
+
+  const [viewMode, setViewMode] = useState<"INBOX" | "COMPOSE">("INBOX");
+  const [replyRecipient, setReplyRecipient] = useState<{
+    email: string;
+    name: string;
+    messageContext?: string;
+  } | null>(null);
+
   const [items, setItems] = useState<MailItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -206,201 +227,257 @@ export default function AdminMailboxPage() {
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 border-b border-zinc-800/80 px-1 pb-4">
-          <div className="grid gap-3 lg:grid-cols-[minmax(320px,1fr)_180px_180px_auto_auto_auto] lg:items-center">
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name, email, message…"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm text-zinc-100 outline-none ring-[var(--accent)]/30 focus:border-[var(--accent)] focus:ring-2"
-            />
-            <select
-              value={kind}
-              onChange={(e) => setKind(e.target.value as MailboxKind | "ALL")}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none ring-[var(--accent)]/30 focus:border-[var(--accent)] focus:ring-2"
-            >
-              <option value="ALL">All</option>
-              <option value="CONTACT">Contact</option>
-              <option value="FREE_TRIAL">Free Trial</option>
-              <option value="ORDER">Order</option>
-            </select>
-            <label className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200">
-              <span className="text-xs text-zinc-300">Exclude read</span>
-              <input
-                type="checkbox"
-                checked={excludeRead}
-                onChange={(e) => setExcludeRead(e.target.checked)}
-                className="h-4 w-4 accent-[var(--accent)]"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => void load()}
-              className="rounded-xl bg-zinc-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
-            >
-              Refresh
-            </button>
-            <a
-              href={TAWK_DASHBOARD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-100 transition hover:border-[var(--accent)]/40 hover:text-white"
-            >
-              tawk.to
-            </a>
-            <a
-              href="https://mail.zoho.com/zm/#mail/folder/inbox"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-100 transition hover:border-[var(--accent)]/40 hover:text-white"
-            >
-              zoho
-            </a>
-          </div>
-          {msg ? <p className="mt-3 text-xs text-zinc-400">{msg}</p> : null}
-        </div>
-
-        <div className="grid min-h-0 flex-1 grid-cols-1 border-t border-zinc-800/80 lg:grid-cols-[380px_minmax(0,1fr)] lg:grid-rows-1 lg:overflow-hidden lg:min-h-[calc(100dvh-10rem)]">
-          <aside className="flex min-h-0 flex-col border-b border-zinc-800/80 lg:h-full lg:min-h-0 lg:border-b-0 lg:border-r lg:border-zinc-800/80">
-            <div className="max-h-[min(72vh,calc(100dvh-14rem))] min-h-[28vh] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
-              {loading ? (
-                <p className="p-4 text-sm text-zinc-500">Loading…</p>
-              ) : items.length === 0 ? (
-                <p className="p-6 text-center text-sm text-zinc-500">No messages.</p>
-              ) : (
-                <ul className="divide-y divide-zinc-800/80">
-                  {items.map((it) => {
-                    const unread = !it.readAt;
-                    const sub = listSubtitle(it);
-                    const active = openItem?.id === it.id;
-                    return (
-                      <li key={it.id}>
-                        <button
-                          type="button"
-                          onClick={() => setOpenId(it.id)}
-                          className={`w-full px-4 py-4 text-left transition ${
-                            active ? "bg-zinc-900/90" : "hover:bg-zinc-900/60"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-white">
-                                {it.fullName}
-                                {unread ? (
-                                  <span className="ml-2 inline-flex h-2 w-2 translate-y-[-1px] rounded-full bg-[var(--accent)]" />
-                                ) : null}
-                              </p>
-                              {sub ? (
-                                <p className="mt-0.5 truncate text-xs text-zinc-500">{sub}</p>
-                              ) : null}
-                              <p className="mt-1 line-clamp-2 text-xs text-zinc-400">{it.message}</p>
-                            </div>
-                            <span
-                              className={[
-                                "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ring-1",
-                                badge(it.kind),
-                              ].join(" ")}
-                            >
-                              {kindLabel(it.kind)}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-[10px] text-zinc-500">
-                            {new Date(it.createdAt).toLocaleString()}
-                          </p>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </aside>
-
-          <section className="flex min-h-[min(52vh,calc(100dvh-16rem))] flex-col lg:h-full lg:min-h-0">
-            {openItem ? (
-              <div className="flex h-full min-h-0 flex-col">
-                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-5 py-4">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                      {kindLabel(openItem.kind)}
-                    </p>
-                    <h2 className="mt-1 truncate text-lg font-semibold text-white">
-                      {openItem.fullName}
-                    </h2>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {new Date(openItem.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void setRead(openItem.id, !openItem.readAt)}
-                    className="rounded-lg border border-zinc-600 px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-900"
-                  >
-                    {openItem.readAt ? "Mark unread" : "Mark read"}
-                  </button>
-                </div>
-
-                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                        Email
-                      </p>
-                      <p className="mt-1.5 break-all text-sm text-zinc-200">
-                        {displayEmail(openItem) ?? "—"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                        WhatsApp
-                      </p>
-                      <p className="mt-1.5 break-all text-sm text-zinc-200">
-                        {displayWhatsapp(openItem) ?? "—"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 sm:col-span-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                        Country
-                      </p>
-                      <p className="mt-1.5 text-sm text-zinc-200">
-                        {displayCountry(openItem) || "—"}
-                      </p>
-                    </div>
-                    {openItem.requirements?.trim() ? (
-                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 sm:col-span-2">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                          Requirements
-                        </p>
-                        <MailboxRequirementsContent text={openItem.requirements.trim()} />
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                      Message
-                    </p>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-zinc-200">
-                      {openItem.message}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="grid h-full place-items-center px-6 text-center">
-                <div>
-                  <p className="text-base font-semibold text-zinc-300">Select a message</p>
-                  <p className="mt-2 text-sm text-zinc-500">
-                    Choose any item from the left list to read it here.
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
+      {/* Top Workspace Navigation Tabs */}
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-2 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setViewMode("INBOX")}
+            className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+              viewMode === "INBOX"
+                ? "bg-[var(--accent)] text-white shadow-md"
+                : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+            }`}
+          >
+            📥 Submissions Inbox
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setReplyRecipient(null);
+              setViewMode("COMPOSE");
+            }}
+            className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+              viewMode === "COMPOSE"
+                ? "bg-[var(--accent)] text-white shadow-md"
+                : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+            }`}
+          >
+            ✉️ Compose / Drafts & Email Builder
+          </button>
         </div>
       </div>
 
+      {viewMode === "COMPOSE" ? (
+        <AdminEmailTemplateBuilder
+          site={site}
+          heroBanners={heroBanners}
+          portfolioImages={portfolioImages}
+          initialRecipient={replyRecipient}
+        />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="shrink-0 border-b border-zinc-800/80 px-4 py-3">
+            <div className="grid gap-3 lg:grid-cols-[minmax(320px,1fr)_180px_180px_auto_auto_auto] lg:items-center">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search name, email, message…"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm text-zinc-100 outline-none ring-[var(--accent)]/30 focus:border-[var(--accent)] focus:ring-2"
+              />
+              <select
+                value={kind}
+                onChange={(e) => setKind(e.target.value as MailboxKind | "ALL")}
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none ring-[var(--accent)]/30 focus:border-[var(--accent)] focus:ring-2"
+              >
+                <option value="ALL">All Submissions</option>
+                <option value="CONTACT">Contact</option>
+                <option value="FREE_TRIAL">Free Trial</option>
+                <option value="ORDER">Order</option>
+              </select>
+              <label className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-200">
+                <span className="text-xs text-zinc-300">Exclude read</span>
+                <input
+                  type="checkbox"
+                  checked={excludeRead}
+                  onChange={(e) => setExcludeRead(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => void load()}
+                className="rounded-xl bg-zinc-800 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
+              >
+                Refresh
+              </button>
+              <a
+                href={TAWK_DASHBOARD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-100 transition hover:border-[var(--accent)]/40 hover:text-white"
+              >
+                tawk.to
+              </a>
+              <a
+                href="https://mail.zoho.com/zm/#mail/folder/inbox"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-100 transition hover:border-[var(--accent)]/40 hover:text-white"
+              >
+                zoho
+              </a>
+            </div>
+            {msg ? <p className="mt-3 text-xs text-zinc-400">{msg}</p> : null}
+          </div>
+
+          <div className="grid min-h-0 flex-1 grid-cols-1 border-t border-zinc-800/80 lg:grid-cols-[380px_minmax(0,1fr)] lg:grid-rows-1 lg:overflow-hidden lg:min-h-[calc(100dvh-10rem)]">
+            <aside className="flex min-h-0 flex-col border-b border-zinc-800/80 lg:h-full lg:min-h-0 lg:border-b-0 lg:border-r lg:border-zinc-800/80">
+              <div className="max-h-[min(72vh,calc(100dvh-14rem))] min-h-[28vh] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
+                {loading ? (
+                  <p className="p-4 text-sm text-zinc-500">Loading…</p>
+                ) : items.length === 0 ? (
+                  <p className="p-6 text-center text-sm text-zinc-500">No messages.</p>
+                ) : (
+                  <ul className="divide-y divide-zinc-800/80">
+                    {items.map((it) => {
+                      const unread = !it.readAt;
+                      const sub = listSubtitle(it);
+                      const active = openItem?.id === it.id;
+                      return (
+                        <li key={it.id}>
+                          <button
+                            type="button"
+                            onClick={() => setOpenId(it.id)}
+                            className={`w-full px-4 py-4 text-left transition ${
+                              active ? "bg-zinc-900/90" : "hover:bg-zinc-900/60"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-white">
+                                  {it.fullName}
+                                  {unread ? (
+                                    <span className="ml-2 inline-flex h-2 w-2 translate-y-[-1px] rounded-full bg-[var(--accent)]" />
+                                  ) : null}
+                                </p>
+                                {sub ? (
+                                  <p className="mt-0.5 truncate text-xs text-zinc-500">{sub}</p>
+                                ) : null}
+                                <p className="mt-1 line-clamp-2 text-xs text-zinc-400">{it.message}</p>
+                              </div>
+                              <span
+                                className={[
+                                  "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ring-1",
+                                  badge(it.kind),
+                                ].join(" ")}
+                              >
+                                {kindLabel(it.kind)}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-[10px] text-zinc-500">
+                              {new Date(it.createdAt).toLocaleString()}
+                            </p>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </aside>
+
+            <section className="flex min-h-[min(52vh,calc(100dvh-16rem))] flex-col lg:h-full lg:min-h-0">
+              {openItem ? (
+                <div className="flex h-full min-h-0 flex-col">
+                  <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-800 px-5 py-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                        {kindLabel(openItem.kind)}
+                      </p>
+                      <h2 className="mt-1 truncate text-lg font-semibold text-white">
+                        {openItem.fullName}
+                      </h2>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {new Date(openItem.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplyRecipient({
+                            email: displayEmail(openItem) || "",
+                            name: openItem.fullName || "",
+                            messageContext: openItem.message,
+                          });
+                          setViewMode("COMPOSE");
+                        }}
+                        className="rounded-lg bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-[var(--accent-hover)]"
+                      >
+                        ✉️ Reply with Template Builder
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void setRead(openItem.id, !openItem.readAt)}
+                        className="rounded-lg border border-zinc-600 px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-900"
+                      >
+                        {openItem.readAt ? "Mark unread" : "Mark read"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                          Email
+                        </p>
+                        <p className="mt-1.5 break-all text-sm text-zinc-200">
+                          {displayEmail(openItem) ?? "—"}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                          WhatsApp
+                        </p>
+                        <p className="mt-1.5 break-all text-sm text-zinc-200">
+                          {displayWhatsapp(openItem) ?? "—"}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 sm:col-span-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                          Country
+                        </p>
+                        <p className="mt-1.5 text-sm text-zinc-200">
+                          {displayCountry(openItem) || "—"}
+                        </p>
+                      </div>
+                      {openItem.requirements?.trim() ? (
+                        <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 sm:col-span-2">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                            Requirements
+                          </p>
+                          <MailboxRequirementsContent text={openItem.requirements.trim()} />
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                        Message
+                      </p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-zinc-200">
+                        {openItem.message}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid h-full place-items-center px-6 text-center">
+                  <div>
+                    <p className="text-base font-semibold text-zinc-300">Select a message</p>
+                    <p className="mt-2 text-sm text-zinc-500">
+                      Choose any item from the left list to read it here.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
