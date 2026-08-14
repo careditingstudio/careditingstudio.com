@@ -4,6 +4,9 @@ import type { SiteSettings } from "@/lib/cms-types";
 import { generateEmailHtml } from "@/lib/email-html-generator";
 import {
   createDefaultDraft,
+  DEFAULT_BLOCK_ORDER,
+  EMAIL_BLOCK_LABELS,
+  EmailBlockType,
   EmailDraft,
   PRESET_TEMPLATES,
 } from "@/lib/email-template-types";
@@ -52,7 +55,9 @@ export function AdminEmailTemplateBuilder({
   const [previewDevice, setPreviewDevice] = useState<"DESKTOP" | "MOBILE">("DESKTOP");
   const [copied, setCopied] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
+
   const [newPhotoInput, setNewPhotoInput] = useState("");
+  const [newServiceInput, setNewServiceInput] = useState("");
 
   // Load stored drafts on mount
   useEffect(() => {
@@ -105,6 +110,23 @@ export function AdminEmailTemplateBuilder({
     setTimeout(() => setSavedToast(false), 3000);
   }, [activeDraft]);
 
+  // Section Block Sorter (Move block UP or DOWN)
+  const handleMoveBlock = (index: number, direction: -1 | 1) => {
+    const currentOrder = activeDraft.blockOrder || [...DEFAULT_BLOCK_ORDER];
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= currentOrder.length) return;
+
+    const nextOrder = [...currentOrder];
+    const temp = nextOrder[index]!;
+    nextOrder[index] = nextOrder[targetIndex]!;
+    nextOrder[targetIndex] = temp;
+
+    setActiveDraft((prev) => ({
+      ...prev,
+      blockOrder: nextOrder,
+    }));
+  };
+
   // Load preset template into active draft
   const handleApplyPreset = (presetId: string) => {
     const preset = PRESET_TEMPLATES.find((p) => p.id === presetId);
@@ -119,6 +141,7 @@ export function AdminEmailTemplateBuilder({
       ctaUrl: preset.ctaUrl,
       bannerUrl: preset.bannerUrl || prev.bannerUrl,
       photoUrls: preset.photoUrls || prev.photoUrls,
+      servicesList: preset.servicesList || prev.servicesList,
     }));
   };
 
@@ -180,7 +203,7 @@ export function AdminEmailTemplateBuilder({
     setNewPhotoInput("");
   };
 
-  // Remove photo from showcase
+  // Remove photo
   const handleRemovePhoto = (index: number) => {
     setActiveDraft((prev) => ({
       ...prev,
@@ -188,9 +211,29 @@ export function AdminEmailTemplateBuilder({
     }));
   };
 
+  // Add service tag
+  const handleAddServiceTag = (serviceName: string) => {
+    const trimmed = serviceName.trim();
+    if (!trimmed) return;
+    setActiveDraft((prev) => ({
+      ...prev,
+      servicesList: [...(prev.servicesList || []), trimmed],
+      showServices: true,
+    }));
+    setNewServiceInput("");
+  };
+
+  // Remove service tag
+  const handleRemoveServiceTag = (index: number) => {
+    setActiveDraft((prev) => ({
+      ...prev,
+      servicesList: (prev.servicesList || []).filter((_, i) => i !== index),
+    }));
+  };
+
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col bg-zinc-950 text-zinc-100">
-      {/* Top Action Header Bar */}
+      {/* Top Action Bar */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-zinc-800 bg-zinc-900/90 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <button
@@ -202,7 +245,7 @@ export function AdminEmailTemplateBuilder({
                 : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
             }`}
           >
-            ✏️ Builder & Editor
+            ✏️ Template Builder
           </button>
           <button
             type="button"
@@ -235,7 +278,7 @@ export function AdminEmailTemplateBuilder({
 
         <div className="flex flex-wrap items-center gap-2">
           {savedToast ? (
-            <span className="text-xs font-medium text-emerald-400">✓ Saved to drafts</span>
+            <span className="text-xs font-medium text-emerald-400">✓ Saved draft</span>
           ) : null}
           <button
             type="button"
@@ -261,14 +304,14 @@ export function AdminEmailTemplateBuilder({
         </div>
       </div>
 
-      {/* Main Container Work Area */}
+      {/* Work Area */}
       {activeTab === "DRAFTS" ? (
-        /* Saved Drafts List Workspace */
+        /* Saved Drafts Workspace */
         <div className="flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-4xl">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">Saved Email Drafts</h2>
+                <h2 className="text-xl font-bold text-white">Saved Email Drafts & Templates</h2>
                 <p className="mt-1 text-xs text-zinc-400">
                   Manage your draft templates, customer replies, and outreach campaigns.
                 </p>
@@ -350,9 +393,9 @@ export function AdminEmailTemplateBuilder({
           </div>
         </div>
       ) : (
-        /* Split Dual-Pane Editor & Realtime Live Preview */
+        /* Split Dual-Pane Workspace */
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-2">
-          {/* Left Column: Form Controls & Template Builder */}
+          {/* Left Column: Editor Controls */}
           <div
             className={`flex min-h-0 flex-col overflow-y-auto border-r border-zinc-800 p-5 ${
               activeTab === "PREVIEW" ? "hidden lg:flex" : "flex"
@@ -378,12 +421,64 @@ export function AdminEmailTemplateBuilder({
                     </option>
                   ))}
                 </select>
-                <p className="mt-1.5 text-[11px] text-zinc-500">
-                  Pre-fills high-converting headlines, structure, and CTAs tailored for car photo clients.
-                </p>
               </div>
 
-              {/* Draft Info & Recipient Details */}
+              {/* Section Order & Sorter System (Up & Down Arrows) */}
+              <div className="rounded-2xl border border-[var(--accent)]/30 bg-zinc-900/80 p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
+                    ↕️ Section Order & Re-ordering System
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveDraft((prev) => ({
+                        ...prev,
+                        blockOrder: [...DEFAULT_BLOCK_ORDER],
+                      }))
+                    }
+                    className="text-[11px] text-zinc-400 hover:text-white"
+                  >
+                    Reset Order
+                  </button>
+                </div>
+                <p className="mb-3 text-[11px] text-zinc-400">
+                  Click ▲ Up or ▼ Down to position any section anywhere in the email template.
+                </p>
+
+                <div className="space-y-1.5">
+                  {(activeDraft.blockOrder || DEFAULT_BLOCK_ORDER).map((blockType, idx, arr) => (
+                    <div
+                      key={blockType}
+                      className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs"
+                    >
+                      <span className="font-medium text-white">
+                        {idx + 1}. {EMAIL_BLOCK_LABELS[blockType]}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleMoveBlock(idx, -1)}
+                          className="rounded bg-zinc-800 px-2 py-1 text-[11px] font-bold text-white hover:bg-zinc-700 disabled:opacity-30"
+                        >
+                          ▲ Up
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === arr.length - 1}
+                          onClick={() => handleMoveBlock(idx, 1)}
+                          className="rounded bg-zinc-800 px-2 py-1 text-[11px] font-bold text-white hover:bg-zinc-700 disabled:opacity-30"
+                        >
+                          ▼ Down
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recipient Details */}
               <div className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
                   1. Recipient & General Info
@@ -435,7 +530,7 @@ export function AdminEmailTemplateBuilder({
               {/* Banner Selector */}
               <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
-                  2. Top Header Banner
+                  2. Top Header Banner Image
                 </h3>
                 {heroBanners.length > 0 ? (
                   <div>
@@ -466,10 +561,10 @@ export function AdminEmailTemplateBuilder({
                 </div>
               </div>
 
-              {/* Email Content Body */}
+              {/* Headline & Body Text */}
               <div className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
-                  3. Headline & Message Content
+                  3. Headline & Message Paragraphs
                 </h3>
                 <div>
                   <label className="block text-xs font-medium text-zinc-300">Main Headline</label>
@@ -498,7 +593,7 @@ export function AdminEmailTemplateBuilder({
                     </button>
                   </div>
                   <textarea
-                    rows={8}
+                    rows={7}
                     value={activeDraft.bodyText}
                     onChange={(e) => setActiveDraft({ ...activeDraft, bodyText: e.target.value })}
                     placeholder="Write message paragraphs..."
@@ -507,11 +602,182 @@ export function AdminEmailTemplateBuilder({
                 </div>
               </div>
 
-              {/* Photo Showcase Attachment Block */}
+              {/* Executive Sender Signature Block Settings (As in screenshot) */}
+              <div className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
+                    4. Executive Sender Signature Block
+                  </h3>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300">
+                    <span>Show Signature</span>
+                    <input
+                      type="checkbox"
+                      checked={activeDraft.showSignature}
+                      onChange={(e) =>
+                        setActiveDraft({
+                          ...activeDraft,
+                          showSignature: e.target.checked,
+                          signature: { ...activeDraft.signature, show: e.target.checked },
+                        })
+                      }
+                      className="accent-[var(--accent)]"
+                    />
+                  </label>
+                </div>
+
+                {activeDraft.showSignature ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300">Sender Full Name</label>
+                      <input
+                        type="text"
+                        value={activeDraft.signature?.name ?? "Jakaria Khondokar"}
+                        onChange={(e) =>
+                          setActiveDraft({
+                            ...activeDraft,
+                            signature: { ...activeDraft.signature, name: e.target.value },
+                          })
+                        }
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300">Role & Subline</label>
+                      <input
+                        type="text"
+                        value={activeDraft.signature?.role ?? "CEO & Co-Founder, Car Editing Studio"}
+                        onChange={(e) =>
+                          setActiveDraft({
+                            ...activeDraft,
+                            signature: { ...activeDraft.signature, role: e.target.value },
+                          })
+                        }
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300">Avatar / Photo URL</label>
+                      <input
+                        type="text"
+                        value={activeDraft.signature?.avatarUrl ?? ""}
+                        onChange={(e) =>
+                          setActiveDraft({
+                            ...activeDraft,
+                            signature: { ...activeDraft.signature, avatarUrl: e.target.value },
+                          })
+                        }
+                        placeholder="https://careditingstudio.com/logo.png"
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300">Direct Phone / WhatsApp</label>
+                      <input
+                        type="text"
+                        value={activeDraft.signature?.phone ?? "+8801730848933"}
+                        onChange={(e) =>
+                          setActiveDraft({
+                            ...activeDraft,
+                            signature: { ...activeDraft.signature, phone: e.target.value },
+                          })
+                        }
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300">Direct Email</label>
+                      <input
+                        type="text"
+                        value={activeDraft.signature?.email ?? "info@careditingstudio.com"}
+                        onChange={(e) =>
+                          setActiveDraft({
+                            ...activeDraft,
+                            signature: { ...activeDraft.signature, email: e.target.value },
+                          })
+                        }
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300">Office Address</label>
+                      <input
+                        type="text"
+                        value={activeDraft.signature?.address ?? "Talgachi, Dhaka, Bangladesh"}
+                        onChange={(e) =>
+                          setActiveDraft({
+                            ...activeDraft,
+                            signature: { ...activeDraft.signature, address: e.target.value },
+                          })
+                        }
+                        className="mt-1 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Featured Services List */}
               <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
-                    4. Photo Showcase Block
+                    5. Featured Services Block
+                  </h3>
+                  <label className="flex items-center gap-2 text-xs text-zinc-300">
+                    <span>Show Services</span>
+                    <input
+                      type="checkbox"
+                      checked={activeDraft.showServices}
+                      onChange={(e) => setActiveDraft({ ...activeDraft, showServices: e.target.checked })}
+                      className="accent-[var(--accent)]"
+                    />
+                  </label>
+                </div>
+
+                {activeDraft.showServices ? (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newServiceInput}
+                        onChange={(e) => setNewServiceInput(e.target.value)}
+                        placeholder="Add service name (e.g. Window Tinting)"
+                        className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-white outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddServiceTag(newServiceInput)}
+                        className="shrink-0 rounded-xl bg-zinc-800 px-3 py-2 text-xs font-semibold text-white hover:bg-zinc-700"
+                      >
+                        + Add Service
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {(activeDraft.servicesList || []).map((s, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-200"
+                        >
+                          ✓ {s}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveServiceTag(idx)}
+                            className="ml-1 text-zinc-400 hover:text-rose-400 font-bold"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Photo Showcase */}
+              <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
+                    6. Photo Showcase Block
                   </h3>
                   <label className="flex items-center gap-2 text-xs text-zinc-300">
                     <span>Show Photos</span>
@@ -590,10 +856,10 @@ export function AdminEmailTemplateBuilder({
                 ) : null}
               </div>
 
-              {/* Call-To-Action Button Block */}
+              {/* CTA Button Block */}
               <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
-                  5. Action Button (CTA)
+                  7. Action Button (CTA)
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
@@ -619,10 +885,10 @@ export function AdminEmailTemplateBuilder({
                 </div>
               </div>
 
-              {/* Social Links & Footer Toggles */}
+              {/* Social Links & Footer */}
               <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
-                  6. Footer & Social Links
+                  8. Standalone Footer & Social Media Icons
                 </h3>
                 <div className="flex flex-wrap gap-4 text-xs text-zinc-300">
                   <label className="flex items-center gap-2">
@@ -632,7 +898,7 @@ export function AdminEmailTemplateBuilder({
                       onChange={(e) => setActiveDraft({ ...activeDraft, showSocialLinks: e.target.checked })}
                       className="accent-[var(--accent)]"
                     />
-                    <span>Auto-include Social Media Icons (from website config)</span>
+                    <span>Include Social Icons Bar (Facebook, WhatsApp, LinkedIn, etc.)</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
@@ -641,22 +907,22 @@ export function AdminEmailTemplateBuilder({
                       onChange={(e) => setActiveDraft({ ...activeDraft, showContactFooter: e.target.checked })}
                       className="accent-[var(--accent)]"
                     />
-                    <span>Include Brand Contact Footer (Email, Phone/WhatsApp, Domain)</span>
+                    <span>Include Legal Footer (Address & Copyright)</span>
                   </label>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Interactive Real-Time Live Preview */}
+          {/* Right Column: Live Real-Time Preview (Wider 680px) */}
           <div
-            className={`flex min-h-0 flex-col bg-zinc-950 p-4 sm:p-6 ${
+            className={`flex min-h-0 flex-col bg-zinc-900/50 p-4 sm:p-6 ${
               activeTab === "EDITOR" ? "hidden lg:flex" : "flex"
             }`}
           >
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                Live HTML Email Preview
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                Live HTML Email Preview (Fluid Transparent Background)
               </span>
               <div className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 p-1">
                 <button
@@ -664,18 +930,18 @@ export function AdminEmailTemplateBuilder({
                   onClick={() => setPreviewDevice("DESKTOP")}
                   className={`rounded px-2.5 py-1 text-[11px] font-semibold transition ${
                     previewDevice === "DESKTOP"
-                      ? "bg-zinc-800 text-white"
+                      ? "bg-[var(--accent)] text-white"
                       : "text-zinc-400 hover:text-white"
                   }`}
                 >
-                  💻 Desktop (600px)
+                  💻 Desktop (680px)
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreviewDevice("MOBILE")}
                   className={`rounded px-2.5 py-1 text-[11px] font-semibold transition ${
                     previewDevice === "MOBILE"
-                      ? "bg-zinc-800 text-white"
+                      ? "bg-[var(--accent)] text-white"
                       : "text-zinc-400 hover:text-white"
                   }`}
                 >
@@ -685,12 +951,12 @@ export function AdminEmailTemplateBuilder({
             </div>
 
             {/* Preview Frame Container */}
-            <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
+            <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-4 shadow-inner">
               <iframe
                 srcDoc={generatedHtml}
                 title="Email Preview"
                 className={`h-full border-0 transition-all duration-300 ${
-                  previewDevice === "MOBILE" ? "w-[360px] rounded-3xl shadow-2xl" : "w-full max-w-[620px]"
+                  previewDevice === "MOBILE" ? "w-[360px] rounded-3xl shadow-2xl" : "w-full max-w-[700px]"
                 }`}
               />
             </div>
