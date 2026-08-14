@@ -12,6 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type NavVariant = "overlay" | "solid";
 
@@ -157,6 +158,10 @@ export function SiteHeader({
   const chromeSolid = useHomeChromeSolid();
   const { lockChromeHide, unlockChromeHide } = useChromeScrollLock();
   const serviceHrefMap = useMemo(() => getServiceHrefMap(services, servicePages), [services, servicePages]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -406,142 +411,164 @@ return (
         </button>
       </div>
 
-      {menuOpen ? (
-        <div
-          id="mobile-nav"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile navigation"
-          className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-zinc-950/98 text-zinc-50 backdrop-blur-3xl lg:hidden"
-        >
-          <div className="flex h-[var(--header-h)] items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6">
-            <Link
-              href="/"
-              onClick={() => handleSetMenuOpen(false)}
-              className={`${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight text-white transition-colors sm:gap-3 sm:text-[1.35rem]`}
+      {mounted && menuOpen
+        ? createPortal(
+            <div
+              id="mobile-nav"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile navigation"
+              className="fixed inset-0 z-[9999] flex flex-col overflow-y-auto bg-zinc-950/98 text-zinc-50 backdrop-blur-3xl lg:hidden"
             >
-              <span className="relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl shadow-[0_12px_40px_-14px_rgba(255,255,255,0.25)] sm:h-10 sm:max-w-[11rem]">
-                <Image
-                  src="/logo.png"
-                  alt=""
-                  width={220}
-                  height={56}
-                  className="h-full w-auto max-h-full object-contain object-left"
-                  priority
-                />
-              </span>
-              <span className="whitespace-nowrap">{brandName}</span>
-            </Link>
-            <button
-              type="button"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-white transition-colors hover:bg-white/10"
-              aria-expanded={true}
-              aria-controls="mobile-nav"
-              aria-label="Close menu"
-              onClick={() => handleSetMenuOpen(false)}
-            >
-              <IconMenu open={true} />
-            </button>
-          </div>
-          <div className="flex min-h-full flex-col px-6 py-10 sm:px-8 sm:py-12">
-            <nav
-              className="flex flex-1 flex-col space-y-6 sm:space-y-8"
-              aria-label="Mobile main"
-            >
-              {mainMobileNavItems.map(({ href }) => {
-                const navIdx = navItems.findIndex((n) => n.href === href);
-                const label = navIdx >= 0 ? (labels[navIdx] ?? navItems[navIdx]!.label) : href;
-                const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
-                
-                if (href === "/services") {
-                  return (
-                    <div key={href} className="flex flex-col">
-                      <button
-                        type="button"
+              <div className="flex h-[var(--header-h)] items-center justify-between gap-4 px-4 sm:gap-6 sm:px-6">
+                <Link
+                  href="/"
+                  onClick={() => handleSetMenuOpen(false)}
+                  className={`${display.className} inline-flex shrink-0 items-center gap-2.5 text-[1.2rem] font-semibold leading-none tracking-tight text-white transition-colors sm:gap-3 sm:text-[1.35rem]`}
+                >
+                  <span className="relative flex h-9 max-h-9 w-auto max-w-[min(42vw,10rem)] shrink-0 items-center overflow-visible rounded-xl shadow-[0_12px_40px_-14px_rgba(255,255,255,0.25)] sm:h-10 sm:max-w-[11rem]">
+                    <Image
+                      src="/logo.png"
+                      alt=""
+                      width={220}
+                      height={56}
+                      className="h-full w-auto max-h-full object-contain object-left"
+                      priority
+                    />
+                  </span>
+                  <span className="whitespace-nowrap">{brandName}</span>
+                </Link>
+                <button
+                  type="button"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white transition-colors hover:bg-white/10 active:bg-white/15"
+                  aria-expanded={true}
+                  aria-controls="mobile-nav"
+                  aria-label="Close menu"
+                  onClick={() => handleSetMenuOpen(false)}
+                >
+                  <IconMenu open={true} />
+                </button>
+              </div>
+              <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-between px-6 pb-12 pt-8 sm:px-8 sm:pb-14 sm:pt-10">
+                <nav
+                  className="flex flex-col space-y-6 sm:space-y-8"
+                  aria-label="Mobile main"
+                >
+                  {mainMobileNavItems.map(({ href }) => {
+                    const navIdx = navItems.findIndex((n) => n.href === href);
+                    const label =
+                      navIdx >= 0
+                        ? (labels[navIdx] ?? navItems[navIdx]!.label)
+                        : href;
+                    const active =
+                      href === "/"
+                        ? pathname === "/"
+                        : pathname === href || pathname.startsWith(`${href}/`);
+
+                    if (href === "/services") {
+                      return (
+                        <div key={href} className="flex flex-col">
+                          <button
+                            type="button"
+                            className={[
+                              `${display.className} flex w-full items-center justify-between text-left text-[1.85rem] font-semibold leading-tight tracking-tight transition-colors sm:text-3xl`,
+                              servicesMobileOpen || active
+                                ? "text-[var(--accent)]"
+                                : "hover:text-[var(--accent)]",
+                            ].join(" ")}
+                            aria-expanded={servicesMobileOpen}
+                            aria-controls="mobile-services-panel"
+                            id="mobile-services-trigger"
+                            onClick={() =>
+                              setServicesMobileOpen((open) => !open)
+                            }
+                          >
+                            {label}
+                            <IconChevronDown
+                              className={[
+                                "h-6 w-6 shrink-0 transition-transform duration-300",
+                                servicesMobileOpen ? "rotate-180" : "",
+                              ].join(" ")}
+                            />
+                          </button>
+                          {servicesMobileOpen ? (
+                            <div
+                              id="mobile-services-panel"
+                              role="region"
+                              aria-labelledby="mobile-services-trigger"
+                              className="mt-4 flex flex-col space-y-3.5 pl-4 sm:mt-5 sm:space-y-4 sm:pl-6"
+                            >
+                              {services.map((svc) => {
+                                const svcHref =
+                                  serviceHrefMap.get(svc.id) ?? `/services`;
+                                return (
+                                  <Link
+                                    key={svc.id}
+                                    href={svcHref}
+                                    onClick={() => {
+                                      handleSetMenuOpen(false);
+                                      setServicesMobileOpen(false);
+                                    }}
+                                    className="text-base font-medium text-zinc-300 transition-colors hover:text-white sm:text-lg"
+                                  >
+                                    {svc.name.trim() || "Service"}
+                                  </Link>
+                                );
+                              })}
+                              <Link
+                                href="/services"
+                                onClick={() => {
+                                  handleSetMenuOpen(false);
+                                  setServicesMobileOpen(false);
+                                }}
+                                className="text-base font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)] sm:text-lg"
+                              >
+                                {megaViewAll} &rarr;
+                              </Link>
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => handleSetMenuOpen(false)}
                         className={[
-                          `${display.className} flex w-full items-center justify-between text-left text-[2rem] font-semibold leading-tight tracking-tight transition-colors sm:text-4xl`,
-                          servicesMobileOpen || active ? "text-[var(--accent)]" : "hover:text-[var(--accent)]",
+                          `${display.className} block text-[1.85rem] font-semibold leading-tight tracking-tight transition-colors sm:text-3xl`,
+                          active
+                            ? "text-[var(--accent)]"
+                            : "hover:text-[var(--accent)]",
                         ].join(" ")}
-                        aria-expanded={servicesMobileOpen}
-                        aria-controls="mobile-services-panel"
-                        id="mobile-services-trigger"
-                        onClick={() => setServicesMobileOpen((open) => !open)}
                       >
                         {label}
-                        <IconChevronDown
-                          className={[
-                            "h-7 w-7 shrink-0 transition-transform duration-300",
-                            servicesMobileOpen ? "rotate-180" : "",
-                          ].join(" ")}
-                        />
-                      </button>
-                      {servicesMobileOpen ? (
-                        <div
-                          id="mobile-services-panel"
-                          role="region"
-                          aria-labelledby="mobile-services-trigger"
-                          className="mt-5 flex flex-col space-y-4 pl-4 sm:mt-6 sm:space-y-5 sm:pl-6"
-                        >
-                          {services.map(svc => {
-                            const svcHref = serviceHrefMap.get(svc.id) ?? `/services`;
-                            return (
-                              <Link
-                                key={svc.id}
-                                href={svcHref}
-                                onClick={() => { handleSetMenuOpen(false); setServicesMobileOpen(false); }}
-                                className="text-lg font-medium text-[var(--muted)] transition-colors hover:text-[var(--foreground)] sm:text-xl"
-                              >
-                                {svc.name.trim() || "Service"}
-                              </Link>
-                            );
-                          })}
-                          <Link
-                            href="/services"
-                            onClick={() => { handleSetMenuOpen(false); setServicesMobileOpen(false); }}
-                            className="text-lg font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)] sm:text-xl"
-                          >
-                            {megaViewAll} &rarr;
-                          </Link>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                }
+                      </Link>
+                    );
+                  })}
+                </nav>
 
-                return (
+                <div className="mt-12 flex flex-col gap-3.5 sm:mt-14">
+                  <OrderNowLink
+                    className="flex min-h-[3.25rem] items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-base font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-transform hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
+                    onNavigate={() => handleSetMenuOpen(false)}
+                    label={orderLabel}
+                  />
                   <Link
-                    key={href}
-                    href={href}
+                    href="/free-trial"
+                    prefetch
                     onClick={() => handleSetMenuOpen(false)}
-                    className={[
-                      `${display.className} block text-[2rem] font-semibold leading-tight tracking-tight transition-colors sm:text-4xl`,
-                      active ? "text-[var(--accent)]" : "hover:text-[var(--accent)]",
-                    ].join(" ")}
+                    className="flex min-h-[3.25rem] items-center justify-center rounded-2xl border border-white/15 bg-white/[0.04] px-6 text-base font-semibold transition-colors hover:bg-white/[0.08]"
                   >
-                    {label}
+                    {freeTrialLabel}
                   </Link>
-                );
-              })}
-            </nav>
-
-            <div className="mt-14 flex flex-col gap-4 sm:mt-16">
-              <OrderNowLink
-                className="flex min-h-[3.5rem] items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-lg font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-transform hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
-                onNavigate={() => handleSetMenuOpen(false)}
-                label={orderLabel}
-              />
-              <Link
-                href="/free-trial"
-                prefetch
-                onClick={() => handleSetMenuOpen(false)}
-                className="flex min-h-[3.5rem] items-center justify-center rounded-2xl border border-[var(--line-strong)] bg-transparent px-6 text-lg font-semibold transition-colors hover:bg-white/[0.04]"
-              >
-                {freeTrialLabel}
-              </Link>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </header>
   );
 }
