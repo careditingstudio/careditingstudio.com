@@ -11,6 +11,8 @@ import {
 } from "react";
 import { isCloudinaryUrl, isUploadedAsset } from "@/lib/cms-types";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 export function BeforeAfterSliderHeader() {
   return (
     <header className="mx-auto mb-[clamp(2.5rem,6vw,3.75rem)] max-w-3xl text-center">
