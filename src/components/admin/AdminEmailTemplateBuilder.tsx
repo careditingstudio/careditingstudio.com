@@ -6,7 +6,7 @@ import {
   createDefaultDraft,
   DEFAULT_BLOCK_ORDER,
   EMAIL_BLOCK_LABELS,
-  EmailBlockType,
+
   EmailDraft,
   PRESET_TEMPLATES,
 } from "@/lib/email-template-types";
