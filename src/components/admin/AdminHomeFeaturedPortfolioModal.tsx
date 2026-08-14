@@ -104,7 +104,7 @@ export function AdminHomeFeaturedPortfolioModal({ open, onClose }: Props) {
                       src={row.after.trim() || row.before}
                       alt=""
                       fill
-                      className="object-cover transition group-hover:scale-[1.03]"
+                      className="object-contain transition group-hover:scale-[1.03]"
                       sizes="120px"
                       unoptimized={isUploadedAsset(row.after || row.before)}
                     />
@@ -151,7 +151,7 @@ export function AdminHomeFeaturedPortfolioModal({ open, onClose }: Props) {
                           src={src}
                           alt=""
                           fill
-                          className="object-cover"
+                          className="object-contain"
                           sizes="48px"
                           unoptimized={isUploadedAsset(src)}
                         />

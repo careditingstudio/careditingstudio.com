@@ -269,13 +269,13 @@ export function BeforeAfterPostEditModal({
                       <p className="text-xs font-medium capitalize text-zinc-400">
                         {side}
                       </p>
-                      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg bg-zinc-900">
+                      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-zinc-900">
                         {sideSrc ? (
                           <Image
                             src={sideSrc}
                             alt=""
                             fill
-                            className="object-cover"
+                            className="object-contain"
                             sizes="200px"
                             unoptimized={isUploadedAsset(sideSrc)}
                           />

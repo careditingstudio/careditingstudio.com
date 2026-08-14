@@ -50,14 +50,9 @@ export function BeforeAfterSlider({
     isUploadedAsset(afterSrc) ||
     !isCloudinaryUrl(beforeSrc) ||
     !isCloudinaryUrl(afterSrc);
-  const aspectClass =
-    layout === "square"
-      ? "aspect-square"
-      : "aspect-[4/3]";
+  const aspectClass = "aspect-square";
   const imageSizes =
-    layout === "square" || layout === "portfolio"
-      ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      : "(max-width: 1024px) 100vw, 50vw";
+    "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
   const id = useId();
   const labelId = `${id}-label`;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -113,7 +108,7 @@ export function BeforeAfterSlider({
       aria-valuemax={100}
       aria-valuenow={Math.round(percent)}
       aria-valuetext={`${Math.round(percent)} percent before visible`}
-      className={`group relative ${aspectClass} w-full max-w-none cursor-ew-resize touch-none select-none overflow-hidden rounded-3xl bg-zinc-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)] ring-1 ring-black/10 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] dark:bg-zinc-800 dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] dark:ring-white/10 ${className}`}
+      className={`group relative ${aspectClass} w-full max-w-none cursor-ew-resize touch-none select-none overflow-hidden rounded-3xl bg-zinc-950 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.25)] ring-1 ring-white/10 outline-none transition-shadow duration-300 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] dark:bg-zinc-950 dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] dark:ring-white/10 ${className}`}
       onPointerDown={(e) => {
         if (e.button !== 0) return;
         e.preventDefault();
@@ -135,7 +130,7 @@ export function BeforeAfterSlider({
         priority={priority}
         unoptimized={unopt}
         sizes={imageSizes}
-        className="pointer-events-none object-cover"
+        className="pointer-events-none object-contain"
         draggable={false}
       />
 
@@ -151,7 +146,7 @@ export function BeforeAfterSlider({
           priority={priority}
           unoptimized={unopt}
           sizes={imageSizes}
-          className="object-cover"
+          className="object-contain"
           draggable={false}
         />
       </div>

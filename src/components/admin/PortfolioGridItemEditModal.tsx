@@ -168,7 +168,7 @@ export function PortfolioGridItemEditModal({
                             src={sideSrc}
                             alt=""
                             fill
-                            className="object-cover"
+                            className="object-contain"
                             sizes="200px"
                             unoptimized={isUploadedAsset(sideSrc)}
                           />
