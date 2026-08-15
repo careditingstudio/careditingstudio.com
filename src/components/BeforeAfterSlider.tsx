@@ -52,7 +52,7 @@ export function BeforeAfterSlider({
     isUploadedAsset(afterSrc) ||
     !isCloudinaryUrl(beforeSrc) ||
     !isCloudinaryUrl(afterSrc);
-  const aspectClass = "aspect-[2/3]";
+  const aspectClass = layout === "square" ? "aspect-square" : "aspect-[3/2]";
   const imageSizes =
     "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
   const id = useId();
